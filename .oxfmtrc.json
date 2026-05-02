@@ -1,9 +1,15 @@
 {
     "$schema": "./node_modules/oxfmt/configuration_schema.json",
     "endOfLine": "lf",
-    "ignorePatterns": ["node_modules", "dist", "src/generated", "src-tauri/gen", "src-tauri/target"],
+    "ignorePatterns": [
+        "node_modules",
+        "dist",
+        "src/generated",
+        "src-tauri/gen",
+        "src-tauri/target"
+    ],
     "jsxSingleQuote": true,
-    "printWidth": 120,
+    "printWidth": 100,
     "semi": true,
     "singleQuote": true,
     "sortImports": {

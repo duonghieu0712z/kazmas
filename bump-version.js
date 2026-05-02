@@ -22,7 +22,10 @@ async function updateVersion() {
             const filePath = join(process.cwd(), filename);
             const fileContent = await readFile(filePath, 'utf8');
             // Create the replacement pattern based on the file type
-            const updatedContent = fileContent.replace(searchPattern(OLD_VERSION), replacement(newVersion));
+            const updatedContent = fileContent.replace(
+                searchPattern(OLD_VERSION),
+                replacement(newVersion),
+            );
             await writeFile(filePath, updatedContent);
             console.log(`Updated ${filename} version to ${newVersion}`);
         } catch (error) {
