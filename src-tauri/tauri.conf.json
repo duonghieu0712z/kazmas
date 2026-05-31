@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "Kazmas",
+    "version": "0.0.1",
+    "identifier": "com.kazmas.desktop",
+    "build": {
+        "beforeDevCommand": "pnpm dev",
+        "devUrl": "http://localhost:1420",
+        "beforeBuildCommand": "pnpm build",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "Kazmas",
+                "width": 1200,
+                "height": 800,
+                "center": true
+            }
+        ],
+        "security": {
+            "csp": null
+        }
+    },
+    "bundle": {
+        "publisher": "duonghieu0712z",
+        "active": true,
+        "targets": "all",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ]
+    }
+}

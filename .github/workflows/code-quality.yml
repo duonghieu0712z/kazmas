@@ -1,0 +1,80 @@
+name: Code Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format
+
+      - name: Check oxlint
+        run: pnpm lint:github:oxlint
+
+      - name: Check ESLint
+        uses: reviewdog/action-eslint@v1
+        with:
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
+          filter_mode: ${{ github.event_name == 'pull_request' && 'added' || 'nofilter' }}
+          fail_level: error
+          workdir: .
+          eslint_flags: '. --cache'
+
+      - name: Check types
+        run: pnpm type-check
+
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt, clippy
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Check formatting
+        run: cargo +nightly fmt --manifest-path src-tauri/Cargo.toml -- --check
+
+      - name: Check Clippy
+        run: cargo +nightly clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
