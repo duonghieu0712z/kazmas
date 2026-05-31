@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  frontend:
+  frontend-quality:
     runs-on: ubuntu-latest
 
     steps:
@@ -50,7 +50,7 @@ jobs:
       - name: Check types
         run: pnpm type-check
 
-  rust:
+  tauri-quality:
     runs-on: ubuntu-latest
 
     steps:
