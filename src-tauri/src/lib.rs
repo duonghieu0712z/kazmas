@@ -1,10 +1,8 @@
-use tauri_specta::Builder;
-
 mod command;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let specta_builder = Builder::<tauri::Wry>::new().commands(command::commands());
+    let specta_builder = tauri_specta::Builder::<tauri::Wry>::new().commands(command::commands());
 
     #[cfg(all(debug_assertions, not(mobile)))]
     {
@@ -15,9 +13,7 @@ pub fn run() {
             .unwrap();
     }
 
-    let builder = tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_prevent_default::debug());
+    let builder = tauri::Builder::default().plugin(tauri_plugin_prevent_default::debug());
 
     #[cfg(debug_assertions)]
     let builder = builder.plugin(tauri_plugin_devtools::init());
@@ -45,7 +41,11 @@ pub fn run() {
             {
                 use tauri::Manager;
 
-                _app.get_webview_window("main").unwrap().open_devtools();
+                if let Some(window) = _app.get_webview_window("main") {
+                    window.open_devtools();
+                } else {
+                    log::error!("Main window not found");
+                }
             }
             Ok(())
         })
