@@ -36,7 +36,7 @@ jobs:
         run: pnpm format
 
       - name: Check oxlint
-        run: pnpm lint:github:oxlint
+        run: pnpm lint:check:oxlint --format=github
 
       - name: Check ESLint
         uses: reviewdog/action-eslint@v1
