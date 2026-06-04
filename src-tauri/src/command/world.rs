@@ -1,36 +1,44 @@
-use tauri::State;
+use tauri::{AppHandle, Runtime, State};
 
 use super::error::CommandResult;
 use crate::{
     app::{self, AppState},
     dto::WorldDto,
-    world::{WorldManifest, WorldProject, create_package_path, create_workspace_path},
+    world::WorldProject,
 };
 
 #[tauri::command]
 #[specta::specta]
-pub(super) fn create_world(
+pub(super) fn create_world<R: Runtime>(
+    app: AppHandle<R>,
     state: State<'_, AppState>,
     name: &str,
     path: &str,
 ) -> CommandResult<WorldDto> {
-    let manifest = WorldManifest::new(name);
-    let package_path = create_package_path(name, path);
-    let workspace_path = create_workspace_path(&manifest.id, path)?;
+    let mut project = app::lock_mutex(&state.project)?;
+    *project = Some(WorldProject::create_world(&app, name, path)?);
 
-    {
-        let mut project = app::lock_mutex(&state.project)?;
-        *project = Some(WorldProject {
-            manifest: manifest.clone(),
-            package: package_path,
-            workspace: workspace_path,
-        });
-    }
+    let project = project.as_ref().unwrap();
+    log::debug!("package path: {}", project.package.display());
+    log::debug!("workspace path: {}", project.workspace.display());
+    Ok(project.manifest.clone().into())
+}
 
-    if let Some(project) = app::lock_mutex(&state.project)?.as_ref() {
-        log::debug!("package path: {}", project.package.display());
-        log::debug!("workspace path: {}", project.workspace.display());
-    }
+#[tauri::command]
+#[specta::specta]
+pub(super) fn open_world<R: Runtime>(
+    _app: AppHandle<R>,
+    _state: State<'_, AppState>,
+    _path: &str,
+) -> CommandResult<()> {
+    Ok(())
+}
 
-    Ok(manifest.into())
+#[tauri::command]
+#[specta::specta]
+pub(super) fn save_world<R: Runtime>(
+    _app: AppHandle<R>,
+    _state: State<'_, AppState>,
+) -> CommandResult<()> {
+    Ok(())
 }

@@ -5,6 +5,8 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 /** Commands */
 export const commands = {
 	createWorld: (name: string, path: string) => typedError<WorldDto, CommandError>(__TAURI_INVOKE("create_world", { name, path })),
+	openWorld: (path: string) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { path })),
+	saveWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_world")),
 };
 
 /* Types */
