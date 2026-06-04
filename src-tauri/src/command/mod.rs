@@ -1,3 +1,4 @@
+mod error;
 mod world;
 
 use tauri::Runtime;

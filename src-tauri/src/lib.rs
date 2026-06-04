@@ -1,5 +1,6 @@
 mod app;
 mod command;
+mod dto;
 mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

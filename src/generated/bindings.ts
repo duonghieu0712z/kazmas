@@ -4,7 +4,22 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 
 /** Commands */
 export const commands = {
-	createWorld: (name: string, path: string) => typedError<null, string>(__TAURI_INVOKE("create_world", { name, path })),
+	createWorld: (name: string, path: string) => typedError<WorldDto, CommandError>(__TAURI_INVOKE("create_world", { name, path })),
+};
+
+/* Types */
+export type CommandError = {
+	code: CommandErrorCode,
+	message: string,
+};
+
+export type CommandErrorCode = "STATE_LOCK_POISONED" | "IO_ERROR" | "TAURI_ERROR";
+
+export type WorldDto = {
+	id: string,
+	name: string,
+	createdAt: string,
+	updatedAt: string,
 };
 
 /* Tauri Specta runtime */
