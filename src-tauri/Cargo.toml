@@ -25,6 +25,7 @@ tauri-plugin-devtools = "2.1.0"
 tauri-plugin-log = "2.8.0"
 tauri-plugin-prevent-default = "5.0.0"
 tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"] }
+thiserror = "2.0.18"
 
 [build-dependencies]
 tauri-build = { version = "2.6.2", features = [] }

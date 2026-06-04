@@ -1,4 +1,6 @@
+mod app;
 mod command;
+mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -35,6 +37,7 @@ pub fn run() {
     );
 
     builder
+        .manage(app::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|_app| {
             #[cfg(debug_assertions)]
