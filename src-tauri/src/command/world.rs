@@ -1,8 +1,10 @@
-use tauri::{AppHandle, Runtime, State};
+use std::{fs, path::PathBuf};
+
+use tauri::{AppHandle, Manager, Runtime, State};
 
 use super::error::CommandResult;
 use crate::{
-    app::{self, AppState},
+    app::{self, AppState, KazmasResult},
     dto::WorldDto,
     world::WorldProject,
 };
@@ -16,29 +18,47 @@ pub(super) fn create_world<R: Runtime>(
     path: &str,
 ) -> CommandResult<WorldDto> {
     let mut project = app::lock_mutex(&state.project)?;
-    *project = Some(WorldProject::create_world(&app, name, path)?);
+    let temp_dir = project_temp_dir(&app)?;
+    let new_project = WorldProject::create_world(name, path, temp_dir)?;
 
-    let project = project.as_ref().unwrap();
-    log::debug!("package path: {}", project.package.display());
-    log::debug!("workspace path: {}", project.workspace.display());
-    Ok(project.manifest.clone().into())
+    log::debug!("package path: {}", new_project.package.display());
+    log::debug!("workspace path: {}", new_project.workspace.display());
+
+    let world = new_project.manifest.clone().into();
+    *project = Some(new_project);
+    Ok(world)
 }
 
 #[tauri::command]
 #[specta::specta]
 pub(super) fn open_world<R: Runtime>(
-    _app: AppHandle<R>,
-    _state: State<'_, AppState>,
-    _path: &str,
-) -> CommandResult<()> {
-    Ok(())
+    app: AppHandle<R>,
+    state: State<'_, AppState>,
+    path: &str,
+) -> CommandResult<WorldDto> {
+    let mut project = app::lock_mutex(&state.project)?;
+    let temp_dir = project_temp_dir(&app)?;
+    let new_project = WorldProject::open_world(path, temp_dir)?;
+
+    log::debug!("package path: {}", new_project.package.display());
+    log::debug!("workspace path: {}", new_project.workspace.display());
+
+    let world = new_project.manifest.clone().into();
+    *project = Some(new_project);
+    Ok(world)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub(super) fn save_world<R: Runtime>(
-    _app: AppHandle<R>,
-    _state: State<'_, AppState>,
-) -> CommandResult<()> {
+pub(super) fn save_world(state: State<'_, AppState>) -> CommandResult<()> {
+    if let Some(project) = app::lock_mutex(&state.project)?.as_ref() {
+        project.save_world()?;
+    }
     Ok(())
+}
+
+fn project_temp_dir<R: Runtime>(app: &AppHandle<R>) -> KazmasResult<PathBuf> {
+    let path = app.path().temp_dir()?.join(&app.config().identifier);
+    fs::create_dir_all(&path)?;
+    Ok(path)
 }

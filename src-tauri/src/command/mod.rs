@@ -8,6 +8,6 @@ pub(crate) fn commands<R: Runtime>() -> Commands<R> {
     collect_commands![
         world::create_world<Wry>,
         world::open_world<Wry>,
-        world::save_world<Wry>,
+        world::save_world,
     ]
 }
