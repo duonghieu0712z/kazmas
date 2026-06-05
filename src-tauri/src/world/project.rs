@@ -15,13 +15,17 @@ const EXTENSION: &str = "kazmas";
 
 #[derive(Debug)]
 pub(crate) struct WorldProject {
-    pub(crate) manifest: WorldManifest,
+    manifest: WorldManifest,
 
-    pub(crate) package: PathBuf,
-    pub(crate) workspace: PathBuf,
+    package: PathBuf,
+    workspace: PathBuf,
 }
 
 impl WorldProject {
+    pub(crate) fn manifest(&self) -> WorldManifest {
+        self.manifest.clone()
+    }
+
     pub(crate) fn create_world(
         name: &str,
         path: impl AsRef<Path>,

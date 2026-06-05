@@ -9,12 +9,12 @@ use crate::world::WorldManifest;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct WorldDto {
     #[specta(type = String)]
-    pub(crate) id: Uuid,
-    pub(crate) name: String,
+    id: Uuid,
+    name: String,
     #[specta(type = String)]
-    pub(crate) created_at: DateTime<Utc>,
+    created_at: DateTime<Utc>,
     #[specta(type = String)]
-    pub(crate) updated_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
 }
 
 impl From<WorldManifest> for WorldDto {

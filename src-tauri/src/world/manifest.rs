@@ -21,7 +21,7 @@ pub(crate) struct WorldManifest {
     #[serde(serialize_with = "uuid::serde::simple::serialize")]
     pub(crate) id: Uuid,
     pub(crate) name: String,
-    pub(super) paths: WorldPaths,
+    paths: WorldPaths,
     #[serde(with = "chrono::serde::ts_seconds")]
     pub(crate) created_at: DateTime<Utc>,
     #[serde(with = "chrono::serde::ts_seconds")]
@@ -68,9 +68,9 @@ pub(super) fn write_manifest(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(super) struct WorldPaths {
-    pub(super) world: String,
-    pub(super) assets: String,
+struct WorldPaths {
+    world: String,
+    assets: String,
 }
 
 impl Default for WorldPaths {

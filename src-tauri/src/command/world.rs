@@ -21,10 +21,7 @@ pub(super) fn create_world<R: Runtime>(
     let temp_dir = project_temp_dir(&app)?;
     let new_project = WorldProject::create_world(name, path, temp_dir)?;
 
-    log::debug!("package path: {}", new_project.package.display());
-    log::debug!("workspace path: {}", new_project.workspace.display());
-
-    let world = new_project.manifest.clone().into();
+    let world = new_project.manifest().into();
     *project = Some(new_project);
     Ok(world)
 }
@@ -40,10 +37,7 @@ pub(super) fn open_world<R: Runtime>(
     let temp_dir = project_temp_dir(&app)?;
     let new_project = WorldProject::open_world(path, temp_dir)?;
 
-    log::debug!("package path: {}", new_project.package.display());
-    log::debug!("workspace path: {}", new_project.workspace.display());
-
-    let world = new_project.manifest.clone().into();
+    let world = new_project.manifest().into();
     *project = Some(new_project);
     Ok(world)
 }
