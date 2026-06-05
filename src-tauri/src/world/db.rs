@@ -42,11 +42,6 @@ pub(super) async fn validate_database(conn: &mut SqliteConnection) -> KazmasResu
     let application_id = read_scalar(conn, PRAGMA_APPLICATION_ID).await?;
     let user_version = read_scalar(conn, PRAGMA_USER_VERSION).await?;
 
-    if application_id == 0 {
-        initialize_schema(conn).await?;
-        return Ok(());
-    }
-
     if application_id != APPLICATION_ID {
         return Err(KazmasError::Invalid(format!(
             "unexpected application id {application_id}"
