@@ -8,13 +8,16 @@ pub(super) type CommandResult<T> = Result<T, CommandError>;
 #[derive(Debug, Clone, Copy, Serialize, Type)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub(super) enum CommandErrorCode {
-    StateLockPoisoned,
-    IoError,
-    JsonError,
-    StripPrefixError,
-    TauriError,
-    WalkDirError,
-    ZipError,
+    // Internal errors
+    Invalid,
+    // External errors
+    Io,
+    Json,
+    Sqlite,
+    StripPrefix,
+    Tauri,
+    WalkDir,
+    Zip,
 }
 
 #[derive(Debug, Clone, Serialize, Type)]
@@ -26,13 +29,14 @@ pub(super) struct CommandError {
 impl From<KazmasError> for CommandError {
     fn from(error: KazmasError) -> Self {
         let code = match error {
-            KazmasError::StateLockPoisoned => CommandErrorCode::StateLockPoisoned,
-            KazmasError::Io(_) => CommandErrorCode::IoError,
-            KazmasError::Json(_) => CommandErrorCode::JsonError,
-            KazmasError::StripPrefix(_) => CommandErrorCode::StripPrefixError,
-            KazmasError::Tauri(_) => CommandErrorCode::TauriError,
-            KazmasError::WalkDir(_) => CommandErrorCode::WalkDirError,
-            KazmasError::Zip(_) => CommandErrorCode::ZipError,
+            KazmasError::Invalid(_) => CommandErrorCode::Invalid,
+            KazmasError::Io(_) => CommandErrorCode::Io,
+            KazmasError::Json(_) => CommandErrorCode::Json,
+            KazmasError::Sqlite(_) => CommandErrorCode::Sqlite,
+            KazmasError::StripPrefix(_) => CommandErrorCode::StripPrefix,
+            KazmasError::Tauri(_) => CommandErrorCode::Tauri,
+            KazmasError::WalkDir(_) => CommandErrorCode::WalkDir,
+            KazmasError::Zip(_) => CommandErrorCode::Zip,
         };
 
         Self {

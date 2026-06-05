@@ -4,14 +4,19 @@ pub(crate) type KazmasResult<T> = Result<T, KazmasError>;
 
 #[derive(Debug, Error)]
 pub(crate) enum KazmasError {
-    #[error("application state lock was poisoned")]
-    StateLockPoisoned,
+    // Internal errors
+    #[error("invalid error: {0}")]
+    Invalid(String),
 
+    // External errors
     #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Sqlite(#[from] sqlx::Error),
 
     #[error(transparent)]
     StripPrefix(#[from] std::path::StripPrefixError),

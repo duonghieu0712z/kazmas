@@ -15,7 +15,7 @@ export type CommandError = {
 	message: string,
 };
 
-export type CommandErrorCode = "STATE_LOCK_POISONED" | "IO_ERROR" | "JSON_ERROR" | "STRIP_PREFIX_ERROR" | "TAURI_ERROR" | "WALK_DIR_ERROR" | "ZIP_ERROR";
+export type CommandErrorCode = "INVALID" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "TAURI" | "WALK_DIR" | "ZIP";
 
 export type WorldDto = {
 	id: string,

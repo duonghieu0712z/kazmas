@@ -1,11 +1,8 @@
-use std::{
-    fs::{self, File},
-    io::Read,
-    path::Path,
-};
+use std::{fs::File, io::Read, path::Path};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use tokio::fs;
 use uuid::Uuid;
 use zip::ZipArchive;
 
@@ -40,6 +37,10 @@ impl WorldManifest {
         }
     }
 
+    pub(super) fn world_path(&self) -> String {
+        self.paths.world.clone()
+    }
+
     pub(super) fn assets_path(&self) -> String {
         self.paths.assets.clone()
     }
@@ -57,13 +58,13 @@ pub(super) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldMani
     Ok(manifest)
 }
 
-pub(super) fn write_manifest(
+pub(super) async fn write_manifest(
     manifest: &WorldManifest,
     workspace: impl AsRef<Path>,
 ) -> KazmasResult<()> {
     let file = workspace.as_ref().join(MANIFEST_ENTRY);
     let data = serde_json::to_string(manifest)?;
-    fs::write(file, data)?;
+    fs::write(file, data).await?;
     Ok(())
 }
 
