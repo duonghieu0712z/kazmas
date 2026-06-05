@@ -74,7 +74,9 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Check formatting
-        run: cargo +nightly fmt --manifest-path src-tauri/Cargo.toml -- --check
+        working-directory: src-tauri
+        run: cargo +nightly fmt -- --check
 
       - name: Check Clippy
-        run: cargo +nightly clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+        working-directory: src-tauri
+        run: cargo +nightly clippy --all-targets --all-features -- -D warnings

@@ -111,5 +111,4 @@ jobs:
           releaseBody: ${{ steps.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: kazmas_[version]_[arch][setup][ext]
           args: ${{ matrix.args }}
