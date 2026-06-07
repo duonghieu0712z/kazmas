@@ -48,9 +48,13 @@ pub(super) async fn open_world<R: Runtime>(
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn save_world(state: State<'_, AppState>) -> CommandResult<()> {
-    if let Some(project) = state.project.lock().await.as_mut() {
-        project.save_world().await?;
+    let project = state.project.lock().await.take();
+    if let Some(mut project) = project {
+        let result = project.save_world().await;
+        *state.project.lock().await = Some(project);
+        result?;
     }
+
     Ok(())
 }
 

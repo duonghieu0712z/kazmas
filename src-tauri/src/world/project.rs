@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::{
     archive::{pack_world, unpack_world},
-    db::{checkpoint_wal, initialize_schema, open_world_database, validate_database},
+    db::{checkpoint_wal, close_database, initialize_schema, open_database, validate_database},
     manifest::{WorldManifest, read_manifest, write_manifest},
 };
 use crate::app::KazmasResult;
@@ -40,7 +40,7 @@ impl WorldProject {
         create_assets_dir(&manifest, &workspace_path).await?;
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
-        let mut conn = open_world_database(world_db).await?;
+        let mut conn = open_database(world_db).await?;
         initialize_schema(&mut conn).await?;
 
         pack_world(&workspace_path, &package_path)?;
@@ -64,7 +64,7 @@ impl WorldProject {
         unpack_world(&package_path, &workspace_path)?;
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
-        let mut conn = open_world_database(world_db).await?;
+        let mut conn = open_database(world_db).await?;
         validate_database(&mut conn).await?;
 
         Ok(Self {
@@ -78,6 +78,12 @@ impl WorldProject {
     pub(crate) async fn save_world(&mut self) -> KazmasResult<()> {
         checkpoint_wal(&mut self.conn).await?;
         pack_world(&self.workspace, &self.package)
+    }
+
+    pub(crate) async fn close_world(self) -> KazmasResult<()> {
+        close_database(self.conn).await?;
+        fs::remove_dir_all(&self.workspace).await?;
+        Ok(())
     }
 }
 

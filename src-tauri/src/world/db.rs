@@ -21,7 +21,7 @@ const PRAGMA_APPLICATION_ID: &str = "PRAGMA application_id;";
 const PRAGMA_USER_VERSION: &str = "PRAGMA user_version;";
 const CHECKPOINT_WAL: &str = "PRAGMA wal_checkpoint(TRUNCATE);";
 
-pub(super) async fn open_world_database(url: impl AsRef<Path>) -> KazmasResult<SqliteConnection> {
+pub(super) async fn open_database(url: impl AsRef<Path>) -> KazmasResult<SqliteConnection> {
     let options = SqliteConnectOptions::default()
         .filename(url)
         .foreign_keys(true)
@@ -71,5 +71,10 @@ pub(super) async fn checkpoint_wal(conn: &mut SqliteConnection) -> KazmasResult<
         .fetch_one(conn)
         .await?;
     log::debug!("busy: {busy} | log: {log} | checkpointed: {checkpointed}");
+    Ok(())
+}
+
+pub(super) async fn close_database(conn: SqliteConnection) -> KazmasResult<()> {
+    conn.close().await?;
     Ok(())
 }
