@@ -136,7 +136,7 @@
     }
 
     body {
-        @apply bg-background text-foreground font-ui;
+        @apply bg-background text-foreground font-ui text-sm;
         @apply cursor-default antialiased select-none;
     }
 

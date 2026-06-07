@@ -1,5 +1,7 @@
+<script setup lang="ts">
+import { AppShell } from '@/layouts/app-shell';
+</script>
+
 <template>
-    <div class="font-editor flex h-full w-full items-center justify-center text-4xl font-semibold">
-        Kazmas
-    </div>
+    <AppShell />
 </template>
