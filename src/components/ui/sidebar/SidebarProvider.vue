@@ -79,7 +79,7 @@ provideSidebarContext({
 </script>
 
 <template>
-    <TooltipProvider :delay-duration="0">
+    <TooltipProvider>
         <div
             :class="
                 cn(
