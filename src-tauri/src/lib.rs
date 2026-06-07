@@ -40,12 +40,15 @@ pub fn run() {
     builder
         .manage(app::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
-        .setup(|_app| {
+        .setup(|app| {
+            let handle = app.handle();
+            app::create_menu(handle)?;
+
             #[cfg(debug_assertions)]
             {
                 use tauri::Manager;
 
-                if let Some(window) = _app.get_webview_window("main") {
+                if let Some(window) = app.get_webview_window("main") {
                     window.open_devtools();
                 } else {
                     log::error!("Main window not found");
