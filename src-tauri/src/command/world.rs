@@ -22,9 +22,7 @@ pub(super) async fn create_world<R: Runtime>(
     let new_project = WorldProject::create_world(name, path, temp_dir).await?;
     let world = new_project.manifest().into();
 
-    let mut project = state.project.lock().await;
-    *project = Some(new_project);
-
+    replace_project(&state, new_project).await?;
     Ok(world)
 }
 
@@ -39,20 +37,32 @@ pub(super) async fn open_world<R: Runtime>(
     let new_project = WorldProject::open_world(path, temp_dir).await?;
     let world = new_project.manifest().into();
 
-    let mut project = state.project.lock().await;
-    *project = Some(new_project);
-
+    replace_project(&state, new_project).await?;
     Ok(world)
 }
 
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn save_world(state: State<'_, AppState>) -> CommandResult<()> {
-    let project = state.project.lock().await.take();
-    if let Some(mut project) = project {
-        let result = project.save_world().await;
-        *state.project.lock().await = Some(project);
-        result?;
+    let mut project = state.project.lock().await;
+    if let Some(project) = project.as_mut() {
+        project.save_world().await?;
+    }
+
+    Ok(())
+}
+
+async fn replace_project(
+    state: &State<'_, AppState>,
+    new_project: WorldProject,
+) -> KazmasResult<()> {
+    let old_project = {
+        let mut project = state.project.lock().await;
+        project.replace(new_project)
+    };
+
+    if let Some(old_project) = old_project {
+        old_project.close_world().await?;
     }
 
     Ok(())
