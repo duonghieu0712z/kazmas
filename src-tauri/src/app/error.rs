@@ -22,6 +22,9 @@ pub(crate) enum KazmasError {
     StripPrefix(#[from] std::path::StripPrefixError),
 
     #[error(transparent)]
+    Strum(#[from] strum::ParseError),
+
+    #[error(transparent)]
     Tauri(#[from] tauri::Error),
 
     #[error(transparent)]

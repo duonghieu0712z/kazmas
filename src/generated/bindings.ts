@@ -15,7 +15,7 @@ export type CommandError = {
 	message: string,
 };
 
-export type CommandErrorCode = "INVALID" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "TAURI" | "WALK_DIR" | "ZIP";
+export type CommandErrorCode = "INVALID" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "WALK_DIR" | "ZIP";
 
 export type WorldDto = {
 	id: string,
