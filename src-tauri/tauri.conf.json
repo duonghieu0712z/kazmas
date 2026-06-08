@@ -24,6 +24,7 @@
     },
     "bundle": {
         "publisher": "duonghieu0712z",
+        "category": "Productivity",
         "active": true,
         "targets": "all",
         "icon": [
