@@ -37,19 +37,23 @@ function selectItem(item: { name: string; icon: LucideIcon }) {
         collapsible="none"
     >
         <SidebarContent>
-            <SidebarMenu class="w-(--sidebar-width-icon) items-center gap-0 py-0.75">
-                <SidebarMenuItem v-for="item in ITEMS" :key="item.name">
+            <SidebarMenu class="items-center gap-0">
+                <SidebarMenuItem
+                    v-for="item in ITEMS"
+                    :key="item.name"
+                    class="flex size-(--sidebar-width-icon) items-center justify-center"
+                >
                     <SidebarMenuButton
                         always-show-tooltip
                         :class="[
-                            'size-9 justify-center p-0 hover:bg-transparent active:bg-transparent',
+                            'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
                             'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
                         ]"
                         :is-active="activeItem?.name === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
                     >
-                        <component :is="item.icon" class="size-5" />
+                        <component :is="item.icon" />
                         <span class="sr-only">{{ item.name }}</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
