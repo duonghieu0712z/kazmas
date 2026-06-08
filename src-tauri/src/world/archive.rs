@@ -1,9 +1,13 @@
-use std::{fs::File, io, path::Path};
+use std::{
+    fs::{self, File},
+    io,
+    path::Path,
+};
 
 use walkdir::WalkDir;
 use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
 
-use crate::app::KazmasResult;
+use crate::app::{KazmasError, KazmasResult};
 
 const COMPRESSION_LEVEL: i64 = 3;
 
@@ -56,7 +60,31 @@ pub(super) fn unpack_world(
 ) -> KazmasResult<()> {
     let zip_file = File::open(package)?;
     let mut archive = ZipArchive::new(zip_file)?;
-    archive.extract(workspace)?;
+
+    for index in 0..archive.len() {
+        let mut entry = archive.by_index(index)?;
+        let Some(enclosed_name) = entry.enclosed_name() else {
+            return Err(KazmasError::Invalid(format!(
+                "unsafe archive entry {}",
+                entry.name()
+            )));
+        };
+
+        let output_path = workspace.as_ref().join(enclosed_name);
+
+        if entry.is_dir() {
+            fs::create_dir_all(output_path)?;
+            continue;
+        }
+
+        if let Some(parent) = output_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        let mut output = File::create(output_path)?;
+        io::copy(&mut entry, &mut output)?;
+    }
+
     Ok(())
 }
 

@@ -77,6 +77,10 @@ impl WorldProject {
 
     pub(crate) async fn save_world(&mut self) -> KazmasResult<()> {
         checkpoint_wal(&mut self.conn).await?;
+
+        self.manifest.touch();
+        write_manifest(&self.manifest, &self.workspace).await?;
+
         pack_world(&self.workspace, &self.package)
     }
 

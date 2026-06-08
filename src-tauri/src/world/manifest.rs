@@ -44,6 +44,10 @@ impl WorldManifest {
     pub(super) fn assets_path(&self) -> String {
         self.paths.assets.clone()
     }
+
+    pub(super) fn touch(&mut self) {
+        self.updated_at = Utc::now();
+    }
 }
 
 pub(super) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldManifest> {
