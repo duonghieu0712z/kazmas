@@ -16,12 +16,12 @@ const ITEMS = [
     },
 ];
 
-const activeItem = ref(ITEMS[0]);
+const activeItem = ref<{ name: string; icon: LucideIcon } | null>(null);
 const { open, setOpen } = useSidebar();
 
 function selectItem(item: { name: string; icon: LucideIcon }) {
     if (open.value && activeItem.value?.name === item.name) {
-        activeItem.value = undefined;
+        activeItem.value = null;
         setOpen(false);
         return;
     }
@@ -29,6 +29,12 @@ function selectItem(item: { name: string; icon: LucideIcon }) {
     activeItem.value = item;
     setOpen(true);
 }
+
+onMounted(() => {
+    if (open.value) {
+        activeItem.value = ITEMS[0]!;
+    }
+});
 </script>
 
 <template>
@@ -37,7 +43,7 @@ function selectItem(item: { name: string; icon: LucideIcon }) {
         collapsible="none"
     >
         <SidebarContent>
-            <SidebarMenu class="items-center gap-0">
+            <SidebarMenu class="gap-0">
                 <SidebarMenuItem
                     v-for="item in ITEMS"
                     :key="item.name"
