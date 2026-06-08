@@ -39,7 +39,7 @@ onMounted(() => {
 
 <template>
     <Sidebar
-        class="bg-background text-foreground w-(--sidebar-width-icon)! items-center border-r"
+        class="bg-background text-foreground w-(--sidebar-width-icon) items-center border-r"
         collapsible="none"
     >
         <SidebarContent>
