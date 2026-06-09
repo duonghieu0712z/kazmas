@@ -1,13 +1,37 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::world::WorldProject;
-
-pub(super) type SharedProjectManager = Arc<ProjectManager>;
+use crate::{app::KazmasResult, world::WorldProject};
 
 #[derive(Default)]
-pub(super) struct ProjectManager {
+pub(crate) struct ProjectManager {
     projects: Mutex<HashMap<Uuid, WorldProject>>,
+}
+
+impl ProjectManager {
+    pub(crate) async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
+        let mut projects = self.projects.lock().await;
+        projects.insert(project.manifest().id, project);
+        Ok(())
+    }
+
+    pub(crate) async fn save_project(&self, id: &Uuid) -> KazmasResult<()> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            project.save_world().await?;
+        }
+
+        Ok(())
+    }
+
+    pub(crate) async fn close_project(&self, id: &Uuid) -> KazmasResult<()> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.remove(id) {
+            project.close_world().await?;
+        }
+
+        Ok(())
+    }
 }

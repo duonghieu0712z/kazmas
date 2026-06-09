@@ -1,6 +1,8 @@
+use std::sync::Arc;
+
 use tokio::sync::Mutex;
 
-use super::{project::SharedProjectManager, window::SharedWindowRegistry};
+use super::{project::ProjectManager, window::WindowRegistry};
 use crate::{app::KazmasResult, world::WorldProject};
 
 #[derive(Default)]
@@ -8,11 +10,19 @@ pub(crate) struct AppState {
     #[deprecated]
     project: Mutex<Option<WorldProject>>,
 
-    registry: SharedWindowRegistry,
-    manager: SharedProjectManager,
+    registry: Arc<WindowRegistry>,
+    manager: Arc<ProjectManager>,
 }
 
 impl AppState {
+    pub(crate) fn registry(&self) -> &Arc<WindowRegistry> {
+        &self.registry
+    }
+
+    pub(crate) fn manager(&self) -> &Arc<ProjectManager> {
+        &self.manager
+    }
+
     pub(crate) async fn replace_project(&self, new_project: WorldProject) -> KazmasResult<()> {
         let old_project = {
             let mut project = self.project.lock().await;

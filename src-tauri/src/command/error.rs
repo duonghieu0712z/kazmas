@@ -9,6 +9,7 @@ pub(super) type CommandResult<T> = Result<T, CommandError>;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub(super) enum CommandErrorCode {
     // Internal errors
+    AlreadyExists,
     Invalid,
     // External errors
     Io,
@@ -30,6 +31,7 @@ pub(super) struct CommandError {
 impl From<KazmasError> for CommandError {
     fn from(error: KazmasError) -> Self {
         let code = match error {
+            KazmasError::AlreadyExists(_) => CommandErrorCode::AlreadyExists,
             KazmasError::Invalid(_) => CommandErrorCode::Invalid,
             KazmasError::Io(_) => CommandErrorCode::Io,
             KazmasError::Json(_) => CommandErrorCode::Json,

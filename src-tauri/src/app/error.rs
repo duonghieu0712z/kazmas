@@ -5,6 +5,9 @@ pub(crate) type KazmasResult<T> = Result<T, KazmasError>;
 #[derive(Debug, Error)]
 pub(crate) enum KazmasError {
     // Internal errors
+    #[error("already exists: {0}")]
+    AlreadyExists(String),
+
     #[error("invalid error: {0}")]
     Invalid(String),
 
