@@ -9,7 +9,7 @@ use super::{
     db::{checkpoint_wal, close_database, initialize_schema, open_database, validate_database},
     manifest::{WorldManifest, read_manifest, write_manifest},
 };
-use crate::app::KazmasResult;
+use crate::app::{KazmasError, KazmasResult};
 
 const EXTENSION: &str = "kazmas";
 
@@ -32,8 +32,15 @@ impl WorldProject {
         path: impl AsRef<Path>,
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
-        let manifest = WorldManifest::new(name);
         let package_path = create_package_path(name, path);
+        if fs::try_exists(&package_path).await? {
+            return Err(KazmasError::AlreadyExists(format!(
+                "world with name {name} already exists at {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
+        let manifest = WorldManifest::new(name);
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
         write_manifest(&manifest, &workspace_path).await?;
