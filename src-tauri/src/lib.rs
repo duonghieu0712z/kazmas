@@ -1,6 +1,7 @@
 mod app;
 mod command;
 mod dto;
+mod state;
 mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -38,7 +39,7 @@ pub fn run() {
     );
 
     builder
-        .manage(app::AppState::default())
+        .manage(state::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|app| {
             let handle = app.handle();

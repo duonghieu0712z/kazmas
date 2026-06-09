@@ -1,6 +1,7 @@
 use tauri::{Manager, Window, WindowEvent, async_runtime::block_on};
 
-use crate::app::{AppState, KazmasResult};
+use super::KazmasResult;
+use crate::state::AppState;
 
 pub(crate) fn handle_window_event(window: &Window, event: &WindowEvent) {
     match event {
@@ -15,10 +16,5 @@ pub(crate) fn handle_window_event(window: &Window, event: &WindowEvent) {
 
 async fn handle_close_requested(window: &Window) -> KazmasResult<()> {
     let state = window.state::<AppState>();
-    let project = state.project.lock().await.take();
-    if let Some(project) = project {
-        project.close_world().await?;
-    }
-
-    Ok(())
+    state.close_project().await
 }

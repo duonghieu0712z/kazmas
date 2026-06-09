@@ -10,14 +10,7 @@
         "frontendDist": "../dist"
     },
     "app": {
-        "windows": [
-            {
-                "title": "Kazmas",
-                "width": 1200,
-                "height": 800,
-                "center": true
-            }
-        ],
+        "windows": [],
         "security": {
             "csp": null
         }

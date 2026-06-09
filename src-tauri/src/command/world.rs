@@ -4,11 +4,7 @@ use tauri::{AppHandle, Manager, Runtime, State};
 use tokio::fs;
 
 use super::error::CommandResult;
-use crate::{
-    app::{AppState, KazmasResult},
-    dto::WorldDto,
-    world::WorldProject,
-};
+use crate::{app::KazmasResult, dto::WorldDto, state::AppState, world::WorldProject};
 
 #[tauri::command]
 #[specta::specta]
@@ -22,7 +18,7 @@ pub(super) async fn create_world<R: Runtime>(
     let new_project = WorldProject::create_world(name, path, temp_dir).await?;
     let world = new_project.manifest().into();
 
-    replace_project(&state, new_project).await?;
+    state.replace_project(new_project).await?;
     Ok(world)
 }
 
@@ -37,34 +33,14 @@ pub(super) async fn open_world<R: Runtime>(
     let new_project = WorldProject::open_world(path, temp_dir).await?;
     let world = new_project.manifest().into();
 
-    replace_project(&state, new_project).await?;
+    state.replace_project(new_project).await?;
     Ok(world)
 }
 
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn save_world(state: State<'_, AppState>) -> CommandResult<()> {
-    let mut project = state.project.lock().await;
-    if let Some(project) = project.as_mut() {
-        project.save_world().await?;
-    }
-
-    Ok(())
-}
-
-async fn replace_project(
-    state: &State<'_, AppState>,
-    new_project: WorldProject,
-) -> KazmasResult<()> {
-    let old_project = {
-        let mut project = state.project.lock().await;
-        project.replace(new_project)
-    };
-
-    if let Some(old_project) = old_project {
-        old_project.close_world().await?;
-    }
-
+    state.save_project().await?;
     Ok(())
 }
 
