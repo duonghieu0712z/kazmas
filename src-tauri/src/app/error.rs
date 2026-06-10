@@ -11,6 +11,9 @@ pub(crate) enum KazmasError {
     #[error("invalid error: {0}")]
     Invalid(String),
 
+    #[error("not found: {0}")]
+    NotFound(String),
+
     // External errors
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -29,6 +32,9 @@ pub(crate) enum KazmasError {
 
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+
+    #[error(transparent)]
+    Uuid(#[from] uuid::Error),
 
     #[error(transparent)]
     WalkDir(#[from] walkdir::Error),

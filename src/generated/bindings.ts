@@ -15,7 +15,7 @@ export type CommandError = {
 	message: string,
 };
 
-export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "WALK_DIR" | "ZIP";
+export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
 
 export type WorldDto = {
 	id: string,
