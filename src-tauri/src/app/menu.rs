@@ -59,6 +59,8 @@ fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
     let builder = SubmenuBuilder::new(app, "File").items(&[
         &(menu_item(app, MenuCommand::NewFile)?),
         &(menu_item(app, MenuCommand::NewWorld)?),
+        &(menu_item(app, MenuCommand::NewWindow)?),
+        &(PredefinedMenuItem::separator(app)?),
         &(menu_item(app, MenuCommand::OpenWorld)?),
         &(menu_item(app, MenuCommand::RecentWorlds)?),
         &(PredefinedMenuItem::separator(app)?),
@@ -150,6 +152,7 @@ fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
 enum MenuCommand {
     NewFile,
     NewWorld,
+    NewWindow,
     OpenWorld,
     RecentWorlds,
     Save,
@@ -163,6 +166,7 @@ impl MenuCommand {
         match self {
             Self::NewFile => "New &File...",
             Self::NewWorld => "&New World...",
+            Self::NewWindow => "New &Window...",
             Self::OpenWorld => "&Open World...",
             Self::RecentWorlds => "&Recent Worlds",
             Self::Save => "&Save",
@@ -176,6 +180,7 @@ impl MenuCommand {
         match self {
             Self::NewFile => Some("CmdOrCtrl+N"),
             Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
+            Self::NewWindow => Some("CmdOrCtrl+Shift+W"),
             Self::OpenWorld => Some("CmdOrCtrl+O"),
             Self::Save => Some("CmdOrCtrl+S"),
             Self::SaveAs => Some("CmdOrCtrl+Shift+S"),
