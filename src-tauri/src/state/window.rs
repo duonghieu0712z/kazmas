@@ -1,8 +1,13 @@
 use std::collections::HashMap;
 
+use tauri::{
+    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
+    async_runtime::spawn,
+};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+use super::AppState;
 use crate::app::{KazmasError, KazmasResult};
 
 const LABEL_PREFIX: &str = "kazmas-window:";
@@ -168,4 +173,62 @@ impl WindowRegistry {
         let inner = self.inner.lock().await;
         inner.project_windows.get(project_id).copied()
     }
+}
+
+pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResult<()> {
+    let window_id = Uuid::now_v7();
+    let label = window_label(&window_id);
+
+    let state = app.state::<AppState>();
+    state
+        .registry()
+        .register_window(&window_id, project_id)
+        .await?;
+
+    let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html".into()))
+        .title("New World")
+        .inner_size(1200.0, 800.0)
+        .center()
+        .build()?;
+
+    if let Some(project_id) = project_id {
+        if let Some(manifest) = state.manager().world_manifest(project_id).await? {
+            window.set_title(&manifest.name)?;
+        }
+    }
+
+    let event_window = window.clone();
+    window.on_window_event(move |event| {
+        let window = event_window.clone();
+        let event = event.clone();
+
+        spawn(async move {
+            if let Err(error) = handle_window_event(&window, &event).await {
+                log::error!("{error}");
+            }
+        });
+    });
+
+    window.show()?;
+    window.set_focus()?;
+
+    Ok(())
+}
+
+async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> KazmasResult<()> {
+    let state = window.state::<AppState>();
+    let Some(window_id) = parse_window_label(window.label())? else {
+        return Ok(());
+    };
+
+    match event {
+        WindowEvent::Focused(true) => state.registry().set_last_window(&window_id).await?,
+        WindowEvent::Destroyed => {
+            if let Some(project_id) = state.registry().unregister_window(&window_id).await? {
+                state.manager().close_project(&project_id).await?;
+            }
+        }
+        _ => log::debug!("Window unhandled event {event:?}"),
+    }
+    Ok(())
 }

@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 
+use tauri::utils::acl::manifest;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::{app::KazmasResult, world::WorldProject};
+use crate::{
+    app::KazmasResult,
+    world::{WorldManifest, WorldProject},
+};
 
 #[derive(Default)]
 pub(crate) struct ProjectManager {
@@ -11,6 +15,13 @@ pub(crate) struct ProjectManager {
 }
 
 impl ProjectManager {
+    pub(crate) async fn world_manifest(&self, id: &Uuid) -> KazmasResult<Option<WorldManifest>> {
+        let projects = self.projects.lock().await;
+        let project = projects.get(id);
+        let manifest = project.map(|p| p.manifest());
+        Ok(manifest)
+    }
+
     pub(crate) async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
         let mut projects = self.projects.lock().await;
         projects.insert(project.manifest().id, project);

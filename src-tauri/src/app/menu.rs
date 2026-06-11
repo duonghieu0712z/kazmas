@@ -25,8 +25,8 @@ pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
         .build()?;
 
     app.set_menu(menu)?;
-    app.on_menu_event(|window, event| {
-        if let Err(error) = handle_menu_event(window, event) {
+    app.on_menu_event(|app, event| {
+        if let Err(error) = handle_menu_event(app, event) {
             log::error!("{error}");
         }
     });
