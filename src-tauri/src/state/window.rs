@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
-    async_runtime::spawn,
+    async_runtime::spawn, window,
 };
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -141,7 +141,12 @@ impl WindowRegistry {
         inner.last_window
     }
 
-    pub(crate) async fn set_last_window(&self, window_id: &Uuid) -> KazmasResult<()> {
+    pub(crate) async fn set_last_window(&self, window_id: Option<&Uuid>) -> KazmasResult<()> {
+        let Some(window_id) = window_id else {
+            self.inner.lock().await.last_window = None;
+            return Ok(());
+        };
+
         let mut inner = self.inner.lock().await;
         if !inner.sessions.contains_key(window_id) {
             return Err(KazmasError::NotFound(format!(
@@ -222,7 +227,13 @@ async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> Kaz
     };
 
     match event {
-        WindowEvent::Focused(true) => state.registry().set_last_window(&window_id).await?,
+        WindowEvent::Focused(flag) => {
+            if *flag {
+                state.registry().set_last_window(Some(&window_id)).await?;
+            } else if Some(window_id) == state.registry().get_last_window().await {
+                state.registry().set_last_window(None).await?;
+            }
+        }
         WindowEvent::Destroyed => {
             if let Some(project_id) = state.registry().unregister_window(&window_id).await? {
                 state.manager().close_project(&project_id).await?;

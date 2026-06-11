@@ -2,7 +2,8 @@ use std::str::FromStr;
 
 use strum::{AsRefStr, EnumString};
 use tauri::{
-    AppHandle, Result, Wry,
+    AppHandle, Manager, Result, Wry,
+    async_runtime::spawn,
     image::Image,
     menu::{
         AboutMetadata, AboutMetadataBuilder, HELP_SUBMENU_ID, MenuBuilder, MenuEvent, MenuItem,
@@ -11,6 +12,7 @@ use tauri::{
 };
 
 use super::error::KazmasResult;
+use crate::state::{AppState, spawn_window};
 
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
@@ -26,9 +28,13 @@ pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
 
     app.set_menu(menu)?;
     app.on_menu_event(|app, event| {
-        if let Err(error) = handle_menu_event(app, event) {
-            log::error!("{error}");
-        }
+        let app = app.clone();
+        let event = event.clone();
+        spawn(async move {
+            if let Err(error) = handle_menu_event(&app, event).await {
+                log::error!("{error}");
+            }
+        });
     });
 
     Ok(())
@@ -150,9 +156,10 @@ fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, AsRefStr)]
 #[strum(serialize_all = "kebab-case", prefix = "menu:")]
 enum MenuCommand {
+    CloseWorld,
     NewFile,
-    NewWorld,
     NewWindow,
+    NewWorld,
     OpenWorld,
     RecentWorlds,
     Save,
@@ -164,9 +171,10 @@ enum MenuCommand {
 impl MenuCommand {
     fn text(self) -> &'static str {
         match self {
+            Self::CloseWorld => "&Close World",
             Self::NewFile => "New &File...",
-            Self::NewWorld => "&New World...",
             Self::NewWindow => "New &Window...",
+            Self::NewWorld => "&New World...",
             Self::OpenWorld => "&Open World...",
             Self::RecentWorlds => "&Recent Worlds",
             Self::Save => "&Save",
@@ -178,9 +186,10 @@ impl MenuCommand {
 
     fn accelerator(self) -> Option<&'static str> {
         match self {
+            Self::CloseWorld => Some("CmdOrCtrl+W"),
             Self::NewFile => Some("CmdOrCtrl+N"),
-            Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
             Self::NewWindow => Some("CmdOrCtrl+Shift+W"),
+            Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
             Self::OpenWorld => Some("CmdOrCtrl+O"),
             Self::Save => Some("CmdOrCtrl+S"),
             Self::SaveAs => Some("CmdOrCtrl+Shift+S"),
@@ -201,13 +210,21 @@ fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     }
 }
 
-fn handle_menu_event(_: &AppHandle, event: MenuEvent) -> KazmasResult<()> {
+async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> KazmasResult<()> {
     let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
         return Ok(());
     };
 
     let command = MenuCommand::from_str(id)?;
-    log::debug!("Menu item {} not handled", command.as_ref());
+    match command {
+        MenuCommand::NewWindow => spawn_window(app, None).await?,
+        MenuCommand::NewWorld => {}
+        MenuCommand::OpenWorld => {}
+        MenuCommand::CloseWorld => {
+            let state = app.state::<AppState>();
+        }
+        _ => log::debug!("Menu item {} not handled", command.as_ref()),
+    }
 
     Ok(())
 }
