@@ -79,6 +79,13 @@ impl WorldProject {
             )));
         }
 
+        if !fs::metadata(&package_path).await?.is_file() {
+            return Err(KazmasError::Invalid(format!(
+                "expected file path: {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
         let manifest = read_manifest(&package_path)?;
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
