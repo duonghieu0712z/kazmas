@@ -45,16 +45,11 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
             menu::create_menu(handle)?;
+            let window = tauri::async_runtime::block_on(menu::spawn_window(handle, None))?;
 
             #[cfg(debug_assertions)]
             {
-                use tauri::Manager;
-
-                if let Some(window) = app.get_webview_window("main") {
-                    window.open_devtools();
-                } else {
-                    log::error!("Main window not found");
-                }
+                window.open_devtools();
             }
             Ok(())
         })

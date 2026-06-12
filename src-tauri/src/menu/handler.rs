@@ -26,7 +26,9 @@ pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> Kazm
 
     let command = MenuCommand::from_str(id)?;
     match command {
-        MenuCommand::NewWindow => spawn_window(app, None).await?,
+        MenuCommand::NewWindow => {
+            spawn_window(app, None).await?;
+        }
         MenuCommand::NewWorld => create_world(app).await?,
         MenuCommand::OpenWorld => open_world(app).await?,
         MenuCommand::Save => save_world(app).await?,
@@ -37,7 +39,10 @@ pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> Kazm
     Ok(())
 }
 
-async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResult<()> {
+pub(crate) async fn spawn_window(
+    app: &AppHandle,
+    project_id: Option<&Uuid>,
+) -> KazmasResult<WebviewWindow> {
     let window_id = Uuid::now_v7();
     let label = window_label(&window_id);
 
@@ -74,7 +79,7 @@ async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResul
         window.set_title(&manifest.name)?;
     }
 
-    Ok(())
+    Ok(window)
 }
 
 async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> KazmasResult<()> {
