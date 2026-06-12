@@ -54,9 +54,9 @@ impl WindowRegistry {
         }
 
         if let Some(project_id) = project_id {
-            if inner.by_projects.contains_key(project_id) {
+            if let Some(existing_window_id) = inner.by_projects.get(project_id) {
                 return Err(KazmasError::AlreadyExists(format!(
-                    "world {project_id} is already opened in window {window_id}"
+                    "world {project_id} is already opened in window {existing_window_id}"
                 )));
             }
             inner.by_projects.insert(*project_id, *window_id);
