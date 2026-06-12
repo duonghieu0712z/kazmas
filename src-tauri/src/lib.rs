@@ -1,6 +1,5 @@
 mod app;
 mod command;
-mod dto;
 mod menu;
 mod state;
 mod world;
