@@ -1,6 +1,7 @@
 mod app;
 mod command;
 mod dto;
+mod menu;
 mod state;
 mod world;
 
@@ -43,7 +44,7 @@ pub fn run() {
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|app| {
             let handle = app.handle();
-            app::create_menu(handle)?;
+            menu::create_menu(handle)?;
 
             #[cfg(debug_assertions)]
             {

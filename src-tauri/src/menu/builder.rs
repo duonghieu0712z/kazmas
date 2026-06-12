@@ -1,24 +1,15 @@
-use std::{path::PathBuf, str::FromStr};
-
-use strum::{AsRefStr, EnumString};
 use tauri::{
-    AppHandle, Manager, Result, Wry,
-    async_runtime::spawn,
+    AppHandle, Result, Wry,
     image::Image,
     menu::{
-        AboutMetadata, AboutMetadataBuilder, HELP_SUBMENU_ID, MenuBuilder, MenuEvent, MenuItem,
+        AboutMetadata, AboutMetadataBuilder, HELP_SUBMENU_ID, MenuBuilder, MenuItem,
         MenuItemBuilder, PredefinedMenuItem, Submenu, SubmenuBuilder, WINDOW_SUBMENU_ID,
     },
 };
-use tokio::fs;
 
-use super::error::KazmasResult;
-use crate::{
-    state::{AppState, spawn_window},
-    world::WorldProject,
-};
+use super::command::MenuCommand;
 
-pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
+pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
         .items(&[
             #[cfg(target_os = "macos")]
@@ -31,16 +22,6 @@ pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
         .build()?;
 
     app.set_menu(menu)?;
-    app.on_menu_event(|app, event| {
-        let app = app.clone();
-        let event = event.clone();
-        spawn(async move {
-            if let Err(error) = handle_menu_event(&app, event).await {
-                log::error!("{error}");
-            }
-        });
-    });
-
     Ok(())
 }
 
@@ -159,52 +140,6 @@ fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
     Ok(about)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, AsRefStr)]
-#[strum(serialize_all = "kebab-case", prefix = "menu:")]
-enum MenuCommand {
-    CloseWorld,
-    NewFile,
-    NewWindow,
-    NewWorld,
-    OpenWorld,
-    RecentWorlds,
-    Save,
-    SaveAs,
-    Settings,
-    Updates,
-}
-
-impl MenuCommand {
-    fn text(self) -> &'static str {
-        match self {
-            Self::CloseWorld => "&Close World",
-            Self::NewFile => "New &File...",
-            Self::NewWindow => "New &Window...",
-            Self::NewWorld => "&New World...",
-            Self::OpenWorld => "&Open World...",
-            Self::RecentWorlds => "&Recent Worlds",
-            Self::Save => "&Save",
-            Self::SaveAs => "Save &As...",
-            Self::Settings => "&Settings...",
-            Self::Updates => "Check for &Updates...",
-        }
-    }
-
-    fn accelerator(self) -> Option<&'static str> {
-        match self {
-            Self::CloseWorld => Some("CmdOrCtrl+W"),
-            Self::NewFile => Some("CmdOrCtrl+N"),
-            Self::NewWindow => Some("CmdOrCtrl+Shift+W"),
-            Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
-            Self::OpenWorld => Some("CmdOrCtrl+O"),
-            Self::Save => Some("CmdOrCtrl+S"),
-            Self::SaveAs => Some("CmdOrCtrl+Shift+S"),
-            Self::Settings => Some("CmdOrCtrl+,"),
-            _ => None,
-        }
-    }
-}
-
 fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     let builder = MenuItemBuilder::with_id(command.as_ref(), command.text());
     log::debug!("{command:?} {}", command.as_ref());
@@ -214,56 +149,4 @@ fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     } else {
         builder.build(app)
     }
-}
-
-async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> KazmasResult<()> {
-    let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
-        return Ok(());
-    };
-
-    let command = MenuCommand::from_str(id)?;
-    match command {
-        MenuCommand::NewWindow => spawn_window(app, None).await?,
-        MenuCommand::NewWorld => {
-            let state = app.state::<AppState>();
-            let registry = state.registry();
-            let name = "New World";
-            let path = "/path/to/documents";
-            let temp_dir = project_temp_dir(app).await?;
-            if let Some(window_id) = registry.focused_window().await {
-                let project = WorldProject::create_world(name, path, &temp_dir).await?;
-                let manifest = project.manifest();
-                registry.replace_project(&window_id, &manifest.id).await?;
-            }
-        }
-        MenuCommand::OpenWorld => {
-            let state = app.state::<AppState>();
-            let registry = state.registry();
-            let path = "/path/to/documents/New World.kazmas";
-            let temp_dir = project_temp_dir(app).await?;
-            if let Some(window_id) = registry.focused_window().await {
-                let project = WorldProject::open_world(path, &temp_dir).await?;
-                let manifest = project.manifest();
-                registry.replace_project(&window_id, &manifest.id).await?;
-            }
-        }
-        MenuCommand::CloseWorld => {
-            let state = app.state::<AppState>();
-            let registry = state.registry();
-            if let Some(window_id) = registry.focused_window().await
-                && let Some(project_id) = registry.close_project(&window_id).await
-            {
-                state.manager().close_project(&project_id).await?;
-            }
-        }
-        _ => log::debug!("Menu item {} not handled", command.as_ref()),
-    }
-
-    Ok(())
-}
-
-async fn project_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
-    let path = app.path().temp_dir()?.join(&app.config().identifier);
-    fs::create_dir_all(&path).await?;
-    Ok(path)
 }
