@@ -1,20 +1,10 @@
-use tauri::{Manager, Window, WindowEvent, async_runtime::block_on};
-
-use super::KazmasResult;
-use crate::state::AppState;
+use tauri::{Window, WindowEvent};
 
 pub(crate) fn handle_window_event(window: &Window, event: &WindowEvent) {
     match event {
         WindowEvent::CloseRequested { .. } => {
-            if let Err(error) = block_on(handle_close_requested(window)) {
-                log::error!("{error}");
-            }
+            log::debug!("Window close requested {}", window.label());
         }
         _ => log::debug!("Window unhandled event {event:?}"),
     }
-}
-
-async fn handle_close_requested(window: &Window) -> KazmasResult<()> {
-    let state = window.state::<AppState>();
-    state.close_project().await
 }
