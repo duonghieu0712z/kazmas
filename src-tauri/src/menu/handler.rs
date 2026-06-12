@@ -1,24 +1,19 @@
 use std::{path::PathBuf, str::FromStr};
 
-use tauri::{
-    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
-    async_runtime::spawn, menu::MenuEvent,
-};
+use tauri::{AppHandle, Manager, menu::MenuEvent};
 use tauri_plugin_dialog::DialogExt;
 use tokio::fs;
 use uuid::Uuid;
 
 use super::command::MenuCommand;
 use crate::{
-    app::KazmasResult,
-    state::{AppState, parse_window_label, window_label},
-    world::{WorldProject, read_manifest},
+    app::{
+        KazmasResult, ProjectPlacement, choose_project_placement, confirm_project_transition,
+        place_project, spawn_window,
+    },
+    state::{AppState, window_label},
+    world::{EXTENSION, WorldProject, read_manifest},
 };
-
-const WEBVIEW_URL: &str = "index.html";
-const WINDOW_TITLE: &str = "New World";
-const WINDOW_WIDTH: f64 = 1200.0;
-const WINDOW_HEIGHT: f64 = 800.0;
 
 pub(super) async fn handle_menu_event(
     app: &AppHandle,
@@ -42,84 +37,12 @@ pub(super) async fn handle_menu_event(
     Ok(())
 }
 
-pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResult<()> {
-    let window_id = Uuid::now_v7();
-    let label = window_label(&window_id);
-
-    let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
-        .title(WINDOW_TITLE)
-        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .center()
-        .build()?;
-
-    let event_window = window.clone();
-    window.on_window_event(move |event| {
-        let window = event_window.clone();
-        let event = event.clone();
-
-        spawn(async move {
-            if let Err(error) = handle_window_event(&window, &event).await {
-                log::error!("{error}");
-            }
-        });
-    });
-
-    window.show()?;
-    window.set_focus()?;
-
-    let state = app.state::<AppState>();
-    state
-        .registry()
-        .register_window(&window_id, project_id)
-        .await?;
-
-    if let Some(project_id) = project_id
-        && let Some(manifest) = state.manager().world_manifest(project_id).await?
-    {
-        window.set_title(&manifest.name)?;
-    }
-
-    #[cfg(debug_assertions)]
-    {
-        window.open_devtools();
-    }
-
-    Ok(())
-}
-
-async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> KazmasResult<()> {
-    let state = window.state::<AppState>();
-    let Some(window_id) = parse_window_label(window.label())? else {
-        return Ok(());
-    };
-
-    match event {
-        WindowEvent::Focused(flag) => {
-            if *flag {
-                state.registry().set_focus(Some(&window_id)).await;
-            } else if Some(window_id) == state.registry().focused_window().await {
-                state.registry().set_focus(None).await;
-            }
-        }
-        WindowEvent::Destroyed => {
-            if Some(window_id) == state.registry().focused_window().await {
-                state.registry().set_focus(None).await;
-            }
-            if let Some(project_id) = state.registry().unregister_window(&window_id).await {
-                state.manager().close_project(&project_id).await?;
-            }
-        }
-        _ => log::debug!("Window unhandled event {event:?}"),
-    }
-    Ok(())
-}
-
 async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
-    let registry = state.registry();
-    let manager = state.manager();
+    if !confirm_project_transition(app, window_id.as_ref()).await? {
+        return Ok(());
+    }
 
-    let Some(window_id) = window_id else {
+    let Some(placement) = choose_project_placement(app) else {
         return Ok(());
     };
 
@@ -137,10 +60,8 @@ async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<
     let name = "New World";
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::create_world(name, &dir, &temp_dir).await?;
-    let manifest = project.manifest();
 
-    registry.replace_project(&window_id, &manifest.id).await?;
-    manager.open_project(project).await?;
+    place_project(app, window_id.as_ref(), placement, project).await?;
 
     Ok(())
 }
@@ -148,13 +69,20 @@ async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<
 async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+
+    if !confirm_project_transition(app, window_id.as_ref()).await? {
+        return Ok(());
+    }
+
+    let Some(placement) = choose_project_placement(app) else {
+        return Ok(());
+    };
 
     let Some(file) = app
         .dialog()
         .file()
         .set_title("Open World")
-        .add_filter("Kazmas world", &["kazmas"])
+        .add_filter("Kazmas world", &[EXTENSION])
         .blocking_pick_file()
     else {
         return Ok(());
@@ -172,11 +100,10 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
         }
     }
 
-    if let Some(window_id) = window_id {
+    if window_id.is_some() || placement == ProjectPlacement::NewWindow {
         let temp_dir = app_temp_dir(app).await?;
         let project = WorldProject::open_world(&file, &temp_dir).await?;
-        registry.replace_project(&window_id, &manifest.id).await?;
-        manager.open_project(project).await?;
+        place_project(app, window_id.as_ref(), placement, project).await?;
     }
 
     Ok(())
@@ -187,9 +114,15 @@ async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<(
     let registry = state.registry();
     let manager = state.manager();
 
-    if let Some(window_id) = window_id
-        && let Some(project_id) = registry.close_project(&window_id).await
-    {
+    let Some(window_id) = window_id else {
+        return Ok(());
+    };
+
+    if !confirm_project_transition(app, Some(&window_id)).await? {
+        return Ok(());
+    }
+
+    if let Some(project_id) = registry.close_project(&window_id).await {
         manager.close_project(&project_id).await?;
     }
 

@@ -2,7 +2,6 @@ mod builder;
 mod command;
 mod handler;
 
-pub(crate) use handler::spawn_window;
 use tauri::{AppHandle, Manager, Result, async_runtime::spawn};
 
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {

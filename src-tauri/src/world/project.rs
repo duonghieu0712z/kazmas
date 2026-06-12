@@ -11,12 +11,13 @@ use super::{
 };
 use crate::app::{KazmasError, KazmasResult};
 
-const EXTENSION: &str = "kazmas";
+pub(crate) const EXTENSION: &str = "kazmas";
 
 #[derive(Debug)]
 pub(crate) struct WorldProject {
     manifest: WorldManifest,
     conn: SqliteConnection,
+    dirty: bool,
 
     package: PathBuf,
     workspace: PathBuf,
@@ -25,6 +26,10 @@ pub(crate) struct WorldProject {
 impl WorldProject {
     pub(crate) fn manifest(&self) -> WorldManifest {
         self.manifest.clone()
+    }
+
+    pub(crate) fn is_dirty(&self) -> bool {
+        self.dirty
     }
 
     pub(crate) async fn create_world(
@@ -49,12 +54,14 @@ impl WorldProject {
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = open_database(world_db).await?;
         initialize_schema(&mut conn).await?;
+        checkpoint_wal(&mut conn).await?;
 
         pack_world(&workspace_path, &package_path)?;
 
         Ok(Self {
             manifest,
             conn,
+            dirty: false,
             package: package_path,
             workspace: workspace_path,
         })
@@ -98,6 +105,7 @@ impl WorldProject {
         Ok(Self {
             manifest,
             conn,
+            dirty: false,
             package: package_path,
             workspace: workspace_path,
         })
@@ -109,7 +117,9 @@ impl WorldProject {
         self.manifest.touch();
         write_manifest(&self.manifest, &self.workspace).await?;
 
-        pack_world(&self.workspace, &self.package)
+        pack_world(&self.workspace, &self.package)?;
+        self.dirty = false;
+        Ok(())
     }
 
     pub(crate) async fn close_world(self) -> KazmasResult<()> {

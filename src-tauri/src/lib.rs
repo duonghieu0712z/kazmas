@@ -46,10 +46,9 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
             menu::create_menu(handle)?;
-            tauri::async_runtime::block_on(menu::spawn_window(handle, None))?;
+            tauri::async_runtime::block_on(app::spawn_window(handle, None))?;
             Ok(())
         })
-        .on_window_event(app::handle_window_event)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

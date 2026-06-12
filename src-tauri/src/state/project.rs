@@ -21,6 +21,11 @@ impl ProjectManager {
         Ok(manifest)
     }
 
+    pub(crate) async fn is_project_dirty(&self, id: &Uuid) -> bool {
+        let projects = self.projects.lock().await;
+        projects.get(id).is_some_and(WorldProject::is_dirty)
+    }
+
     pub(crate) async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
         let mut projects = self.projects.lock().await;
         let project_id = project.manifest().id;
