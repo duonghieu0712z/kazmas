@@ -39,10 +39,7 @@ pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> Kazm
     Ok(())
 }
 
-pub(crate) async fn spawn_window(
-    app: &AppHandle,
-    project_id: Option<&Uuid>,
-) -> KazmasResult<WebviewWindow> {
+pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
     let label = window_label(&window_id);
 
@@ -79,7 +76,12 @@ pub(crate) async fn spawn_window(
         window.set_title(&manifest.name)?;
     }
 
-    Ok(window)
+    #[cfg(debug_assertions)]
+    {
+        window.open_devtools();
+    }
+
+    Ok(())
 }
 
 async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> KazmasResult<()> {

@@ -45,12 +45,7 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
             menu::create_menu(handle)?;
-            let window = tauri::async_runtime::block_on(menu::spawn_window(handle, None))?;
-
-            #[cfg(debug_assertions)]
-            {
-                window.open_devtools();
-            }
+            tauri::async_runtime::block_on(menu::spawn_window(handle, None))?;
             Ok(())
         })
         .on_window_event(app::handle_window_event)
