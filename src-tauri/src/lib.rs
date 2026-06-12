@@ -1,6 +1,7 @@
 mod app;
 mod command;
-mod dto;
+mod menu;
+mod state;
 mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -16,7 +17,9 @@ pub fn run() {
             .unwrap();
     }
 
-    let builder = tauri::Builder::default().plugin(tauri_plugin_prevent_default::debug());
+    let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_prevent_default::debug());
 
     #[cfg(debug_assertions)]
     let builder = builder.plugin(tauri_plugin_devtools::init());
@@ -38,25 +41,14 @@ pub fn run() {
     );
 
     builder
-        .manage(app::AppState::default())
+        .manage(state::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|app| {
             let handle = app.handle();
-            app::create_menu(handle)?;
-
-            #[cfg(debug_assertions)]
-            {
-                use tauri::Manager;
-
-                if let Some(window) = app.get_webview_window("main") {
-                    window.open_devtools();
-                } else {
-                    log::error!("Main window not found");
-                }
-            }
+            menu::create_menu(handle)?;
+            tauri::async_runtime::block_on(app::spawn_window(handle, None))?;
             Ok(())
         })
-        .on_window_event(app::handle_window_event)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -9,14 +9,15 @@ use super::{
     db::{checkpoint_wal, close_database, initialize_schema, open_database, validate_database},
     manifest::{WorldManifest, read_manifest, write_manifest},
 };
-use crate::app::KazmasResult;
+use crate::app::{KazmasError, KazmasResult};
 
-const EXTENSION: &str = "kazmas";
+pub(crate) const EXTENSION: &str = "kazmas";
 
 #[derive(Debug)]
 pub(crate) struct WorldProject {
     manifest: WorldManifest,
     conn: SqliteConnection,
+    dirty: bool,
 
     package: PathBuf,
     workspace: PathBuf,
@@ -27,13 +28,24 @@ impl WorldProject {
         self.manifest.clone()
     }
 
+    pub(crate) fn is_dirty(&self) -> bool {
+        self.dirty
+    }
+
     pub(crate) async fn create_world(
         name: &str,
         path: impl AsRef<Path>,
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
-        let manifest = WorldManifest::new(name);
         let package_path = create_package_path(name, path);
+        if fs::try_exists(&package_path).await? {
+            return Err(KazmasError::AlreadyExists(format!(
+                "world with name {name} already exists at {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
+        let manifest = WorldManifest::new(name);
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
         write_manifest(&manifest, &workspace_path).await?;
@@ -42,12 +54,14 @@ impl WorldProject {
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = open_database(world_db).await?;
         initialize_schema(&mut conn).await?;
+        checkpoint_wal(&mut conn).await?;
 
         pack_world(&workspace_path, &package_path)?;
 
         Ok(Self {
             manifest,
             conn,
+            dirty: false,
             package: package_path,
             workspace: workspace_path,
         })
@@ -58,6 +72,27 @@ impl WorldProject {
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
         let package_path = path.as_ref().to_path_buf();
+        if package_path.extension() != Some(EXTENSION.as_ref()) {
+            return Err(KazmasError::Invalid(format!(
+                "expected .{EXTENSION} file: {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
+        if !fs::try_exists(&package_path).await? {
+            return Err(KazmasError::NotFound(format!(
+                "world not found at {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
+        if !fs::metadata(&package_path).await?.is_file() {
+            return Err(KazmasError::Invalid(format!(
+                "expected file path: {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
         let manifest = read_manifest(&package_path)?;
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
@@ -70,6 +105,7 @@ impl WorldProject {
         Ok(Self {
             manifest,
             conn,
+            dirty: false,
             package: package_path,
             workspace: workspace_path,
         })
@@ -81,7 +117,9 @@ impl WorldProject {
         self.manifest.touch();
         write_manifest(&self.manifest, &self.workspace).await?;
 
-        pack_world(&self.workspace, &self.package)
+        pack_world(&self.workspace, &self.package)?;
+        self.dirty = false;
+        Ok(())
     }
 
     pub(crate) async fn close_world(self) -> KazmasResult<()> {

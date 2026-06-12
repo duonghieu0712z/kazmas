@@ -1,18 +1,15 @@
-use std::str::FromStr;
-
-use strum::{AsRefStr, EnumString};
 use tauri::{
     AppHandle, Result, Wry,
     image::Image,
     menu::{
-        AboutMetadata, AboutMetadataBuilder, HELP_SUBMENU_ID, MenuBuilder, MenuEvent, MenuItem,
+        AboutMetadata, AboutMetadataBuilder, HELP_SUBMENU_ID, MenuBuilder, MenuItem,
         MenuItemBuilder, PredefinedMenuItem, Submenu, SubmenuBuilder, WINDOW_SUBMENU_ID,
     },
 };
 
-use super::error::KazmasResult;
+use super::command::MenuCommand;
 
-pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
+pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
         .items(&[
             #[cfg(target_os = "macos")]
@@ -25,12 +22,6 @@ pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
         .build()?;
 
     app.set_menu(menu)?;
-    app.on_menu_event(|window, event| {
-        if let Err(error) = handle_menu_event(window, event) {
-            log::error!("{error}");
-        }
-    });
-
     Ok(())
 }
 
@@ -56,26 +47,31 @@ fn create_app_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
 }
 
 fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
-    let builder = SubmenuBuilder::new(app, "File").items(&[
-        &(menu_item(app, MenuCommand::NewFile)?),
-        &(menu_item(app, MenuCommand::NewWorld)?),
-        &(menu_item(app, MenuCommand::OpenWorld)?),
-        &(menu_item(app, MenuCommand::RecentWorlds)?),
-        &(PredefinedMenuItem::separator(app)?),
-        &(menu_item(app, MenuCommand::Save)?),
-        &(menu_item(app, MenuCommand::SaveAs)?),
-    ]);
+    let menu = SubmenuBuilder::new(app, "File")
+        .items(&[
+            &menu_item(app, MenuCommand::NewFile)?,
+            &menu_item(app, MenuCommand::NewWorld)?,
+            &menu_item(app, MenuCommand::NewWindow)?,
+            &PredefinedMenuItem::separator(app)?,
+            &menu_item(app, MenuCommand::OpenWorld)?,
+            &menu_item(app, MenuCommand::RecentWorlds)?,
+            &PredefinedMenuItem::separator(app)?,
+            &menu_item(app, MenuCommand::Save)?,
+            &menu_item(app, MenuCommand::SaveAs)?,
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::separator(app)?,
+            #[cfg(not(target_os = "macos"))]
+            &menu_item(app, MenuCommand::Settings)?,
+            &PredefinedMenuItem::separator(app)?,
+            &menu_item(app, MenuCommand::CloseWorld)?,
+            &PredefinedMenuItem::close_window(app, None)?,
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::separator(app)?,
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::quit(app, None)?,
+        ])
+        .build()?;
 
-    #[cfg(not(target_os = "macos"))]
-    let builder = builder
-        .separator()
-        .item(&menu_item(app, MenuCommand::Settings)?)
-        .separator()
-        .close_window_with_text("&Close")
-        .separator()
-        .quit();
-
-    let menu = builder.build()?;
     Ok(menu)
 }
 
@@ -105,9 +101,7 @@ fn create_window_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
         .separator()
         .fullscreen()
         .separator()
-        .bring_all_to_front()
-        .separator()
-        .close_window();
+        .bring_all_to_front();
 
     let menu = builder.build()?;
     Ok(menu)
@@ -145,46 +139,6 @@ fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
     Ok(about)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, AsRefStr)]
-#[strum(serialize_all = "kebab-case", prefix = "menu:")]
-enum MenuCommand {
-    NewFile,
-    NewWorld,
-    OpenWorld,
-    RecentWorlds,
-    Save,
-    SaveAs,
-    Settings,
-    Updates,
-}
-
-impl MenuCommand {
-    fn text(self) -> &'static str {
-        match self {
-            Self::NewFile => "New &File...",
-            Self::NewWorld => "&New World...",
-            Self::OpenWorld => "&Open World...",
-            Self::RecentWorlds => "&Recent Worlds",
-            Self::Save => "&Save",
-            Self::SaveAs => "Save &As...",
-            Self::Settings => "&Settings...",
-            Self::Updates => "Check for &Updates...",
-        }
-    }
-
-    fn accelerator(self) -> Option<&'static str> {
-        match self {
-            Self::NewFile => Some("CmdOrCtrl+N"),
-            Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
-            Self::OpenWorld => Some("CmdOrCtrl+O"),
-            Self::Save => Some("CmdOrCtrl+S"),
-            Self::SaveAs => Some("CmdOrCtrl+Shift+S"),
-            Self::Settings => Some("CmdOrCtrl+,"),
-            _ => None,
-        }
-    }
-}
-
 fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     let builder = MenuItemBuilder::with_id(command.as_ref(), command.text());
     log::debug!("{command:?} {}", command.as_ref());
@@ -194,15 +148,4 @@ fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     } else {
         builder.build(app)
     }
-}
-
-fn handle_menu_event(_: &AppHandle, event: MenuEvent) -> KazmasResult<()> {
-    let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
-        return Ok(());
-    };
-
-    let command = MenuCommand::from_str(id)?;
-    log::debug!("Menu item {} not handled", command.as_ref());
-
-    Ok(())
 }

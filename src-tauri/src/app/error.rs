@@ -5,8 +5,14 @@ pub(crate) type KazmasResult<T> = Result<T, KazmasError>;
 #[derive(Debug, Error)]
 pub(crate) enum KazmasError {
     // Internal errors
-    #[error("invalid error: {0}")]
+    #[error("already exists: {0}")]
+    AlreadyExists(String),
+
+    #[error("invalid: {0}")]
     Invalid(String),
+
+    #[error("not found: {0}")]
+    NotFound(String),
 
     // External errors
     #[error(transparent)]
@@ -26,6 +32,12 @@ pub(crate) enum KazmasError {
 
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+
+    #[error(transparent)]
+    TauriFs(#[from] tauri_plugin_fs::Error),
+
+    #[error(transparent)]
+    Uuid(#[from] uuid::Error),
 
     #[error(transparent)]
     WalkDir(#[from] walkdir::Error),

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use serde::Serialize;
 use specta::Type;
 
@@ -9,7 +11,9 @@ pub(super) type CommandResult<T> = Result<T, CommandError>;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub(super) enum CommandErrorCode {
     // Internal errors
+    AlreadyExists,
     Invalid,
+    NotFound,
     // External errors
     Io,
     Json,
@@ -17,6 +21,8 @@ pub(super) enum CommandErrorCode {
     StripPrefix,
     Strum,
     Tauri,
+    TauriFs,
+    Uuid,
     WalkDir,
     Zip,
 }
@@ -30,13 +36,17 @@ pub(super) struct CommandError {
 impl From<KazmasError> for CommandError {
     fn from(error: KazmasError) -> Self {
         let code = match error {
+            KazmasError::AlreadyExists(_) => CommandErrorCode::AlreadyExists,
             KazmasError::Invalid(_) => CommandErrorCode::Invalid,
+            KazmasError::NotFound(_) => CommandErrorCode::NotFound,
             KazmasError::Io(_) => CommandErrorCode::Io,
             KazmasError::Json(_) => CommandErrorCode::Json,
             KazmasError::Sqlite(_) => CommandErrorCode::Sqlite,
             KazmasError::StripPrefix(_) => CommandErrorCode::StripPrefix,
             KazmasError::Strum(_) => CommandErrorCode::Strum,
             KazmasError::Tauri(_) => CommandErrorCode::Tauri,
+            KazmasError::TauriFs(_) => CommandErrorCode::TauriFs,
+            KazmasError::Uuid(_) => CommandErrorCode::Uuid,
             KazmasError::WalkDir(_) => CommandErrorCode::WalkDir,
             KazmasError::Zip(_) => CommandErrorCode::Zip,
         };
