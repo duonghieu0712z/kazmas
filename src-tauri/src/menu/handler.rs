@@ -32,7 +32,7 @@ async fn create_world(app: &AppHandle) -> KazmasResult<()> {
     let registry = state.registry();
     let name = "New World";
     let path = "/path/to/documents";
-    let temp_dir = project_temp_dir(app).await?;
+    let temp_dir = app_temp_dir(app).await?;
 
     if let Some(window_id) = registry.focused_window().await {
         let project = WorldProject::create_world(name, path, &temp_dir).await?;
@@ -47,7 +47,7 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
     let path = "/path/to/documents/New World.kazmas";
-    let temp_dir = project_temp_dir(app).await?;
+    let temp_dir = app_temp_dir(app).await?;
 
     if let Some(window_id) = registry.focused_window().await {
         let project = WorldProject::open_world(path, &temp_dir).await?;
@@ -71,7 +71,7 @@ async fn close_world(app: &AppHandle) -> KazmasResult<()> {
     Ok(())
 }
 
-async fn project_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
+async fn app_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
     let path = app.path().temp_dir()?.join(&app.config().identifier);
     fs::create_dir_all(&path).await?;
     Ok(path)
