@@ -52,6 +52,12 @@ onMounted(() => {
         activeItem.value = ITEMS[0]!;
     }
 });
+
+watch(open, (val) => {
+    if (!val) {
+        activeItem.value = null;
+    }
+});
 </script>
 
 <template>

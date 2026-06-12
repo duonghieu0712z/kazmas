@@ -7,8 +7,7 @@ import AppStatusBar from './AppStatusBar.vue';
 
 const STATUS_BAR_HEIGHT = '1.5rem';
 
-const { store } = useColorMode();
-store.value = 'auto';
+useColorMode({ initialValue: 'auto' });
 </script>
 
 <template>
