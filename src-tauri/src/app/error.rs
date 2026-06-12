@@ -34,6 +34,9 @@ pub(crate) enum KazmasError {
     Tauri(#[from] tauri::Error),
 
     #[error(transparent)]
+    TauriFs(#[from] tauri_plugin_fs::Error),
+
+    #[error(transparent)]
     Uuid(#[from] uuid::Error),
 
     #[error(transparent)]

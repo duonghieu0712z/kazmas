@@ -25,6 +25,8 @@ sqlx = { version = "0.9.0", features = ["sqlite"] }
 strum = { version = "0.28.0", features = ["derive"] }
 tauri = { version = "2.11.2", features = ["image-png"] }
 tauri-plugin-devtools = "2.1.0"
+tauri-plugin-dialog = "2.7.1"
+tauri-plugin-fs = "2.5.1"
 tauri-plugin-log = "2.8.0"
 tauri-plugin-prevent-default = "5.0.0"
 tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"] }

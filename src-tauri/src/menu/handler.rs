@@ -4,6 +4,7 @@ use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
     async_runtime::spawn, menu::MenuEvent,
 };
+use tauri_plugin_dialog::DialogExt;
 use tokio::fs;
 use uuid::Uuid;
 
@@ -11,7 +12,7 @@ use super::command::MenuCommand;
 use crate::{
     app::KazmasResult,
     state::{AppState, parse_window_label, window_label},
-    world::WorldProject,
+    world::{WorldProject, read_manifest},
 };
 
 const WEBVIEW_URL: &str = "index.html";
@@ -26,9 +27,7 @@ pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> Kazm
 
     let command = MenuCommand::from_str(id)?;
     match command {
-        MenuCommand::NewWindow => {
-            spawn_window(app, None).await?;
-        }
+        MenuCommand::NewWindow => spawn_window(app, None).await?,
         MenuCommand::NewWorld => create_world(app).await?,
         MenuCommand::OpenWorld => open_world(app).await?,
         MenuCommand::Save => save_world(app).await?,
@@ -114,15 +113,24 @@ async fn create_world(app: &AppHandle) -> KazmasResult<()> {
     let registry = state.registry();
     let manager = state.manager();
 
-    let name = "New World";
-    let path = "/path/to/documents";
-    let temp_dir = app_temp_dir(app).await?;
+    let Some(dir) = app
+        .dialog()
+        .file()
+        .set_title("New World")
+        .set_can_create_directories(true)
+        .blocking_pick_folder()
+    else {
+        return Ok(());
+    };
+    let dir = dir.into_path()?;
 
     let Some(window_id) = registry.focused_window().await else {
         return Ok(());
     };
 
-    let project = WorldProject::create_world(name, path, &temp_dir).await?;
+    let name = "New World";
+    let temp_dir = app_temp_dir(app).await?;
+    let project = WorldProject::create_world(name, &dir, &temp_dir).await?;
     let manifest = project.manifest();
 
     registry.replace_project(&window_id, &manifest.id).await?;
@@ -136,12 +144,18 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
     let registry = state.registry();
     let manager = state.manager();
 
-    let path = "/path/to/documents/New World.kazmas";
-    let temp_dir = app_temp_dir(app).await?;
+    let Some(file) = app
+        .dialog()
+        .file()
+        .set_title("Open World")
+        .add_filter("Kazmas world", &["kazmas"])
+        .blocking_pick_file()
+    else {
+        return Ok(());
+    };
+    let file = file.into_path()?;
 
-    let project = WorldProject::open_world(path, &temp_dir).await?;
-    let manifest = project.manifest();
-
+    let manifest = read_manifest(&file)?;
     if let Some(window_id) = registry.get_window_id(&manifest.id).await {
         let label = window_label(&window_id);
         if let Some(window) = app.get_webview_window(&label) {
@@ -153,6 +167,8 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
     }
 
     if let Some(window_id) = registry.focused_window().await {
+        let temp_dir = app_temp_dir(app).await?;
+        let project = WorldProject::open_world(&file, &temp_dir).await?;
         registry.replace_project(&window_id, &manifest.id).await?;
         manager.open_project(project).await?;
     }

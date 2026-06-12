@@ -50,7 +50,7 @@ impl WorldManifest {
     }
 }
 
-pub(super) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldManifest> {
+pub(crate) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldManifest> {
     let zip_file = File::open(package)?;
     let mut archive = ZipArchive::new(zip_file)?;
     let mut manifest_file = archive.by_name(MANIFEST_ENTRY)?;
