@@ -8,7 +8,7 @@ pub(crate) enum KazmasError {
     #[error("already exists: {0}")]
     AlreadyExists(String),
 
-    #[error("invalid error: {0}")]
+    #[error("invalid: {0}")]
     Invalid(String),
 
     #[error("not found: {0}")]

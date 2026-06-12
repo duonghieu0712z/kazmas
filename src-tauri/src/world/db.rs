@@ -7,11 +7,6 @@ use sqlx::{
 
 use crate::app::{KazmasError, KazmasResult};
 
-const SCHEMA_SQL: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/resources/sql/schema.sql"
-));
-
 const APPLICATION_ID: i64 = 0x4B5A4D53;
 const USER_VERSION: i64 = 0;
 
@@ -20,6 +15,11 @@ const BUSY_TIMEOUT: u64 = 5;
 const PRAGMA_APPLICATION_ID: &str = "PRAGMA application_id;";
 const PRAGMA_USER_VERSION: &str = "PRAGMA user_version;";
 const CHECKPOINT_WAL: &str = "PRAGMA wal_checkpoint(TRUNCATE);";
+
+const SCHEMA_SQL: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/resources/sql/schema.sql"
+));
 
 pub(super) async fn open_database(url: impl AsRef<Path>) -> KazmasResult<SqliteConnection> {
     let options = SqliteConnectOptions::default()

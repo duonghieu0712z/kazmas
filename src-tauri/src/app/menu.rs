@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use strum::{AsRefStr, EnumString};
 use tauri::{
-    AppHandle, Manager, Result, Wry,
+    AppHandle, Result, Wry,
     async_runtime::spawn,
     image::Image,
     menu::{
@@ -12,7 +12,7 @@ use tauri::{
 };
 
 use super::error::KazmasResult;
-use crate::state::{AppState, spawn_window};
+use crate::state::spawn_window;
 
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
@@ -62,28 +62,32 @@ fn create_app_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
 }
 
 fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
-    let builder = SubmenuBuilder::new(app, "File").items(&[
-        &(menu_item(app, MenuCommand::NewFile)?),
-        &(menu_item(app, MenuCommand::NewWorld)?),
-        &(menu_item(app, MenuCommand::NewWindow)?),
-        &(PredefinedMenuItem::separator(app)?),
-        &(menu_item(app, MenuCommand::OpenWorld)?),
-        &(menu_item(app, MenuCommand::RecentWorlds)?),
-        &(PredefinedMenuItem::separator(app)?),
-        &(menu_item(app, MenuCommand::Save)?),
-        &(menu_item(app, MenuCommand::SaveAs)?),
-    ]);
+    let separator = PredefinedMenuItem::separator(app)?;
+    let menu = SubmenuBuilder::new(app, "File")
+        .items(&[
+            &menu_item(app, MenuCommand::NewFile)?,
+            &menu_item(app, MenuCommand::NewWorld)?,
+            &menu_item(app, MenuCommand::NewWindow)?,
+            &PredefinedMenuItem::separator(app)?,
+            &menu_item(app, MenuCommand::OpenWorld)?,
+            &menu_item(app, MenuCommand::RecentWorlds)?,
+            &PredefinedMenuItem::separator(app)?,
+            &menu_item(app, MenuCommand::Save)?,
+            &menu_item(app, MenuCommand::SaveAs)?,
+            #[cfg(not(target_os = "macos"))]
+            &separator,
+            #[cfg(not(target_os = "macos"))]
+            &menu_item(app, MenuCommand::Settings)?,
+            &separator,
+            &menu_item(app, MenuCommand::CloseWorld)?,
+            &PredefinedMenuItem::close_window(app, None)?,
+            #[cfg(not(target_os = "macos"))]
+            &separator,
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::quit(app, None)?,
+        ])
+        .build()?;
 
-    #[cfg(not(target_os = "macos"))]
-    let builder = builder
-        .separator()
-        .item(&menu_item(app, MenuCommand::Settings)?)
-        .separator()
-        .close_window_with_text("&Close")
-        .separator()
-        .quit();
-
-    let menu = builder.build()?;
     Ok(menu)
 }
 
@@ -113,9 +117,7 @@ fn create_window_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
         .separator()
         .fullscreen()
         .separator()
-        .bring_all_to_front()
-        .separator()
-        .close_window();
+        .bring_all_to_front();
 
     let menu = builder.build()?;
     Ok(menu)
@@ -220,9 +222,7 @@ async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> KazmasResult<()
         MenuCommand::NewWindow => spawn_window(app, None).await?,
         MenuCommand::NewWorld => {}
         MenuCommand::OpenWorld => {}
-        MenuCommand::CloseWorld => {
-            let state = app.state::<AppState>();
-        }
+        MenuCommand::CloseWorld => {}
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
 

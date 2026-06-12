@@ -65,6 +65,20 @@ impl WorldProject {
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
         let package_path = path.as_ref().to_path_buf();
+        if package_path.extension() != Some(EXTENSION.as_ref()) {
+            return Err(KazmasError::Invalid(format!(
+                "expected .{EXTENSION} file: {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
+        if !fs::try_exists(&package_path).await? {
+            return Err(KazmasError::NotFound(format!(
+                "world not found at {}",
+                package_path.to_string_lossy()
+            )));
+        }
+
         let manifest = read_manifest(&package_path)?;
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
