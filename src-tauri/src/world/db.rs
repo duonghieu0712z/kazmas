@@ -70,7 +70,12 @@ pub(super) async fn checkpoint_wal(conn: &mut SqliteConnection) -> KazmasResult<
     let (busy, log, checkpointed) = sqlx::query_as::<_, (i64, i64, i64)>(CHECKPOINT_WAL)
         .fetch_one(conn)
         .await?;
-    log::debug!("busy: {busy} | log: {log} | checkpointed: {checkpointed}");
+    if busy > 0 || checkpointed < log {
+        return Err(KazmasError::Invalid(format!(
+            "WAL checkpoint incomplete: busy={busy}, log={log}, checkpointed={checkpointed}"
+        )));
+    }
+
     Ok(())
 }
 

@@ -41,23 +41,11 @@ async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResul
     let window_id = Uuid::now_v7();
     let label = window_label(&window_id);
 
-    let state = app.state::<AppState>();
-    state
-        .registry()
-        .register_window(&window_id, project_id)
-        .await?;
-
     let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
         .title(WINDOW_TITLE)
         .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
         .center()
         .build()?;
-
-    if let Some(project_id) = project_id
-        && let Some(manifest) = state.manager().world_manifest(project_id).await?
-    {
-        window.set_title(&manifest.name)?;
-    }
 
     let event_window = window.clone();
     window.on_window_event(move |event| {
@@ -73,6 +61,19 @@ async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResul
 
     window.show()?;
     window.set_focus()?;
+
+    let state = app.state::<AppState>();
+    state
+        .registry()
+        .register_window(&window_id, project_id)
+        .await?;
+
+    if let Some(project_id) = project_id
+        && let Some(manifest) = state.manager().world_manifest(project_id).await?
+    {
+        window.set_title(&manifest.name)?;
+    }
+
     Ok(())
 }
 
@@ -91,6 +92,7 @@ async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> Kaz
             }
         }
         WindowEvent::Destroyed => {
+            state.registry().set_focus(None).await;
             if let Some(project_id) = state.registry().unregister_window(&window_id).await {
                 state.manager().close_project(&project_id).await?;
             }
@@ -109,13 +111,15 @@ async fn create_world(app: &AppHandle) -> KazmasResult<()> {
     let path = "/path/to/documents";
     let temp_dir = app_temp_dir(app).await?;
 
+    let Some(window_id) = registry.focused_window().await else {
+        return Ok(());
+    };
+
     let project = WorldProject::create_world(name, path, &temp_dir).await?;
     let manifest = project.manifest();
 
-    if let Some(window_id) = registry.focused_window().await {
-        registry.replace_project(&window_id, &manifest.id).await?;
-        manager.open_project(project).await?;
-    }
+    registry.replace_project(&window_id, &manifest.id).await?;
+    manager.open_project(project).await?;
 
     Ok(())
 }
@@ -137,6 +141,7 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
             window.set_title(&manifest.name)?;
             window.show()?;
             window.set_focus()?;
+            return Ok(());
         }
     }
 
