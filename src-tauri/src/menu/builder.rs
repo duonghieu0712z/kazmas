@@ -47,7 +47,6 @@ fn create_app_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
 }
 
 fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
-    let separator = PredefinedMenuItem::separator(app)?;
     let menu = SubmenuBuilder::new(app, "File")
         .items(&[
             &menu_item(app, MenuCommand::NewFile)?,
@@ -60,14 +59,14 @@ fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
             &menu_item(app, MenuCommand::Save)?,
             &menu_item(app, MenuCommand::SaveAs)?,
             #[cfg(not(target_os = "macos"))]
-            &separator,
+            &PredefinedMenuItem::separator(app)?,
             #[cfg(not(target_os = "macos"))]
             &menu_item(app, MenuCommand::Settings)?,
-            &separator,
+            &PredefinedMenuItem::separator(app)?,
             &menu_item(app, MenuCommand::CloseWorld)?,
             &PredefinedMenuItem::close_window(app, None)?,
             #[cfg(not(target_os = "macos"))]
-            &separator,
+            &PredefinedMenuItem::separator(app)?,
             #[cfg(not(target_os = "macos"))]
             &PredefinedMenuItem::quit(app, None)?,
         ])
