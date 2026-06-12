@@ -163,7 +163,9 @@ pub(crate) async fn place_project(
     match placement {
         ProjectPlacement::CurrentWindow => {
             let Some(window_id) = window_id else {
-                return Ok(());
+                return Err(KazmasError::Invalid(
+                    "No window available for CurrentWindow placement".into(),
+                ));
             };
 
             let prev_project_id = open_project_or_close(manager, project, async {

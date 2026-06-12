@@ -8,8 +8,8 @@ use uuid::Uuid;
 use super::command::MenuCommand;
 use crate::{
     app::{
-        KazmasResult, ProjectPlacement, choose_project_placement, confirm_project_transition,
-        place_project, spawn_window,
+        KazmasResult, choose_project_placement, confirm_project_transition, place_project,
+        spawn_window,
     },
     state::{AppState, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
@@ -100,11 +100,9 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
         }
     }
 
-    if window_id.is_some() || placement == ProjectPlacement::NewWindow {
-        let temp_dir = app_temp_dir(app).await?;
-        let project = WorldProject::open_world(&file, &temp_dir).await?;
-        place_project(app, window_id.as_ref(), placement, project).await?;
-    }
+    let temp_dir = app_temp_dir(app).await?;
+    let project = WorldProject::open_world(&file, &temp_dir).await?;
+    place_project(app, window_id.as_ref(), placement, project).await?;
 
     Ok(())
 }
