@@ -3,7 +3,7 @@ mod command;
 mod handler;
 
 pub(crate) use handler::spawn_window;
-use tauri::{AppHandle, Result, async_runtime::spawn};
+use tauri::{AppHandle, Manager, Result, async_runtime::spawn};
 
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
     builder::build_menu(app)?;
@@ -11,7 +11,12 @@ pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
         let app = app.clone();
         let event = event.clone();
         spawn(async move {
-            if let Err(error) = handler::handle_menu_event(&app, event).await {
+            let window_id = app
+                .state::<crate::state::AppState>()
+                .registry()
+                .focused_window()
+                .await;
+            if let Err(error) = handler::handle_menu_event(&app, event, window_id).await {
                 log::error!("{error}");
             }
         });

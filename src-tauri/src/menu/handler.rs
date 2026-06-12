@@ -20,7 +20,11 @@ const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
 
-pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> KazmasResult<()> {
+pub(super) async fn handle_menu_event(
+    app: &AppHandle,
+    event: MenuEvent,
+    window_id: Option<Uuid>,
+) -> KazmasResult<()> {
     let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
         return Ok(());
     };
@@ -28,10 +32,10 @@ pub(super) async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> Kazm
     let command = MenuCommand::from_str(id)?;
     match command {
         MenuCommand::NewWindow => spawn_window(app, None).await?,
-        MenuCommand::NewWorld => create_world(app).await?,
-        MenuCommand::OpenWorld => open_world(app).await?,
-        MenuCommand::Save => save_world(app).await?,
-        MenuCommand::CloseWorld => close_world(app).await?,
+        MenuCommand::NewWorld => create_world(app, window_id).await?,
+        MenuCommand::OpenWorld => open_world(app, window_id).await?,
+        MenuCommand::Save => save_world(app, window_id).await?,
+        MenuCommand::CloseWorld => close_world(app, window_id).await?,
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
 
@@ -110,10 +114,14 @@ async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> Kaz
     Ok(())
 }
 
-async fn create_world(app: &AppHandle) -> KazmasResult<()> {
+async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
     let manager = state.manager();
+
+    let Some(window_id) = window_id else {
+        return Ok(());
+    };
 
     let Some(dir) = app
         .dialog()
@@ -126,10 +134,6 @@ async fn create_world(app: &AppHandle) -> KazmasResult<()> {
     };
     let dir = dir.into_path()?;
 
-    let Some(window_id) = registry.focused_window().await else {
-        return Ok(());
-    };
-
     let name = "New World";
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::create_world(name, &dir, &temp_dir).await?;
@@ -141,7 +145,7 @@ async fn create_world(app: &AppHandle) -> KazmasResult<()> {
     Ok(())
 }
 
-async fn open_world(app: &AppHandle) -> KazmasResult<()> {
+async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
     let manager = state.manager();
@@ -168,7 +172,7 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
         }
     }
 
-    if let Some(window_id) = registry.focused_window().await {
+    if let Some(window_id) = window_id {
         let temp_dir = app_temp_dir(app).await?;
         let project = WorldProject::open_world(&file, &temp_dir).await?;
         registry.replace_project(&window_id, &manifest.id).await?;
@@ -178,12 +182,12 @@ async fn open_world(app: &AppHandle) -> KazmasResult<()> {
     Ok(())
 }
 
-async fn close_world(app: &AppHandle) -> KazmasResult<()> {
+async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
     let manager = state.manager();
 
-    if let Some(window_id) = registry.focused_window().await
+    if let Some(window_id) = window_id
         && let Some(project_id) = registry.close_project(&window_id).await
     {
         manager.close_project(&project_id).await?;
@@ -192,12 +196,12 @@ async fn close_world(app: &AppHandle) -> KazmasResult<()> {
     Ok(())
 }
 
-async fn save_world(app: &AppHandle) -> KazmasResult<()> {
+async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
     let manager = state.manager();
 
-    if let Some(window_id) = registry.focused_window().await
+    if let Some(window_id) = window_id
         && let Some(project_id) = registry.get_project_id(&window_id).await
     {
         manager.save_project(&project_id).await?;
