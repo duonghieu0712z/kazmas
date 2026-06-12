@@ -98,7 +98,9 @@ async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> Kaz
             }
         }
         WindowEvent::Destroyed => {
-            state.registry().set_focus(None).await;
+            if Some(window_id) == state.registry().focused_window().await {
+                state.registry().set_focus(None).await;
+            }
             if let Some(project_id) = state.registry().unregister_window(&window_id).await {
                 state.manager().close_project(&project_id).await?;
             }
