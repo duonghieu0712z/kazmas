@@ -1,8 +1,8 @@
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
 
 use strum::{AsRefStr, EnumString};
 use tauri::{
-    AppHandle, Result, Wry,
+    AppHandle, Manager, Result, Wry,
     async_runtime::spawn,
     image::Image,
     menu::{
@@ -10,9 +10,13 @@ use tauri::{
         MenuItemBuilder, PredefinedMenuItem, Submenu, SubmenuBuilder, WINDOW_SUBMENU_ID,
     },
 };
+use tokio::fs;
 
 use super::error::KazmasResult;
-use crate::state::spawn_window;
+use crate::{
+    state::{AppState, spawn_window},
+    world::WorldProject,
+};
 
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
@@ -220,11 +224,46 @@ async fn handle_menu_event(app: &AppHandle, event: MenuEvent) -> KazmasResult<()
     let command = MenuCommand::from_str(id)?;
     match command {
         MenuCommand::NewWindow => spawn_window(app, None).await?,
-        MenuCommand::NewWorld => {}
-        MenuCommand::OpenWorld => {}
-        MenuCommand::CloseWorld => {}
+        MenuCommand::NewWorld => {
+            let state = app.state::<AppState>();
+            let registry = state.registry();
+            let name = "New World";
+            let path = "/path/to/documents";
+            let temp_dir = project_temp_dir(app).await?;
+            if let Some(window_id) = registry.focused_window().await {
+                let project = WorldProject::create_world(name, path, &temp_dir).await?;
+                let manifest = project.manifest();
+                registry.replace_project(&window_id, &manifest.id).await?;
+            }
+        }
+        MenuCommand::OpenWorld => {
+            let state = app.state::<AppState>();
+            let registry = state.registry();
+            let path = "/path/to/documents/New World.kazmas";
+            let temp_dir = project_temp_dir(app).await?;
+            if let Some(window_id) = registry.focused_window().await {
+                let project = WorldProject::open_world(path, &temp_dir).await?;
+                let manifest = project.manifest();
+                registry.replace_project(&window_id, &manifest.id).await?;
+            }
+        }
+        MenuCommand::CloseWorld => {
+            let state = app.state::<AppState>();
+            let registry = state.registry();
+            if let Some(window_id) = registry.focused_window().await
+                && let Some(project_id) = registry.close_project(&window_id).await
+            {
+                state.manager().close_project(&project_id).await?;
+            }
+        }
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
 
     Ok(())
+}
+
+async fn project_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
+    let path = app.path().temp_dir()?.join(&app.config().identifier);
+    fs::create_dir_all(&path).await?;
+    Ok(path)
 }
