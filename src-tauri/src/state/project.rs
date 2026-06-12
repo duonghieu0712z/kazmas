@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use tauri::utils::acl::manifest;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 

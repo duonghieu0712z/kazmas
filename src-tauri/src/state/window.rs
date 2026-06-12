@@ -12,6 +12,11 @@ use crate::app::{KazmasError, KazmasResult};
 
 const LABEL_PREFIX: &str = "kazmas-window:";
 
+const WEBVIEW_URL: &str = "index.html";
+const WINDOW_TITLE: &str = "New World";
+const WINDOW_WIDTH: f64 = 1200.0;
+const WINDOW_HEIGHT: f64 = 800.0;
+
 pub(crate) fn window_label(id: &Uuid) -> String {
     format!("{LABEL_PREFIX}{id}")
 }
@@ -112,25 +117,24 @@ impl WindowRegistry {
             )));
         }
 
-        let old_project_id = inner
+        let prev_project_id = inner
             .by_windows
             .get_mut(window_id)
             .ok_or_else(|| KazmasError::NotFound(format!("window {window_id} is not registered")))?
             .replace(*project_id);
 
-        if let Some(previous_project_id) = old_project_id {
-            inner.by_projects.remove(&previous_project_id);
+        if let Some(prev_project_id) = prev_project_id {
+            inner.by_projects.remove(&prev_project_id);
         }
         inner.by_projects.insert(*project_id, *window_id);
 
-        Ok(old_project_id)
+        Ok(prev_project_id)
     }
 
     pub(crate) async fn close_project(&self, window_id: &WindowId) -> Option<ProjectId> {
         let mut inner = self.inner.lock().await;
 
         let project_id = inner.by_windows.get_mut(window_id).and_then(Option::take);
-
         if let Some(project_id) = project_id {
             inner.by_projects.remove(&project_id);
         }
@@ -149,9 +153,9 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
         .register_window(&window_id, project_id)
         .await?;
 
-    let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html".into()))
-        .title("New World")
-        .inner_size(1200.0, 800.0)
+    let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
+        .title(WINDOW_TITLE)
+        .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
         .center()
         .build()?;
 
@@ -173,8 +177,11 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
         });
     });
 
+    window.show()?;
+    window.set_focus()?;
     Ok(())
 }
+
 async fn handle_window_event(window: &WebviewWindow, event: &WindowEvent) -> KazmasResult<()> {
     let state = window.state::<AppState>();
     let Some(window_id) = parse_window_label(window.label())? else {
