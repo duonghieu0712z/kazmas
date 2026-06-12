@@ -53,10 +53,10 @@ async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResul
         .center()
         .build()?;
 
-    if let Some(project_id) = project_id {
-        if let Some(manifest) = state.manager().world_manifest(project_id).await? {
-            window.set_title(&manifest.name)?;
-        }
+    if let Some(project_id) = project_id
+        && let Some(manifest) = state.manager().world_manifest(project_id).await?
+    {
+        window.set_title(&manifest.name)?;
     }
 
     let event_window = window.clone();
