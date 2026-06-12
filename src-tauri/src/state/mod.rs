@@ -1,8 +1,7 @@
 mod app;
 mod label;
 mod project;
-mod spawn;
 mod window;
 
 pub(crate) use app::AppState;
-pub(crate) use spawn::spawn_window;
+pub(crate) use label::{parse_window_label, window_label};
