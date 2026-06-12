@@ -4,7 +4,7 @@ use tokio::sync::Mutex;
 use uuid::Uuid;
 
 use crate::{
-    app::KazmasResult,
+    app::{KazmasError, KazmasResult},
     world::{WorldManifest, WorldProject},
 };
 
@@ -23,7 +23,13 @@ impl ProjectManager {
 
     pub(crate) async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
         let mut projects = self.projects.lock().await;
-        projects.insert(project.manifest().id, project);
+        let project_id = project.manifest().id;
+        if projects.contains_key(&project_id) {
+            return Err(KazmasError::AlreadyExists(format!(
+                "project {project_id} is already open"
+            )));
+        }
+        projects.insert(project_id, project);
         Ok(())
     }
 
