@@ -24,7 +24,7 @@ const props = withDefaults(
 );
 const emits = defineEmits<DialogContentEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'showCloseButton');
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
@@ -37,8 +37,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             :class="
                 cn(
                     'bg-background fixed z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-sm border p-6 shadow-xs duration-200 sm:max-w-lg',
-                    'data-[state=open]:animate-in data-[state=open]:fade-in-0 :zoom-out-95 data-[state=open]:zoom-in-95',
-                    'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]',
+                    'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+                    'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'top-[50%] left-[50%]',
                     props.class,
                 )
