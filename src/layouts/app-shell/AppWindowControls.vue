@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import type { UnlistenFn } from '@tauri-apps/api/event';
+
 import { CopyIcon, MinusIcon, SquareIcon, XIcon } from '@lucide/vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const window = getCurrentWindow();
 
 const isMaximized = ref(false);
+let unlistenResize: UnlistenFn | null = null;
 
 async function minimizeWindow() {
     await window.minimize();
@@ -21,6 +24,13 @@ async function closeWindow() {
 
 onMounted(async () => {
     isMaximized.value = await window.isMaximized();
+    unlistenResize = await window.onResized(async () => {
+        isMaximized.value = await window.isMaximized();
+    });
+});
+
+onBeforeUnmount(() => {
+    unlistenResize?.();
 });
 </script>
 
