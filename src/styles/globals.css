@@ -150,12 +150,18 @@
     }
 }
 
-@layer utilities {
-    .scrollbar {
-        @apply [&::-webkit-scrollbar]:w-1.5;
-        @apply [&::-webkit-scrollbar-track]:bg-transparent;
-        @apply [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border;
-        @apply [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-clip-content;
-        @apply [&::-webkit-scrollbar-thumb]:bg-input [&::-webkit-scrollbar-thumb:hover]:bg-ring;
-    }
+@utility drag {
+    @apply [-webkit-app-region:drag] [app-region:drag];
+}
+
+@utility drag-none {
+    @apply [-webkit-app-region:no-drag] [app-region:no-drag];
+}
+
+@utility scrollbar {
+    @apply [&::-webkit-scrollbar]:w-1.5;
+    @apply [&::-webkit-scrollbar-track]:bg-transparent;
+    @apply [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border;
+    @apply [&::-webkit-scrollbar-thumb]:border-transparent [&::-webkit-scrollbar-thumb]:bg-clip-content;
+    @apply [&::-webkit-scrollbar-thumb]:bg-input [&::-webkit-scrollbar-thumb:hover]:bg-ring;
 }

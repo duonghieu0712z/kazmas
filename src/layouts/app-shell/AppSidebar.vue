@@ -4,7 +4,10 @@ import AppActivityBar from './AppActivityBar.vue';
 
 <template>
     <Sidebar
-        class="h-[calc(100svh-var(--status-bar-height))] overflow-hidden *:data-[sidebar=sidebar]:flex-row"
+        :class="[
+            'top-(--title-bar-height) bottom-(--status-bar-height) h-[calc(100svh-var(--title-bar-height)-var(--status-bar-height))]',
+            'overflow-hidden *:data-[sidebar=sidebar]:flex-row',
+        ]"
         collapsible="icon"
     >
         <AppActivityBar />

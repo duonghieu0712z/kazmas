@@ -34,6 +34,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
         .title(WINDOW_TITLE)
         .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
         .center()
+        .decorations(false)
         .build()?;
 
     let event_window = window.clone();

@@ -4,14 +4,24 @@ import { useColorMode } from '@vueuse/core';
 import AppContent from './AppContent.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppStatusBar from './AppStatusBar.vue';
+import AppTitleBar from './AppTitleBar.vue';
 
+const TITLE_BAR_HEIGHT = '2rem';
 const STATUS_BAR_HEIGHT = '1.5rem';
 
 useColorMode({ initialValue: 'auto' });
 </script>
 
 <template>
-    <SidebarProvider class="flex flex-col" :style="{ '--status-bar-height': STATUS_BAR_HEIGHT }">
+    <SidebarProvider
+        class="flex flex-col"
+        :style="{
+            '--title-bar-height': TITLE_BAR_HEIGHT,
+            '--status-bar-height': STATUS_BAR_HEIGHT,
+        }"
+    >
+        <AppTitleBar />
+
         <div class="flex flex-1">
             <AppSidebar />
             <AppContent />
