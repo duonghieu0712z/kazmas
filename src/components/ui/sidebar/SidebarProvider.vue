@@ -57,7 +57,12 @@ function toggleSidebar() {
 }
 
 useEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+    // Require Alt to avoid conflicting with Ctrl/Cmd+B (bold) in editable surfaces such as dialogs.
+    if (
+        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
+        (event.metaKey || event.ctrlKey) &&
+        event.altKey
+    ) {
         event.preventDefault();
         toggleSidebar();
     }

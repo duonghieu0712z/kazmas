@@ -12,6 +12,16 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('./../components/ui/button/Button.vue')['default']
+    Dialog: typeof import('./../components/ui/dialog/Dialog.vue')['default']
+    DialogClose: typeof import('./../components/ui/dialog/DialogClose.vue')['default']
+    DialogContent: typeof import('./../components/ui/dialog/DialogContent.vue')['default']
+    DialogDescription: typeof import('./../components/ui/dialog/DialogDescription.vue')['default']
+    DialogFooter: typeof import('./../components/ui/dialog/DialogFooter.vue')['default']
+    DialogHeader: typeof import('./../components/ui/dialog/DialogHeader.vue')['default']
+    DialogOverlay: typeof import('./../components/ui/dialog/DialogOverlay.vue')['default']
+    DialogScrollContent: typeof import('./../components/ui/dialog/DialogScrollContent.vue')['default']
+    DialogTitle: typeof import('./../components/ui/dialog/DialogTitle.vue')['default']
+    DialogTrigger: typeof import('./../components/ui/dialog/DialogTrigger.vue')['default']
     Input: typeof import('./../components/ui/input/Input.vue')['default']
     Menubar: typeof import('./../components/ui/menubar/Menubar.vue')['default']
     MenubarCheckboxItem: typeof import('./../components/ui/menubar/MenubarCheckboxItem.vue')['default']
