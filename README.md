@@ -60,3 +60,12 @@ pnpm bump 0.1.0
 ```
 
 The version script updates `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
+
+## License
+
+Licensed under either of:
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT License ([LICENSE-MIT](LICENSE-MIT))
+
+at your option.

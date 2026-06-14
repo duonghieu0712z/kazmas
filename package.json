@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "description": "The Kazmas App",
+    "license": "Apache-2.0 OR MIT",
     "author": "duonghieu0712z",
     "type": "module",
     "scripts": {

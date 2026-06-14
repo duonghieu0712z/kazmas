@@ -2,6 +2,7 @@
 name = "kazmas"
 version = "0.0.1"
 description = "The Kazmas App"
+license = "Apache-2.0 OR MIT"
 authors = ["duonghieu0712z"]
 edition = "2024"
 
