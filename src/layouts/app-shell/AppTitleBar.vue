@@ -7,7 +7,12 @@ import AppWindowControls from './AppWindowControls.vue';
     <div
         class="drag sticky z-50 grid h-(--title-bar-height) grid-cols-[1fr_auto_1fr] items-center border-b"
     >
-        <AppMenuBar class="drag-none justify-self-start" />
+        <div class="flex h-full items-center justify-self-start">
+            <div
+                class="size-(--title-bar-height) bg-[url(@/assets/images/icon.png)] bg-size-[20px] bg-center bg-no-repeat"
+            ></div>
+            <AppMenuBar class="drag-none" />
+        </div>
 
         <div class="flex items-center justify-self-center">New world</div>
 
