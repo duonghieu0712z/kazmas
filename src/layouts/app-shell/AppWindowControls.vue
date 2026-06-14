@@ -37,6 +37,7 @@ onBeforeUnmount(() => {
 <template>
     <div class="flex">
         <Button
+            aria-label="Minimize window"
             class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
             size="icon"
             variant="ghost"
@@ -45,6 +46,7 @@ onBeforeUnmount(() => {
             <MinusIcon />
         </Button>
         <Button
+            aria-label="Toggle maximize window"
             class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
             size="icon"
             variant="ghost"
@@ -54,6 +56,7 @@ onBeforeUnmount(() => {
             <SquareIcon v-else class="size-3" />
         </Button>
         <Button
+            aria-label="Close window"
             :class="[
                 'hover:bg-destructive/90 dark:hover:bg-destructive/90 rounded-none',
                 '[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground',
