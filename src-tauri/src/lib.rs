@@ -6,7 +6,11 @@ mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let specta_builder = tauri_specta::Builder::<tauri::Wry>::new().commands(command::commands());
+    let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
+        .commands(command::commands())
+        .typ::<menu::MenuCommand>()
+        .typ::<menu::MenuGroup>()
+        .typ::<menu::MenuItem>();
 
     #[cfg(all(debug_assertions, not(mobile)))]
     {
@@ -19,6 +23,7 @@ pub fn run() {
 
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_prevent_default::debug());
 
     #[cfg(debug_assertions)]
@@ -45,7 +50,10 @@ pub fn run() {
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|app| {
             let handle = app.handle();
+
+            #[cfg(target_os = "macos")]
             menu::create_menu(handle)?;
+
             tauri::async_runtime::block_on(app::spawn_window(handle, None))?;
             Ok(())
         })

@@ -12,7 +12,6 @@ use super::command::MenuCommand;
 pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     let menu = MenuBuilder::new(app)
         .items(&[
-            #[cfg(target_os = "macos")]
             &create_app_menu(app)?,
             &create_file_menu(app)?,
             &create_edit_menu(app)?,
@@ -25,7 +24,6 @@ pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
 fn create_app_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
     let name = &app.package_info().name;
     let menu = SubmenuBuilder::new(app, name)
@@ -58,17 +56,9 @@ fn create_file_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
             &PredefinedMenuItem::separator(app)?,
             &menu_item(app, MenuCommand::Save)?,
             &menu_item(app, MenuCommand::SaveAs)?,
-            #[cfg(not(target_os = "macos"))]
-            &PredefinedMenuItem::separator(app)?,
-            #[cfg(not(target_os = "macos"))]
-            &menu_item(app, MenuCommand::Settings)?,
             &PredefinedMenuItem::separator(app)?,
             &menu_item(app, MenuCommand::CloseWorld)?,
             &PredefinedMenuItem::close_window(app, None)?,
-            #[cfg(not(target_os = "macos"))]
-            &PredefinedMenuItem::separator(app)?,
-            #[cfg(not(target_os = "macos"))]
-            &PredefinedMenuItem::quit(app, None)?,
         ])
         .build()?;
 
@@ -96,7 +86,6 @@ fn create_window_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
         .minimize()
         .maximize();
 
-    #[cfg(target_os = "macos")]
     let builder = builder
         .separator()
         .fullscreen()
@@ -109,15 +98,6 @@ fn create_window_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
 
 fn create_help_menu(app: &AppHandle) -> Result<Submenu<Wry>> {
     let builder = SubmenuBuilder::new(app, "Help").id(HELP_SUBMENU_ID);
-
-    #[cfg(not(target_os = "macos"))]
-    let builder = builder
-        .item(&menu_item(app, MenuCommand::Updates)?)
-        .separator()
-        .about_with_text(
-            format!("&About {}", app.package_info().name),
-            Some(about_metadata(app)?),
-        );
 
     let menu = builder.build()?;
     Ok(menu)

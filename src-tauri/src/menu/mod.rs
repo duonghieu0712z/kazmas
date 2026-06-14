@@ -1,9 +1,32 @@
+#[cfg(target_os = "macos")]
 mod builder;
 mod command;
+mod descriptor;
 mod handler;
 
-use tauri::{AppHandle, Manager, Result, async_runtime::spawn};
+pub(crate) use command::MenuCommand;
+pub(crate) use descriptor::{MenuGroup, MenuItem};
+use tauri::{AppHandle, Manager};
+#[cfg(target_os = "macos")]
+use tauri::{Result, async_runtime::spawn};
 
+use crate::app::KazmasResult;
+
+pub(crate) fn app_menu() -> Vec<MenuGroup> {
+    descriptor::app_menu()
+}
+
+pub(crate) async fn execute_command(app: &AppHandle, command: MenuCommand) -> KazmasResult<()> {
+    let window_id = app
+        .state::<crate::state::AppState>()
+        .registry()
+        .focused_window()
+        .await;
+
+    handler::handle_command(app, command, window_id).await
+}
+
+#[cfg(target_os = "macos")]
 pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
     builder::build_menu(app)?;
     app.on_menu_event(|app, event| {

@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { platform } from '@tauri-apps/plugin-os';
+
 import AppMenuBar from './AppMenuBar.vue';
 import AppWindowControls from './AppWindowControls.vue';
+
+const isMac = platform() === 'macos';
 </script>
 
 <template>
@@ -11,7 +15,7 @@ import AppWindowControls from './AppWindowControls.vue';
             <div
                 class="size-(--title-bar-height) bg-[url(@/assets/images/icon.png)] bg-size-[20px] bg-center bg-no-repeat"
             ></div>
-            <AppMenuBar class="drag-none" />
+            <AppMenuBar v-if="!isMac" class="drag-none" />
         </div>
 
         <div class="flex items-center justify-self-center">New world</div>

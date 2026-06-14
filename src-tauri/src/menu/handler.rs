@@ -1,6 +1,10 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
+#[cfg(target_os = "macos")]
+use std::str::FromStr;
 
-use tauri::{AppHandle, Manager, menu::MenuEvent};
+#[cfg(target_os = "macos")]
+use tauri::menu::MenuEvent;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 use tokio::fs;
 use uuid::Uuid;
@@ -15,6 +19,7 @@ use crate::{
     world::{EXTENSION, WorldProject, read_manifest},
 };
 
+#[cfg(target_os = "macos")]
 pub(super) async fn handle_menu_event(
     app: &AppHandle,
     event: MenuEvent,
@@ -24,7 +29,25 @@ pub(super) async fn handle_menu_event(
         return Ok(());
     };
 
+    handle_command_id(app, id, window_id).await
+}
+
+#[cfg(target_os = "macos")]
+pub(super) async fn handle_command_id(
+    app: &AppHandle,
+    id: &str,
+    window_id: Option<Uuid>,
+) -> KazmasResult<()> {
+    let id = id.strip_prefix("menu:").unwrap_or(id);
     let command = MenuCommand::from_str(id)?;
+    handle_command(app, command, window_id).await
+}
+
+pub(super) async fn handle_command(
+    app: &AppHandle,
+    command: MenuCommand,
+    window_id: Option<Uuid>,
+) -> KazmasResult<()> {
     match command {
         MenuCommand::NewWindow => spawn_window(app, None).await?,
         MenuCommand::NewWorld => create_world(app, window_id).await?,
