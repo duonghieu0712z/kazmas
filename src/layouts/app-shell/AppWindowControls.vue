@@ -15,7 +15,6 @@ async function minimizeWindow() {
 
 async function toggleMaximizeWindow() {
     await window.toggleMaximize();
-    isMaximized.value = await window.isMaximized();
 }
 
 async function closeWindow() {
