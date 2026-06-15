@@ -1,8 +1,10 @@
 use std::future::Future;
 
+#[cfg(target_os = "macos")]
+use tauri::LogicalPosition;
 use tauri::{
-    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
-    async_runtime::spawn,
+    AppHandle, Manager, TitleBarStyle, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+    WindowEvent, async_runtime::spawn,
 };
 use tauri_plugin_dialog::{
     DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
@@ -30,12 +32,21 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
     let window_id = Uuid::now_v7();
     let label = window_label(&window_id);
 
-    let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
+    let builder = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
         .title(WINDOW_TITLE)
         .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .center()
-        .decorations(false)
-        .build()?;
+        .center();
+
+    #[cfg(target_os = "macos")]
+    let builder = builder
+        .title_bar_style(TitleBarStyle::Overlay)
+        .traffic_light_position(LogicalPosition::new(12, 14))
+        .hidden_title(true);
+
+    #[cfg(not(target_os = "macos"))]
+    let builder = builder.decorations(false);
+
+    let window = builder.build()?;
 
     let event_window = window.clone();
     window.on_window_event(move |event| {
