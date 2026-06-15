@@ -12,7 +12,7 @@ type DialogPayload<TComponent> =
           : { payload?: never };
 
 type DialogResult<TComponent> =
-    DialogProps<TComponent> extends { resolveDialog: (result: infer TResult) => void }
+    DialogProps<TComponent> extends { onResolveDialog?: (result: infer TResult) => void }
         ? TResult
         : never;
 
@@ -56,6 +56,7 @@ export function useDialogProvider() {
         return new Promise<DialogResult<TComponent> | undefined>((resolve) => {
             const nextEntry: DialogProviderEntry<TComponent> = {
                 ...entry,
+                component: markRaw(entry.component),
                 resolve,
             };
 

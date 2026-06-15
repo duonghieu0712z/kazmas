@@ -23,9 +23,9 @@ function updateOpen(open: boolean) {
             :is="activeDialog.component"
             v-if="activeDialog"
             :key="activeDialog.key"
-            :close-dialog="closeDialog"
             :payload="activeDialog.payload"
-            :resolve-dialog="resolveDialog"
+            @close-dialog="closeDialog"
+            @resolve-dialog="resolveDialog"
         />
     </component>
 </template>
