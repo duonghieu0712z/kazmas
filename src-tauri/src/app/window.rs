@@ -1,11 +1,11 @@
 use std::future::Future;
 
-#[cfg(target_os = "macos")]
-use tauri::LogicalPosition;
 use tauri::{
-    AppHandle, Manager, TitleBarStyle, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
-    WindowEvent, async_runtime::spawn,
+    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
+    async_runtime::spawn,
 };
+#[cfg(target_os = "macos")]
+use tauri::{LogicalPosition, TitleBarStyle};
 use tauri_plugin_dialog::{
     DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
 };

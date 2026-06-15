@@ -7,7 +7,6 @@ const menus = ref<MenuGroup[]>([]);
 
 onMounted(async () => {
     menus.value = await commands.getAppMenu();
-    console.log(menus.value);
 });
 
 async function executeMenuCommand(command: MenuCommand) {
@@ -26,6 +25,7 @@ function displayShortcut(shortcut: string) {
             <MenubarContent>
                 <template v-for="item in menu.items" :key="item.id">
                     <MenubarSeparator v-if="item.type === 'separator'" />
+
                     <MenubarItem
                         v-else-if="item.type === 'item'"
                         :disabled="item.disabled"
@@ -36,6 +36,7 @@ function displayShortcut(shortcut: string) {
                             {{ displayShortcut(item.shortcut) }}
                         </MenubarShortcut>
                     </MenubarItem>
+
                     <MenubarCheckboxItem
                         v-else-if="item.type === 'check'"
                         :disabled="item.disabled"
@@ -47,11 +48,13 @@ function displayShortcut(shortcut: string) {
                             {{ displayShortcut(item.shortcut) }}
                         </MenubarShortcut>
                     </MenubarCheckboxItem>
+
                     <MenubarSub v-else>
                         <MenubarSubTrigger>{{ item.text }}</MenubarSubTrigger>
                         <MenubarSubContent>
                             <template v-for="child in item.items" :key="child.id">
                                 <MenubarSeparator v-if="child.type === 'separator'" />
+
                                 <MenubarItem
                                     v-else-if="child.type === 'item'"
                                     :disabled="child.disabled"
@@ -62,6 +65,7 @@ function displayShortcut(shortcut: string) {
                                         {{ displayShortcut(child.shortcut) }}
                                     </MenubarShortcut>
                                 </MenubarItem>
+
                                 <MenubarCheckboxItem
                                     v-else-if="child.type === 'check'"
                                     :disabled="child.disabled"
