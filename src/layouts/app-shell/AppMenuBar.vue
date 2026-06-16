@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { MenuCommand, MenuGroup } from '@/generated/bindings';
 
-import AboutDialog from '@/dialogs/AboutDialog.vue';
+import { openAboutDialog } from '@/dialogs';
 import { commands } from '@/generated/bindings';
-import { useDialogProvider } from '@/providers/dialog';
 
 const menus = ref<MenuGroup[]>([]);
-const { openDialog } = useDialogProvider();
 
 onMounted(async () => {
     menus.value = await commands.getAppMenu();
@@ -14,9 +12,7 @@ onMounted(async () => {
 
 async function executeMenuCommand(command: MenuCommand) {
     if (command === 'about') {
-        await openDialog({
-            component: AboutDialog,
-        });
+        await openAboutDialog();
         return;
     }
 
