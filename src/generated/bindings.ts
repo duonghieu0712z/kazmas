@@ -6,6 +6,13 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 export const commands = {
 	getAppMenu: () => __TAURI_INVOKE<MenuGroup[]>("get_app_menu"),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
+	getProjectTransitionInfo: () => typedError<ProjectTransitionInfo, CommandError>(__TAURI_INVOKE("get_project_transition_info")),
+	saveFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_focused_world")),
+	pickNewWorldDir: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_new_world_dir")),
+	pickWorldFile: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_world_file")),
+	createWorld: (dir: string, placement: ProjectPlacement) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { dir, placement })),
+	openWorld: (file: string, placement: ProjectPlacement) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, placement })),
+	closeFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_focused_world")),
 };
 
 /* Types */
@@ -25,6 +32,13 @@ export type MenuGroup = {
 };
 
 export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; disabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; disabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
+
+export type ProjectPlacement = "currentWindow" | "newWindow";
+
+export type ProjectTransitionInfo = {
+	dirty: boolean,
+	worldName: string | null,
+};
 
 /* Tauri Specta runtime */
 async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; data: T } | { status: "error"; error: E }> {

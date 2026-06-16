@@ -1,5 +1,7 @@
 use std::{future::Future, path::PathBuf};
 
+use serde::Deserialize;
+use specta::Type;
 use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
     async_runtime::spawn,
@@ -23,7 +25,8 @@ const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
 pub(crate) enum ProjectPlacement {
     CurrentWindow,
     NewWindow,
