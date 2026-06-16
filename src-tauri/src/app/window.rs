@@ -1,4 +1,4 @@
-use std::future::Future;
+use std::{future::Future, path::PathBuf};
 
 use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
@@ -9,6 +9,7 @@ use tauri::{LogicalPosition, TitleBarStyle};
 use tauri_plugin_dialog::{
     DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
 };
+use tokio::fs;
 use uuid::Uuid;
 
 use super::{KazmasError, KazmasResult};
@@ -80,6 +81,59 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
     }
 
     Ok(())
+}
+
+pub(crate) async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
+    let state = app.state::<AppState>();
+    let registry = state.registry();
+
+    if let Some(window_id) = registry.focused_window().await {
+        let label = window_label(&window_id);
+        if let Some(window) = app.get_webview_window(&label) {
+            window.show()?;
+            window.set_focus()?;
+            return Ok(());
+        }
+    }
+
+    if let Some(window) = app.webview_windows().into_values().next() {
+        window.show()?;
+        window.set_focus()?;
+    }
+
+    Ok(())
+}
+
+pub(crate) async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
+    let state = app.state::<AppState>();
+    let registry = state.registry();
+    let manager = state.manager();
+
+    let manifest = crate::world::read_manifest(&file)?;
+    if let Some(window_id) = registry.get_window_id(&manifest.id).await {
+        let label = window_label(&window_id);
+        if let Some(window) = app.get_webview_window(&label) {
+            window.set_title(&manifest.name)?;
+            window.show()?;
+            window.set_focus()?;
+            return Ok(());
+        }
+    }
+
+    let temp_dir = app_temp_dir(app).await?;
+    let project = WorldProject::open_world(&file, &temp_dir).await?;
+    open_project_or_close(manager, project, async {
+        spawn_window(app, Some(&manifest.id)).await
+    })
+    .await?;
+
+    Ok(())
+}
+
+pub(crate) async fn app_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
+    let path = app.path().temp_dir()?.join(&app.config().identifier);
+    fs::create_dir_all(&path).await?;
+    Ok(path)
 }
 
 pub(crate) async fn confirm_project_transition(
@@ -176,7 +230,7 @@ pub(crate) async fn place_project(
         ProjectPlacement::CurrentWindow => {
             let Some(window_id) = window_id else {
                 return Err(KazmasError::Invalid(
-                    "No window available for CurrentWindow placement".into(),
+                    "no window available for CurrentWindow placement".into(),
                 ));
             };
 

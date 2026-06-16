@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::str::FromStr;
 
@@ -6,14 +5,13 @@ use std::str::FromStr;
 use tauri::menu::MenuEvent;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
-use tokio::fs;
 use uuid::Uuid;
 
 use super::command::MenuCommand;
 use crate::{
     app::{
-        KazmasResult, choose_project_placement, confirm_project_transition, place_project,
-        spawn_window,
+        KazmasResult, app_temp_dir, choose_project_placement, confirm_project_transition,
+        place_project, spawn_window,
     },
     state::{AppState, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
@@ -162,10 +160,4 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
     }
 
     Ok(())
-}
-
-async fn app_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
-    let path = app.path().temp_dir()?.join(&app.config().identifier);
-    fs::create_dir_all(&path).await?;
-    Ok(path)
 }
