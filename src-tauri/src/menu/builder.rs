@@ -121,8 +121,6 @@ fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
 
 fn menu_item(app: &AppHandle, command: MenuCommand) -> Result<MenuItem<Wry>> {
     let builder = MenuItemBuilder::with_id(command.as_ref(), command.text());
-    log::debug!("{command:?} {}", command.as_ref());
-
     if let Some(accelerator) = command.accelerator() {
         builder.accelerator(accelerator).build(app)
     } else {

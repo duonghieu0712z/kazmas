@@ -34,6 +34,7 @@ impl ProjectManager {
                 "project {project_id} is already open"
             )));
         }
+
         projects.insert(project_id, project);
         Ok(())
     }

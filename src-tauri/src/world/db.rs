@@ -4,6 +4,7 @@ use sqlx::{
     Connection, SqlSafeStr, SqliteConnection,
     sqlite::{SqliteConnectOptions, SqliteJournalMode},
 };
+use tokio::time;
 
 use crate::app::{KazmasError, KazmasResult};
 
@@ -70,6 +71,8 @@ async fn read_scalar(conn: &mut SqliteConnection, statement: impl SqlSafeStr) ->
 }
 
 pub(super) async fn checkpoint_wal(conn: &mut SqliteConnection) -> KazmasResult<()> {
+    let mut last_checkpoint = None;
+
     for attempt in 0..CHECKPOINT_WAL_ATTEMPTS {
         let (busy, log, checkpointed) = sqlx::query_as::<_, (i64, i64, i64)>(CHECKPOINT_WAL)
             .fetch_one(&mut *conn)
@@ -78,17 +81,21 @@ pub(super) async fn checkpoint_wal(conn: &mut SqliteConnection) -> KazmasResult<
             return Ok(());
         }
 
-        if attempt + 1 == CHECKPOINT_WAL_ATTEMPTS {
-            return Err(KazmasError::Invalid(format!(
-                "WAL checkpoint incomplete: busy={busy}, log={log}, checkpointed={checkpointed}"
-            )));
-        }
+        last_checkpoint = Some((busy, log, checkpointed));
 
-        let delay = Duration::from_millis(CHECKPOINT_WAL_BACKOFF_MS * 2_u64.pow(attempt));
-        tokio::time::sleep(delay).await;
+        if attempt + 1 < CHECKPOINT_WAL_ATTEMPTS {
+            let delay = Duration::from_millis(CHECKPOINT_WAL_BACKOFF_MS * 2_u64.pow(attempt));
+            time::sleep(delay).await;
+        }
     }
 
-    Ok(())
+    let Some((busy, log, checkpointed)) = last_checkpoint else {
+        return Ok(());
+    };
+
+    Err(KazmasError::Invalid(format!(
+        "WAL checkpoint incomplete: busy={busy}, log={log}, checkpointed={checkpointed}"
+    )))
 }
 
 pub(super) async fn close_database(conn: SqliteConnection) -> KazmasResult<()> {

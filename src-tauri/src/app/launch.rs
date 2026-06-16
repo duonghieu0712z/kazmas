@@ -1,6 +1,9 @@
-use std::path::{Path, PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
-use tauri::AppHandle;
+use tauri::{AppHandle, async_runtime::spawn};
 
 use super::{KazmasResult, focus_existing_window, open_world_path, spawn_window};
 use crate::world::EXTENSION;
@@ -8,8 +11,8 @@ use crate::world::EXTENSION;
 pub(crate) async fn open_initial_windows(app: &AppHandle) -> KazmasResult<()> {
     let mut opened = false;
     let paths = launch_world_paths(
-        std::env::args().collect(),
-        std::env::current_dir().unwrap_or_default(),
+        env::args().collect(),
+        env::current_dir().unwrap_or_default(),
     );
 
     for path in paths {
@@ -30,7 +33,7 @@ pub(crate) fn handle_single_instance_launch(app: &AppHandle, args: Vec<String>, 
     let paths = launch_world_paths(args, cwd);
     let app = app.clone();
 
-    tauri::async_runtime::spawn(async move {
+    spawn(async move {
         if paths.is_empty() {
             if let Err(error) = focus_existing_window(&app).await {
                 log::error!("{error}");
