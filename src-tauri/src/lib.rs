@@ -1,5 +1,6 @@
 mod app;
 mod command;
+mod event;
 mod menu;
 mod state;
 mod world;
@@ -8,6 +9,7 @@ mod world;
 pub fn run() {
     let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
         .commands(command::commands())
+        .events(event::events())
         .typ::<menu::MenuCommand>()
         .typ::<menu::MenuGroup>()
         .typ::<menu::MenuItem>();
@@ -55,8 +57,9 @@ pub fn run() {
     builder
         .manage(state::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
-        .setup(|app| {
+        .setup(move |app| {
             let handle = app.handle();
+            specta_builder.mount_events(handle);
 
             #[cfg(target_os = "macos")]
             menu::create_menu(handle)?;

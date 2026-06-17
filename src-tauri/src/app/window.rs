@@ -11,11 +11,13 @@ use tauri::{LogicalPosition, TitleBarStyle};
 use tauri_plugin_dialog::{
     DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
 };
+use tauri_specta::Event;
 use tokio::fs;
 use uuid::Uuid;
 
 use super::{KazmasError, KazmasResult};
 use crate::{
+    event::MenuEvents,
     state::{AppState, ProjectManager, parse_window_label, window_label},
     world::WorldProject,
 };
@@ -66,6 +68,8 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
 
     window.show()?;
     window.set_focus()?;
+
+    MenuEvents.emit(app)?;
 
     let state = app.state::<AppState>();
     let registry = state.registry();
