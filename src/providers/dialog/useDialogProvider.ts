@@ -45,7 +45,7 @@ type ActiveDialogEntry = DialogProviderEntry;
 function createDialogProvider() {
     const activeDialog = shallowRef<ActiveDialogEntry | null>(null);
 
-    function dismissActiveDialog() {
+    const dismissActiveDialog = () => {
         const currentDialog = activeDialog.value;
 
         if (!currentDialog) {
@@ -54,11 +54,11 @@ function createDialogProvider() {
 
         activeDialog.value = null;
         currentDialog.resolve?.(null);
-    }
+    };
 
-    function openDialog<TComponent extends DialogComponent>(
+    const openDialog = <TComponent extends DialogComponent>(
         entry: DialogProviderOpenEntry<TComponent>,
-    ) {
+    ) => {
         dismissActiveDialog();
 
         return new Promise<DialogResult<TComponent> | null>((resolve) => {
@@ -70,13 +70,13 @@ function createDialogProvider() {
 
             activeDialog.value = nextEntry as ActiveDialogEntry;
         }) as DialogPromise<TComponent>;
-    }
+    };
 
-    function closeDialog() {
+    const closeDialog = () => {
         dismissActiveDialog();
-    }
+    };
 
-    function resolveDialog<TResult = never>(result: TResult) {
+    const resolveDialog = <TResult = never>(result: TResult) => {
         const currentDialog = activeDialog.value;
 
         if (!currentDialog) {
@@ -85,7 +85,7 @@ function createDialogProvider() {
 
         activeDialog.value = null;
         currentDialog.resolve?.(result);
-    }
+    };
 
     return {
         activeDialog: readonly(activeDialog),
