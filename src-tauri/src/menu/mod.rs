@@ -12,8 +12,8 @@ use tauri::{Result, async_runtime::spawn};
 
 use crate::app::KazmasResult;
 
-pub(crate) fn app_menu() -> Vec<MenuGroup> {
-    descriptor::app_menu()
+pub(crate) fn app_menu(app: &AppHandle) -> Vec<MenuGroup> {
+    descriptor::app_menu(&app.package_info().name)
 }
 
 pub(crate) async fn execute_command(app: &AppHandle, command: MenuCommand) -> KazmasResult<()> {

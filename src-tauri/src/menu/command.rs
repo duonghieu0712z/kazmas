@@ -7,10 +7,22 @@ use strum::{AsRefStr, EnumString};
 #[strum(serialize_all = "kebab-case", prefix = "menu:")]
 pub(crate) enum MenuCommand {
     About,
+    #[cfg(target_os = "macos")]
+    BringAllToFront,
     CloseWorld,
     CloseWindow,
     Copy,
     Cut,
+    #[cfg(target_os = "macos")]
+    Fullscreen,
+    #[cfg(target_os = "macos")]
+    Hide,
+    #[cfg(target_os = "macos")]
+    HideOthers,
+    #[cfg(target_os = "macos")]
+    Maximize,
+    #[cfg(target_os = "macos")]
+    Minimize,
     NewFile,
     NewWindow,
     NewWorld,
@@ -22,33 +34,56 @@ pub(crate) enum MenuCommand {
     Save,
     SaveAs,
     Settings,
+    #[cfg(target_os = "macos")]
+    Services,
     SelectAll,
+    #[cfg(target_os = "macos")]
+    ShowAll,
     Undo,
     Updates,
 }
 
 impl MenuCommand {
-    pub(super) fn text(self) -> &'static str {
+    pub(super) fn text(self, app_name: &str) -> String {
         match self {
-            Self::About => "About Kazmas",
-            Self::CloseWorld => "Close World",
-            Self::CloseWindow => "Close Window",
-            Self::Copy => "Copy",
-            Self::Cut => "Cut",
-            Self::NewFile => "New File...",
-            Self::NewWindow => "New Window...",
-            Self::NewWorld => "New World...",
-            Self::OpenWorld => "Open World...",
-            Self::Paste => "Paste",
-            Self::Quit => "Quit",
-            Self::Redo => "Redo",
-            Self::RecentWorlds => "Recent Worlds",
-            Self::Save => "Save",
-            Self::SaveAs => "Save As...",
-            Self::Settings => "Settings...",
-            Self::SelectAll => "Select All",
-            Self::Undo => "Undo",
-            Self::Updates => "Check for Updates...",
+            Self::About => format!("About {app_name}"),
+            #[cfg(target_os = "macos")]
+            Self::BringAllToFront => "Bring All to Front".into(),
+            Self::CloseWorld => "Close World".into(),
+            Self::CloseWindow => "Close Window".into(),
+            Self::Copy => "Copy".into(),
+            Self::Cut => "Cut".into(),
+            #[cfg(target_os = "macos")]
+            Self::Fullscreen => "Enter Full Screen".into(),
+            #[cfg(target_os = "macos")]
+            Self::Hide => format!("Hide {app_name}"),
+            #[cfg(target_os = "macos")]
+            Self::HideOthers => "Hide Others".into(),
+            #[cfg(target_os = "macos")]
+            Self::Maximize => "Zoom".into(),
+            #[cfg(target_os = "macos")]
+            Self::Minimize => "Minimize".into(),
+            Self::NewFile => "New File...".into(),
+            Self::NewWindow => "New Window...".into(),
+            Self::NewWorld => "New World...".into(),
+            Self::OpenWorld => "Open World...".into(),
+            Self::Paste => "Paste".into(),
+            #[cfg(target_os = "macos")]
+            Self::Quit => format!("Quit {app_name}"),
+            #[cfg(not(target_os = "macos"))]
+            Self::Quit => "Exit".into(),
+            Self::Redo => "Redo".into(),
+            Self::RecentWorlds => "Recent Worlds".into(),
+            Self::Save => "Save".into(),
+            Self::SaveAs => "Save As...".into(),
+            Self::Settings => "Settings...".into(),
+            #[cfg(target_os = "macos")]
+            Self::Services => "Services".into(),
+            Self::SelectAll => "Select All".into(),
+            #[cfg(target_os = "macos")]
+            Self::ShowAll => "Show All".into(),
+            Self::Undo => "Undo".into(),
+            Self::Updates => "Check for Updates...".into(),
         }
     }
 
