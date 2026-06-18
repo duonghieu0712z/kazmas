@@ -8,20 +8,26 @@ use strum::{AsRefStr, EnumString};
 pub(crate) enum MenuCommand {
     About,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     BringAllToFront,
     CloseWorld,
     CloseWindow,
     Copy,
     Cut,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     Fullscreen,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     Hide,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     HideOthers,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     Maximize,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     Minimize,
     NewFile,
     NewWindow,
@@ -35,9 +41,11 @@ pub(crate) enum MenuCommand {
     SaveAs,
     Settings,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     Services,
     SelectAll,
     #[cfg(target_os = "macos")]
+    #[specta(skip)]
     ShowAll,
     Undo,
     Updates,

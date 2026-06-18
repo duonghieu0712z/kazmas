@@ -1,6 +1,8 @@
 use serde::Serialize;
 use specta::Type;
-use tauri::menu::{HELP_SUBMENU_ID, WINDOW_SUBMENU_ID};
+use tauri::menu::HELP_SUBMENU_ID;
+#[cfg(target_os = "macos")]
+use tauri::menu::WINDOW_SUBMENU_ID;
 
 use super::MenuCommand;
 

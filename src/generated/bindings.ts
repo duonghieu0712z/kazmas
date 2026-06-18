@@ -29,7 +29,7 @@ export type CommandError = {
 
 export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "TAURI_FS" | "UUID" | "WALK_DIR" | "ZIP";
 
-export type MenuCommand = "about" | "bring-all-to-front" | "close-world" | "close-window" | "copy" | "cut" | "fullscreen" | "hide" | "hide-others" | "maximize" | "minimize" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "services" | "select-all" | "show-all" | "undo" | "updates";
+export type MenuCommand = "about" | "close-world" | "close-window" | "copy" | "cut" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "undo" | "updates";
 
 export type MenuEvents = null;
 
