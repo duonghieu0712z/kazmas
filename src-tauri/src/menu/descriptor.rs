@@ -21,14 +21,14 @@ pub(crate) enum MenuItem {
         id: MenuCommand,
         text: String,
         shortcut: Option<&'static str>,
-        disabled: bool,
+        enabled: bool,
     },
     Check {
         id: MenuCommand,
         text: String,
         shortcut: Option<&'static str>,
         checked: bool,
-        disabled: bool,
+        enabled: bool,
     },
     Submenu {
         id: &'static str,
@@ -134,7 +134,7 @@ fn item(id: MenuCommand, app_name: &str) -> MenuItem {
         id,
         text: id.text(app_name),
         shortcut: id.accelerator(),
-        disabled: false,
+        enabled: true,
     }
 }
 
@@ -145,7 +145,7 @@ fn check(id: MenuCommand, checked: bool, app_name: &str) -> MenuItem {
         text: id.text(app_name),
         shortcut: id.accelerator(),
         checked,
-        disabled: false,
+        enabled: true,
     }
 }
 

@@ -9,17 +9,16 @@ use tauri::{
 
 use super::{
     command::MenuCommand,
-    descriptor::{MenuGroup, MenuItem as MenuItemDescriptor},
+    descriptor::{MenuGroup, MenuItem as MenuItemDescriptor, app_menu},
 };
 
 pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     let menu = Menu::new(app)?;
-
-    for group in super::app_menu(app) {
+    for group in app_menu(&app.package_info().name) {
         menu.append(&native_menu_group(app, group)?)?;
     }
 
-    app.set_menu(menu)?;
+    menu.set_as_app_menu()?;
     Ok(())
 }
 
@@ -55,17 +54,17 @@ fn native_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuIte
             id,
             text,
             shortcut,
-            disabled,
-        } => native_command_item(app, id, text, shortcut, !disabled),
+            enabled,
+        } => native_command_item(app, id, text, shortcut, enabled),
         MenuItemDescriptor::Check {
             id,
             text,
             shortcut,
             checked,
-            disabled,
+            enabled,
         } => {
             let mut builder = CheckMenuItemBuilder::with_id(id.as_ref(), text)
-                .enabled(!disabled)
+                .enabled(enabled)
                 .checked(checked);
             if let Some(shortcut) = shortcut {
                 builder = builder.accelerator(shortcut);

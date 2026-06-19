@@ -9,10 +9,7 @@ mod world;
 pub fn run() {
     let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
         .commands(command::commands())
-        .events(event::events())
-        .typ::<menu::MenuCommand>()
-        .typ::<menu::MenuGroup>()
-        .typ::<menu::MenuItem>();
+        .events(event::events());
 
     #[cfg(all(debug_assertions, not(mobile)))]
     {

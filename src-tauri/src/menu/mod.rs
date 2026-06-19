@@ -5,7 +5,7 @@ mod descriptor;
 mod handler;
 
 pub(crate) use command::MenuCommand;
-pub(crate) use descriptor::{MenuGroup, MenuItem};
+pub(crate) use descriptor::MenuGroup;
 use tauri::{AppHandle, Manager};
 #[cfg(target_os = "macos")]
 use tauri::{Result, async_runtime::spawn};

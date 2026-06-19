@@ -39,7 +39,7 @@ export type MenuGroup = {
 	items: MenuItem[],
 };
 
-export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; disabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; disabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
+export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
 
 export type ProjectPlacement = "currentWindow" | "newWindow";
 
