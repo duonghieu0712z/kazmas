@@ -131,7 +131,7 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
 async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     let Some(window_id) = window_id else {
         return Ok(());
@@ -142,7 +142,7 @@ async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<(
     }
 
     if let Some(project_id) = registry.close_project(&window_id).await {
-        manager.close_project(&project_id).await?;
+        project_manager.close_project(&project_id).await?;
     }
 
     Ok(())
@@ -151,12 +151,12 @@ async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<(
 async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     if let Some(window_id) = window_id
         && let Some(project_id) = registry.get_project_id(&window_id).await
     {
-        manager.save_project(&project_id).await?;
+        project_manager.save_project(&project_id).await?;
     }
 
     Ok(())

@@ -28,7 +28,7 @@ pub(super) async fn get_project_transition_info(
 ) -> CommandResult<ProjectTransitionInfo> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     let Some(window_id) = registry.focused_window().await else {
         return Ok(ProjectTransitionInfo {
@@ -44,13 +44,13 @@ pub(super) async fn get_project_transition_info(
         });
     };
 
-    let world_name = manager
+    let world_name = project_manager
         .world_manifest(&project_id)
         .await?
         .map(|manifest| manifest.name);
 
     Ok(ProjectTransitionInfo {
-        dirty: manager.is_project_dirty(&project_id).await,
+        dirty: project_manager.is_project_dirty(&project_id).await,
         world_name,
     })
 }
@@ -60,12 +60,12 @@ pub(super) async fn get_project_transition_info(
 pub(super) async fn save_focused_world(app: AppHandle) -> CommandResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     if let Some(window_id) = registry.focused_window().await
         && let Some(project_id) = registry.get_project_id(&window_id).await
     {
-        manager.save_project(&project_id).await?;
+        project_manager.save_project(&project_id).await?;
     }
 
     Ok(())
@@ -157,12 +157,12 @@ pub(super) async fn open_world(
 pub(super) async fn close_focused_world(app: AppHandle) -> CommandResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     if let Some(window_id) = registry.focused_window().await
         && let Some(project_id) = registry.close_project(&window_id).await
     {
-        manager.close_project(&project_id).await?;
+        project_manager.close_project(&project_id).await?;
     }
 
     Ok(())

@@ -73,11 +73,11 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
 
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
     registry.register_window(&window_id, project_id).await?;
 
     if let Some(project_id) = project_id
-        && let Some(manifest) = manager.world_manifest(project_id).await?
+        && let Some(manifest) = project_manager.world_manifest(project_id).await?
     {
         window.set_title(&manifest.name)?;
     }
@@ -114,7 +114,7 @@ pub(crate) async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
 pub(crate) async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     let manifest = crate::world::read_manifest(&file)?;
     if let Some(window_id) = registry.get_window_id(&manifest.id).await {
@@ -129,7 +129,7 @@ pub(crate) async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasRes
 
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::open_world(&file, &temp_dir).await?;
-    open_project_or_close(manager, project, async {
+    open_project_or_close(project_manager, project, async {
         spawn_window(app, Some(&manifest.id)).await
     })
     .await?;
@@ -153,17 +153,17 @@ pub(crate) async fn confirm_project_transition(
 
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     let Some(project_id) = registry.get_project_id(window_id).await else {
         return Ok(true);
     };
 
-    if !manager.is_project_dirty(&project_id).await {
+    if !project_manager.is_project_dirty(&project_id).await {
         return Ok(true);
     }
 
-    let message = if let Some(manifest) = manager.world_manifest(&project_id).await? {
+    let message = if let Some(manifest) = project_manager.world_manifest(&project_id).await? {
         format!("Save changes to {} before continuing?", manifest.name)
     } else {
         "Save changes before continuing?".to_string()
@@ -183,11 +183,11 @@ pub(crate) async fn confirm_project_transition(
 
     match result {
         MessageDialogResult::Yes => {
-            manager.save_project(&project_id).await?;
+            project_manager.save_project(&project_id).await?;
             Ok(true)
         }
         MessageDialogResult::Custom(value) if value == "Save" => {
-            manager.save_project(&project_id).await?;
+            project_manager.save_project(&project_id).await?;
             Ok(true)
         }
         MessageDialogResult::No => Ok(true),
@@ -230,7 +230,7 @@ pub(crate) async fn place_project(
 ) -> KazmasResult<()> {
     let state = app.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
     let manifest = project.manifest();
 
     match placement {
@@ -241,7 +241,7 @@ pub(crate) async fn place_project(
                 ));
             };
 
-            let prev_project_id = open_project_or_close(manager, project, async {
+            let prev_project_id = open_project_or_close(project_manager, project, async {
                 registry.replace_project(window_id, &manifest.id).await
             })
             .await?;
@@ -249,11 +249,11 @@ pub(crate) async fn place_project(
             if let Some(prev_project_id) = prev_project_id
                 && prev_project_id != manifest.id
             {
-                manager.close_project(&prev_project_id).await?;
+                project_manager.close_project(&prev_project_id).await?;
             }
         }
         ProjectPlacement::NewWindow => {
-            open_project_or_close(manager, project, async {
+            open_project_or_close(project_manager, project, async {
                 spawn_window(app, Some(&manifest.id)).await
             })
             .await?;
@@ -264,27 +264,27 @@ pub(crate) async fn place_project(
 }
 
 async fn open_project_or_close<T>(
-    manager: &ProjectManager,
+    project_manager: &ProjectManager,
     project: WorldProject,
     action: impl Future<Output = KazmasResult<T>>,
 ) -> KazmasResult<T> {
     let project_id = project.manifest().id;
-    manager.open_project(project).await?;
+    project_manager.open_project(project).await?;
 
     let result = action.await;
     if let Err(error) = result {
-        return close_project_after_failure(manager, &project_id, error).await;
+        return close_project_after_failure(project_manager, &project_id, error).await;
     }
 
     result
 }
 
 async fn close_project_after_failure<T>(
-    manager: &ProjectManager,
+    project_manager: &ProjectManager,
     project_id: &Uuid,
     error: KazmasError,
 ) -> KazmasResult<T> {
-    if let Err(cleanup_error) = manager.close_project(project_id).await {
+    if let Err(cleanup_error) = project_manager.close_project(project_id).await {
         return Err(KazmasError::Invalid(format!(
             "{error}; cleanup failed: {cleanup_error}"
         )));
@@ -299,7 +299,7 @@ async fn handle_webview_window_event(
 ) -> KazmasResult<()> {
     let state = window.state::<AppState>();
     let registry = state.registry();
-    let manager = state.manager();
+    let project_manager = state.project_manager();
 
     let Some(window_id) = parse_window_label(window.label())? else {
         return Ok(());
@@ -318,7 +318,7 @@ async fn handle_webview_window_event(
                 registry.set_focus(None).await;
             }
             if let Some(project_id) = registry.unregister_window(&window_id).await {
-                manager.close_project(&project_id).await?;
+                project_manager.close_project(&project_id).await?;
             }
         }
         _ => log::debug!("Window unhandled event {event:?}"),

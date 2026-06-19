@@ -5,7 +5,7 @@ use super::{project::ProjectManager, window::WindowRegistry};
 #[derive(Default)]
 pub(crate) struct AppState {
     registry: Arc<WindowRegistry>,
-    manager: Arc<ProjectManager>,
+    project_manager: Arc<ProjectManager>,
 }
 
 impl AppState {
@@ -13,7 +13,7 @@ impl AppState {
         &self.registry
     }
 
-    pub(crate) fn manager(&self) -> &Arc<ProjectManager> {
-        &self.manager
+    pub(crate) fn project_manager(&self) -> &Arc<ProjectManager> {
+        &self.project_manager
     }
 }
