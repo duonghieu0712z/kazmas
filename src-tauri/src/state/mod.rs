@@ -1,5 +1,6 @@
 mod app;
 mod label;
+mod menu;
 mod project;
 mod window;
 

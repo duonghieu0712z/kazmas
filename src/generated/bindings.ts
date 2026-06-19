@@ -5,7 +5,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 
 /** Commands */
 export const commands = {
-	getAppMenu: () => __TAURI_INVOKE<MenuGroup[]>("get_app_menu"),
+	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
 	getProjectTransitionInfo: () => typedError<ProjectTransitionInfo, CommandError>(__TAURI_INVOKE("get_project_transition_info")),
 	saveFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_focused_world")),
@@ -33,13 +33,13 @@ export type MenuCommand = "about" | "close-world" | "close-window" | "copy" | "c
 
 export type MenuEvents = null;
 
-export type MenuGroup = {
+export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
+
+export type MenuSection = {
 	id: string,
 	text: string,
 	items: MenuItem[],
 };
-
-export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
 
 export type ProjectPlacement = "currentWindow" | "newWindow";
 

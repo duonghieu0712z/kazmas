@@ -1,4 +1,4 @@
-import type { MenuCommand, MenuGroup, ProjectPlacement } from '@/generated/bindings';
+import type { MenuCommand, MenuSection, ProjectPlacement } from '@/generated/bindings';
 
 import { createGlobalState } from '@vueuse/core';
 
@@ -7,7 +7,7 @@ import { commands } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 
 function createMenu() {
-    const menus = ref<MenuGroup[]>([]);
+    const menus = ref<MenuSection[]>([]);
 
     onMounted(async () => {
         menus.value = await commands.getAppMenu();

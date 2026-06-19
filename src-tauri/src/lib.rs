@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 mod app;
 mod command;
 mod event;
@@ -57,6 +59,10 @@ pub fn run() {
         .setup(move |app| {
             let handle = app.handle();
             specta_builder.mount_events(handle);
+
+            let state = handle.state::<state::AppState>();
+            state.menu_manager().watch();
+            tauri::async_runtime::block_on(state.menu_manager().init(handle))?;
 
             #[cfg(target_os = "macos")]
             menu::create_menu(handle)?;

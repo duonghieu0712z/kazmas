@@ -5,15 +5,15 @@ mod descriptor;
 mod handler;
 
 pub(crate) use command::MenuCommand;
-pub(crate) use descriptor::MenuGroup;
+pub(crate) use descriptor::{MenuSection, menu_sections};
 use tauri::{AppHandle, Manager};
 #[cfg(target_os = "macos")]
 use tauri::{Result, async_runtime::spawn};
 
 use crate::app::KazmasResult;
 
-pub(crate) fn app_menu(app: &AppHandle) -> Vec<MenuGroup> {
-    descriptor::app_menu(&app.package_info().name)
+pub(crate) fn app_menu(app: &AppHandle) -> Vec<MenuSection> {
+    descriptor::menu_sections(&app.package_info().name)
 }
 
 pub(crate) async fn execute_command(app: &AppHandle, command: MenuCommand) -> KazmasResult<()> {

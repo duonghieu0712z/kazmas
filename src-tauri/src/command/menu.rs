@@ -1,12 +1,16 @@
-use tauri::AppHandle;
+use tauri::{AppHandle, State};
 
 use super::error::CommandResult;
-use crate::menu::{MenuCommand, MenuGroup, app_menu, execute_command};
+use crate::{
+    menu::{MenuCommand, MenuSection, execute_command},
+    state::AppState,
+};
 
 #[tauri::command]
 #[specta::specta]
-pub(super) fn get_app_menu(app: AppHandle) -> Vec<MenuGroup> {
-    app_menu(&app)
+pub(super) async fn get_app_menu(state: State<'_, AppState>) -> CommandResult<Vec<MenuSection>> {
+    let menu_sections = state.menu_manager().menu_sections().await;
+    Ok(menu_sections)
 }
 
 #[tauri::command]

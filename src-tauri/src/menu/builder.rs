@@ -9,23 +9,23 @@ use tauri::{
 
 use super::{
     command::MenuCommand,
-    descriptor::{MenuGroup, MenuItem as MenuItemDescriptor, app_menu},
+    descriptor::{MenuItem as MenuItemDescriptor, MenuSection, menu_sections},
 };
 
 pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
     let menu = Menu::new(app)?;
-    for group in app_menu(&app.package_info().name) {
-        menu.append(&native_menu_group(app, group)?)?;
+    for section in menu_sections(&app.package_info().name) {
+        menu.append(&native_menu_section(app, section)?)?;
     }
 
     menu.set_as_app_menu()?;
     Ok(())
 }
 
-fn native_menu_group(app: &AppHandle, group: MenuGroup) -> Result<Submenu<Wry>> {
-    let submenu = SubmenuBuilder::with_id(app, group.id, group.text).build()?;
+fn native_menu_section(app: &AppHandle, section: MenuSection) -> Result<Submenu<Wry>> {
+    let submenu = SubmenuBuilder::with_id(app, section.id, section.text).build()?;
 
-    for item in group.items {
+    for item in section.items {
         submenu.append(&native_menu_item(app, item)?)?;
     }
 

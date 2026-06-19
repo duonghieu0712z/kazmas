@@ -8,7 +8,7 @@ use super::MenuCommand;
 
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct MenuGroup {
+pub(crate) struct MenuSection {
     pub(super) id: &'static str,
     pub(super) text: String,
     pub(super) items: Vec<MenuItem>,
@@ -40,10 +40,10 @@ pub(crate) enum MenuItem {
     },
 }
 
-pub(crate) fn app_menu(app_name: &str) -> Vec<MenuGroup> {
+pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
     vec![
         #[cfg(target_os = "macos")]
-        MenuGroup {
+        MenuSection {
             id: "app",
             text: app_name.into(),
             items: vec![
@@ -61,7 +61,7 @@ pub(crate) fn app_menu(app_name: &str) -> Vec<MenuGroup> {
                 item(MenuCommand::Quit, app_name),
             ],
         },
-        MenuGroup {
+        MenuSection {
             id: "file",
             text: "File".into(),
             items: vec![
@@ -87,7 +87,7 @@ pub(crate) fn app_menu(app_name: &str) -> Vec<MenuGroup> {
                 item(MenuCommand::Quit, app_name),
             ],
         },
-        MenuGroup {
+        MenuSection {
             id: "edit",
             text: "Edit".into(),
             items: vec![
@@ -102,7 +102,7 @@ pub(crate) fn app_menu(app_name: &str) -> Vec<MenuGroup> {
             ],
         },
         #[cfg(target_os = "macos")]
-        MenuGroup {
+        MenuSection {
             id: WINDOW_SUBMENU_ID,
             text: "Window".into(),
             items: vec![
@@ -114,7 +114,7 @@ pub(crate) fn app_menu(app_name: &str) -> Vec<MenuGroup> {
                 item(MenuCommand::BringAllToFront, app_name),
             ],
         },
-        MenuGroup {
+        MenuSection {
             id: HELP_SUBMENU_ID,
             text: "Help".into(),
             items: vec![
