@@ -31,9 +31,10 @@ pub(crate) enum MenuItem {
         enabled: bool,
     },
     Submenu {
-        id: &'static str,
+        id: MenuCommand,
         text: String,
         items: Vec<MenuItem>,
+        enabled: bool,
     },
     Separator {
         id: &'static str,
@@ -70,7 +71,10 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
                 item(MenuCommand::NewWindow, app_name),
                 separator("file-open-separator"),
                 item(MenuCommand::OpenWorld, app_name),
-                item(MenuCommand::RecentWorlds, app_name),
+                submenu(MenuCommand::RecentWorlds, app_name, vec![item(
+                    MenuCommand::ClearWorlds,
+                    app_name,
+                )]),
                 separator("file-save-separator"),
                 item(MenuCommand::Save, app_name),
                 item(MenuCommand::SaveAs, app_name),
@@ -150,11 +154,12 @@ fn check(id: MenuCommand, checked: bool, app_name: &str) -> MenuItem {
 }
 
 #[allow(dead_code)]
-fn submenu(id: &'static str, text: &'static str, items: Vec<MenuItem>) -> MenuItem {
+fn submenu(id: MenuCommand, app_name: &str, items: Vec<MenuItem>) -> MenuItem {
     MenuItem::Submenu {
         id,
-        text: text.into(),
+        text: id.text(app_name),
         items,
+        enabled: true,
     }
 }
 

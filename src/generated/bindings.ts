@@ -29,11 +29,11 @@ export type CommandError = {
 
 export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "TAURI_FS" | "UUID" | "WALK_DIR" | "ZIP";
 
-export type MenuCommand = "about" | "close-world" | "close-window" | "copy" | "cut" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "undo" | "updates";
+export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "undo" | "updates";
 
 export type MenuEvents = null;
 
-export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: string; text: string; items: MenuItem[] } | { type: "separator"; id: string };
+export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: MenuCommand; text: string; items: MenuItem[]; enabled: boolean } | { type: "separator"; id: string };
 
 export type MenuSection = {
 	id: string,

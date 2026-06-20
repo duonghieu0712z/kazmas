@@ -18,7 +18,7 @@ use crate::{
 };
 
 #[cfg(target_os = "macos")]
-pub(super) async fn handle_menu_event(
+pub(crate) async fn handle_menu_event(
     app: &AppHandle,
     event: MenuEvent,
     window_id: Option<Uuid>,
@@ -31,11 +31,7 @@ pub(super) async fn handle_menu_event(
 }
 
 #[cfg(target_os = "macos")]
-pub(super) async fn handle_command_id(
-    app: &AppHandle,
-    id: &str,
-    window_id: Option<Uuid>,
-) -> KazmasResult<()> {
+async fn handle_command_id(app: &AppHandle, id: &str, window_id: Option<Uuid>) -> KazmasResult<()> {
     let id = id.strip_prefix("menu:").unwrap_or(id);
     let command = MenuCommand::from_str(id)?;
     handle_command(app, command, window_id).await

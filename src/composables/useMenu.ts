@@ -10,7 +10,10 @@ function createMenu() {
     const menus = ref<MenuSection[]>([]);
 
     onMounted(async () => {
-        menus.value = await commands.getAppMenu();
+        const result = await commands.getAppMenu();
+        if (result.status === 'ok') {
+            menus.value = result.data;
+        }
     });
 
     const executeMenuCommand = async (command: MenuCommand) => {

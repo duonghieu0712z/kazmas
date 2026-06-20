@@ -37,7 +37,7 @@ function displayShortcut(shortcut: string) {
     </MenubarCheckboxItem>
 
     <MenubarSub v-else>
-        <MenubarSubTrigger>{{ item.text }}</MenubarSubTrigger>
+        <MenubarSubTrigger :disabled="!item.enabled">{{ item.text }}</MenubarSubTrigger>
         <MenubarSubContent>
             <AppMenuItem
                 v-for="child in item.items"

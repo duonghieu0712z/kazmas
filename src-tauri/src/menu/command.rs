@@ -10,6 +10,7 @@ pub(crate) enum MenuCommand {
     #[cfg(target_os = "macos")]
     #[specta(skip)]
     BringAllToFront,
+    ClearWorlds,
     CloseWorld,
     CloseWindow,
     Copy,
@@ -57,6 +58,7 @@ impl MenuCommand {
             Self::About => format!("About {app_name}"),
             #[cfg(target_os = "macos")]
             Self::BringAllToFront => "Bring All to Front".into(),
+            Self::ClearWorlds => "Clear Worlds...".into(),
             Self::CloseWorld => "Close World".into(),
             Self::CloseWindow => "Close Window".into(),
             Self::Copy => "Copy".into(),

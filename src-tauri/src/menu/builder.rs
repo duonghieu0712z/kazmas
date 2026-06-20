@@ -1,61 +1,41 @@
 use tauri::{
     AppHandle, Result, Wry,
-    image::Image,
     menu::{
-        AboutMetadata, AboutMetadataBuilder, CheckMenuItemBuilder, Menu, MenuItemBuilder,
-        MenuItemKind, PredefinedMenuItem, Submenu, SubmenuBuilder,
+        CheckMenuItemBuilder, Menu, MenuItemBuilder, MenuItemKind, PredefinedMenuItem, Submenu,
+        SubmenuBuilder,
     },
 };
 
 use super::{
     command::MenuCommand,
-    descriptor::{MenuItem as MenuItemDescriptor, MenuSection, menu_sections},
+    descriptor::{MenuItem as MenuItemDescriptor, MenuSection},
 };
 
-pub(super) fn build_menu(app: &AppHandle) -> Result<()> {
+pub(crate) fn build_menu(app: &AppHandle, menu_sections: Vec<MenuSection>) -> Result<Menu<Wry>> {
     let menu = Menu::new(app)?;
-    for section in menu_sections(&app.package_info().name) {
-        menu.append(&native_menu_section(app, section)?)?;
+    for section in menu_sections {
+        menu.append(&build_menu_section(app, section)?)?;
     }
-
     menu.set_as_app_menu()?;
-    Ok(())
+    Ok(menu)
 }
 
-fn native_menu_section(app: &AppHandle, section: MenuSection) -> Result<Submenu<Wry>> {
+fn build_menu_section(app: &AppHandle, section: MenuSection) -> Result<Submenu<Wry>> {
     let submenu = SubmenuBuilder::with_id(app, section.id, section.text).build()?;
-
     for item in section.items {
-        submenu.append(&native_menu_item(app, item)?)?;
+        submenu.append(&build_menu_item(app, item)?)?;
     }
-
     Ok(submenu)
 }
 
-fn about_metadata(app: &AppHandle) -> Result<AboutMetadata<'static>> {
-    let icon = Image::from_bytes(include_bytes!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/icons/icon.png"
-    )))?;
-    let name = app.package_info().name.clone();
-    let version = app.package_info().version.to_string();
-    let about = AboutMetadataBuilder::new()
-        .name(Some(name))
-        .version(Some(version))
-        .icon(Some(icon))
-        .build();
-
-    Ok(about)
-}
-
-fn native_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuItemKind<Wry>> {
+fn build_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuItemKind<Wry>> {
     match item {
         MenuItemDescriptor::Item {
             id,
             text,
             shortcut,
             enabled,
-        } => native_command_item(app, id, text, shortcut, enabled),
+        } => build_item(app, id, text, shortcut, enabled),
         MenuItemDescriptor::Check {
             id,
             text,
@@ -69,12 +49,13 @@ fn native_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuIte
             if let Some(shortcut) = shortcut {
                 builder = builder.accelerator(shortcut);
             }
-            Ok(MenuItemKind::Check(builder.build(app)?))
+            let item = builder.build(app)?;
+            Ok(MenuItemKind::Check(item))
         }
         MenuItemDescriptor::Submenu { id, text, items } => {
             let submenu = SubmenuBuilder::with_id(app, id, text).build()?;
             for item in items {
-                submenu.append(&native_menu_item(app, item)?)?;
+                submenu.append(&build_menu_item(app, item)?)?;
             }
             Ok(MenuItemKind::Submenu(submenu))
         }
@@ -84,7 +65,7 @@ fn native_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuIte
     }
 }
 
-fn native_command_item(
+fn build_item(
     app: &AppHandle,
     command: MenuCommand,
     text: String,
@@ -99,8 +80,9 @@ fn native_command_item(
     if let Some(shortcut) = shortcut {
         builder = builder.accelerator(shortcut);
     }
+    let item = builder.build(app)?;
 
-    Ok(MenuItemKind::MenuItem(builder.build(app)?))
+    Ok(MenuItemKind::MenuItem(item))
 }
 
 fn predefined_item(
@@ -109,9 +91,6 @@ fn predefined_item(
     text: &str,
 ) -> Result<Option<PredefinedMenuItem<Wry>>> {
     let item = match command {
-        MenuCommand::About => {
-            PredefinedMenuItem::about(app, Some(text), Some(about_metadata(app)?))?
-        }
         MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, Some(text))?,
         MenuCommand::Copy => PredefinedMenuItem::copy(app, Some(text))?,
         MenuCommand::Cut => PredefinedMenuItem::cut(app, Some(text))?,
@@ -120,14 +99,14 @@ fn predefined_item(
         MenuCommand::Redo => PredefinedMenuItem::redo(app, Some(text))?,
         MenuCommand::SelectAll => PredefinedMenuItem::select_all(app, Some(text))?,
         MenuCommand::Undo => PredefinedMenuItem::undo(app, Some(text))?,
-        MenuCommand::BringAllToFront => PredefinedMenuItem::bring_all_to_front(app, Some(text))?,
-        MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, Some(text))?,
-        MenuCommand::Hide => PredefinedMenuItem::hide(app, Some(text))?,
-        MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, Some(text))?,
-        MenuCommand::Maximize => PredefinedMenuItem::maximize(app, Some(text))?,
-        MenuCommand::Minimize => PredefinedMenuItem::minimize(app, Some(text))?,
-        MenuCommand::Services => PredefinedMenuItem::services(app, Some(text))?,
-        MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, Some(text))?,
+        // MenuCommand::BringAllToFront => PredefinedMenuItem::bring_all_to_front(app, Some(text))?,
+        // MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, Some(text))?,
+        // MenuCommand::Hide => PredefinedMenuItem::hide(app, Some(text))?,
+        // MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, Some(text))?,
+        // MenuCommand::Maximize => PredefinedMenuItem::maximize(app, Some(text))?,
+        // MenuCommand::Minimize => PredefinedMenuItem::minimize(app, Some(text))?,
+        // MenuCommand::Services => PredefinedMenuItem::services(app, Some(text))?,
+        // MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, Some(text))?,
         _ => return Ok(None),
     };
 

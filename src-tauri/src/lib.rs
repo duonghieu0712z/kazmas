@@ -1,11 +1,11 @@
-use tauri::Manager;
-
 mod app;
 mod command;
 mod event;
 mod menu;
 mod state;
 mod world;
+
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -61,11 +61,8 @@ pub fn run() {
             specta_builder.mount_events(handle);
 
             let state = handle.state::<state::AppState>();
-            state.menu_manager().watch();
-            tauri::async_runtime::block_on(state.menu_manager().init(handle))?;
-
-            #[cfg(target_os = "macos")]
-            menu::create_menu(handle)?;
+            let menu_manager = state.menu_manager();
+            tauri::async_runtime::block_on(menu_manager.init(handle))?;
 
             #[cfg(desktop)]
             tauri::async_runtime::block_on(app::open_initial_windows(handle))?;
