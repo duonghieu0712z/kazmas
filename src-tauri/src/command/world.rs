@@ -1,69 +1,26 @@
-use std::path::PathBuf;
-
-use serde::Serialize;
-use specta::Type;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
 
 use super::error::CommandResult;
 use crate::{
     app::{KazmasError, place_project},
-    state::get_state,
-    utils::{app_temp_dir, window_label},
+    state::AppState,
+    utils::{app_temp_dir, parse_window_label, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
 };
 
 const NEW_WORLD_NAME: &str = "New World";
 
-#[derive(Debug, Clone, Serialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct ProjectTransitionInfo {
-    dirty: bool,
-    world_name: Option<String>,
-}
-
 #[tauri::command]
 #[specta::specta]
-pub(super) async fn get_project_transition_info(
-    app: AppHandle,
-) -> CommandResult<ProjectTransitionInfo> {
-    let state = get_state(&app);
+pub(super) async fn save_world(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<()> {
     let registry = state.registry();
     let project_manager = state.project_manager();
 
-    let Some(window_id) = registry.focused_window().await else {
-        return Ok(ProjectTransitionInfo {
-            dirty: false,
-            world_name: None,
-        });
-    };
-
-    let Some(project_id) = registry.get_project_id(&window_id).await else {
-        return Ok(ProjectTransitionInfo {
-            dirty: false,
-            world_name: None,
-        });
-    };
-
-    let world_name = project_manager
-        .world_manifest(&project_id)
-        .await?
-        .map(|manifest| manifest.name);
-
-    Ok(ProjectTransitionInfo {
-        dirty: project_manager.is_project_dirty(&project_id).await,
-        world_name,
-    })
-}
-
-#[tauri::command]
-#[specta::specta]
-pub(super) async fn save_focused_world(app: AppHandle) -> CommandResult<()> {
-    let state = get_state(&app);
-    let registry = state.registry();
-    let project_manager = state.project_manager();
-
-    if let Some(window_id) = registry.focused_window().await
+    if let Some(window_id) = parse_window_label(window.label())?
         && let Some(project_id) = registry.get_project_id(&window_id).await
     {
         project_manager.save_project(&project_id).await?;
@@ -110,12 +67,13 @@ pub(super) fn pick_world_file(app: AppHandle) -> CommandResult<Option<String>> {
 #[specta::specta]
 pub(super) async fn create_world(
     app: AppHandle,
+    window: WebviewWindow,
     dir: String,
     new_window: bool,
 ) -> CommandResult<()> {
-    let window_id = get_state(&app).registry().focused_window().await;
+    let window_id = parse_window_label(window.label())?;
     let temp_dir = app_temp_dir(&app).await?;
-    let project = WorldProject::create_world(NEW_WORLD_NAME, PathBuf::from(dir), temp_dir).await?;
+    let project = WorldProject::create_world(NEW_WORLD_NAME, dir, temp_dir).await?;
 
     place_project(&app, window_id.as_ref(), new_window, project).await?;
     Ok(())
@@ -125,13 +83,13 @@ pub(super) async fn create_world(
 #[specta::specta]
 pub(super) async fn open_world(
     app: AppHandle,
+    state: State<'_, AppState>,
+    window: WebviewWindow,
     file: String,
     new_window: bool,
 ) -> CommandResult<()> {
-    let state = get_state(&app);
     let registry = state.registry();
 
-    let file = PathBuf::from(file);
     let manifest = read_manifest(&file)?;
     if let Some(window_id) = registry.get_window_id(&manifest.id).await {
         let label = window_label(&window_id);
@@ -145,7 +103,7 @@ pub(super) async fn open_world(
         }
     }
 
-    let window_id = registry.focused_window().await;
+    let window_id = parse_window_label(window.label())?;
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::open_world(file, temp_dir).await?;
 
@@ -155,12 +113,14 @@ pub(super) async fn open_world(
 
 #[tauri::command]
 #[specta::specta]
-pub(super) async fn close_focused_world(app: AppHandle) -> CommandResult<()> {
-    let state = get_state(&app);
+pub(super) async fn close_world(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<()> {
     let registry = state.registry();
     let project_manager = state.project_manager();
 
-    if let Some(window_id) = registry.focused_window().await
+    if let Some(window_id) = parse_window_label(window.label())?
         && let Some(project_id) = registry.close_project(&window_id).await
     {
         project_manager.close_project(&project_id).await?;

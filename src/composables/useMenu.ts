@@ -2,8 +2,8 @@ import type { MenuCommand, MenuSection } from '@/generated/bindings';
 
 import { createGlobalState } from '@vueuse/core';
 
-import { openAboutDialog, openSaveWorldDialog, openWindowPlacementDialog } from '@/dialogs';
-import { commands } from '@/generated/bindings';
+import { openAboutDialog, openWindowPlacementDialog } from '@/dialogs';
+import { commands, events } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 
 function createMenu() {
@@ -14,33 +14,17 @@ function createMenu() {
         if (result.status === 'ok') {
             menus.value = result.data;
         }
+
+        events.menuEvents.listen(async ({ payload }) => {
+            await executeMenuCommand(payload);
+        });
     });
 
     const executeMenuCommand = async (command: MenuCommand) => {
-        switch (command) {
-            case 'about':
-                await openAboutDialog();
-                return;
-
-            case 'new-world':
-                await newWorld();
-                return;
-
-            case 'open-world':
-                await openWorld();
-                return;
-
-            case 'close-world':
-                await closeWorld();
-                return;
-
-            case 'save':
-                await commands.saveFocusedWorld();
-                return;
-
-            default:
-                await commands.executeMenuCommand(command);
+        if (await executeClientMenuCommand(command)) {
+            return;
         }
+        await commands.executeMenuCommand(command);
     };
 
     return {
@@ -51,11 +35,33 @@ function createMenu() {
 
 export const useMenu = createGlobalState(createMenu);
 
-async function newWorld() {
-    if (!(await confirmProjectTransition())) {
-        return;
+async function executeClientMenuCommand(command: MenuCommand) {
+    switch (command) {
+        case 'about':
+            await openAboutDialog();
+            return true;
+
+        case 'new-world':
+            await newWorld();
+            return true;
+
+        case 'open-world':
+            await openWorld();
+            return true;
+
+        case 'close-world':
+            await closeWorld();
+            return true;
+
+        case 'save':
+            await commands.saveWorld();
+            return true;
     }
 
+    return false;
+}
+
+async function newWorld() {
     const newWindow = await chooseNewWindow();
     if (newWindow === null) {
         return;
@@ -74,10 +80,6 @@ async function newWorld() {
 }
 
 async function openWorld() {
-    if (!(await confirmProjectTransition())) {
-        return;
-    }
-
     const newWindow = await chooseNewWindow();
     if (newWindow === null) {
         return;
@@ -96,33 +98,10 @@ async function openWorld() {
 }
 
 async function closeWorld() {
-    if (!(await confirmProjectTransition())) {
-        return;
-    }
-
-    await commands.closeFocusedWorld();
+    await commands.closeWorld();
 }
 
-async function confirmProjectTransition() {
-    const transition = await commands.getProjectTransitionInfo();
-    if (transition.status === 'error') {
-        return false;
-    }
-
-    if (!transition.data.dirty) {
-        return true;
-    }
-
-    const result = await openSaveWorldDialog(transition.data.worldName ?? undefined);
-    if (result === AlertDialogResult.Yes) {
-        const saveResult = await commands.saveFocusedWorld();
-        return saveResult.status === 'ok';
-    }
-
-    return result === AlertDialogResult.No;
-}
-
-async function chooseNewWindow(): Promise<boolean | null> {
+async function chooseNewWindow() {
     const result = await openWindowPlacementDialog();
     switch (result) {
         case AlertDialogResult.Yes:

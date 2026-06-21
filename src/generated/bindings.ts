@@ -7,13 +7,12 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
-	getProjectTransitionInfo: () => typedError<ProjectTransitionInfo, CommandError>(__TAURI_INVOKE("get_project_transition_info")),
-	saveFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_focused_world")),
+	saveWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_world")),
 	pickNewWorldDir: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_new_world_dir")),
 	pickWorldFile: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_world_file")),
 	createWorld: (dir: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { dir, newWindow })),
 	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
-	closeFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_focused_world")),
+	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),
 };
 
 /** Events */
@@ -39,11 +38,6 @@ export type MenuSection = {
 	id: string,
 	text: string,
 	items: MenuItem[],
-};
-
-export type ProjectTransitionInfo = {
-	dirty: boolean,
-	worldName: string | null,
 };
 
 /* Tauri Specta runtime */
