@@ -1,9 +1,7 @@
 mod app;
-mod label;
 mod menu;
 mod project;
-mod window;
+mod registry;
 
-pub(crate) use app::AppState;
-pub(crate) use label::{parse_window_label, window_label};
+pub(crate) use app::{AppState, get_state};
 pub(crate) use project::ProjectManager;

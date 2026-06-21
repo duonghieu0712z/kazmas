@@ -7,8 +7,9 @@ use tauri_plugin_dialog::DialogExt;
 
 use super::error::CommandResult;
 use crate::{
-    app::{KazmasError, ProjectPlacement, app_temp_dir, place_project},
-    state::{AppState, window_label},
+    app::{KazmasError, ProjectPlacement, place_project},
+    state::get_state,
+    utils::{app_temp_dir, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
 };
 
@@ -26,7 +27,7 @@ pub(super) struct ProjectTransitionInfo {
 pub(super) async fn get_project_transition_info(
     app: AppHandle,
 ) -> CommandResult<ProjectTransitionInfo> {
-    let state = app.state::<AppState>();
+    let state = get_state(&app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 
@@ -58,7 +59,7 @@ pub(super) async fn get_project_transition_info(
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn save_focused_world(app: AppHandle) -> CommandResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(&app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 
@@ -112,7 +113,7 @@ pub(super) async fn create_world(
     dir: String,
     placement: ProjectPlacement,
 ) -> CommandResult<()> {
-    let window_id = app.state::<AppState>().registry().focused_window().await;
+    let window_id = get_state(&app).registry().focused_window().await;
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::create_world(NEW_WORLD_NAME, PathBuf::from(dir), temp_dir).await?;
 
@@ -127,7 +128,7 @@ pub(super) async fn open_world(
     file: String,
     placement: ProjectPlacement,
 ) -> CommandResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(&app);
     let registry = state.registry();
 
     let file = PathBuf::from(file);
@@ -155,7 +156,7 @@ pub(super) async fn open_world(
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn close_focused_world(app: AppHandle) -> CommandResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(&app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 

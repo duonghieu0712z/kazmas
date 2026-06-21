@@ -11,14 +11,12 @@ use tauri::{LogicalPosition, TitleBarStyle};
 use tauri_plugin_dialog::{
     DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
 };
-use tauri_specta::Event;
-use tokio::fs;
 use uuid::Uuid;
 
 use super::{KazmasError, KazmasResult};
 use crate::{
-    event::MenuEvents,
-    state::{AppState, ProjectManager, parse_window_label, window_label},
+    state::{ProjectManager, get_state},
+    utils::{app_temp_dir, parse_window_label, window_label},
     world::WorldProject,
 };
 
@@ -69,9 +67,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
     window.show()?;
     window.set_focus()?;
 
-    MenuEvents.emit(app)?;
-
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
     registry.register_window(&window_id, project_id).await?;
@@ -83,15 +79,13 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
     }
 
     #[cfg(debug_assertions)]
-    {
-        window.open_devtools();
-    }
+    window.open_devtools();
 
     Ok(())
 }
 
 pub(crate) async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
 
     if let Some(window_id) = registry.focused_window().await {
@@ -112,7 +106,7 @@ pub(crate) async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
 }
 
 pub(crate) async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 
@@ -137,12 +131,6 @@ pub(crate) async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasRes
     Ok(())
 }
 
-pub(crate) async fn app_temp_dir(app: &AppHandle) -> KazmasResult<PathBuf> {
-    let path = app.path().temp_dir()?.join(&app.config().identifier);
-    fs::create_dir_all(&path).await?;
-    Ok(path)
-}
-
 pub(crate) async fn confirm_project_transition(
     app: &AppHandle,
     window_id: Option<&Uuid>,
@@ -151,7 +139,7 @@ pub(crate) async fn confirm_project_transition(
         return Ok(true);
     };
 
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 
@@ -228,7 +216,7 @@ pub(crate) async fn place_project(
     placement: ProjectPlacement,
     project: WorldProject,
 ) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
     let manifest = project.manifest();
@@ -297,7 +285,7 @@ async fn handle_webview_window_event(
     window: &WebviewWindow,
     event: &WindowEvent,
 ) -> KazmasResult<()> {
-    let state = window.state::<AppState>();
+    let state = get_state(window);
     let registry = state.registry();
     let project_manager = state.project_manager();
 

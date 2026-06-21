@@ -7,6 +7,8 @@ use tokio::sync::{
 };
 
 #[cfg(target_os = "macos")]
+use super::get_state;
+#[cfg(target_os = "macos")]
 use crate::menu::{build_menu, handle_menu_event};
 use crate::{
     app::{KazmasError, KazmasResult},
@@ -49,11 +51,7 @@ impl MenuManager {
             let app = app.clone();
             let event = event.clone();
             spawn(async move {
-                let window_id = app
-                    .state::<crate::state::AppState>()
-                    .registry()
-                    .focused_window()
-                    .await;
+                let window_id = get_state(&app).registry().focused_window().await;
                 if let Err(error) = handle_menu_event(&app, event, window_id).await {
                     log::error!("{error}");
                 }

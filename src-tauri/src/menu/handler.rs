@@ -10,10 +10,11 @@ use uuid::Uuid;
 use super::command::MenuCommand;
 use crate::{
     app::{
-        KazmasResult, app_temp_dir, choose_project_placement, confirm_project_transition,
-        place_project, spawn_window,
+        KazmasResult, choose_project_placement, confirm_project_transition, place_project,
+        spawn_window,
     },
-    state::{AppState, window_label},
+    state::get_state,
+    utils::{app_temp_dir, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
 };
 
@@ -84,7 +85,7 @@ async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<
 }
 
 async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
 
     if !confirm_project_transition(app, window_id.as_ref()).await? {
@@ -125,7 +126,7 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
 }
 
 async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 
@@ -145,7 +146,7 @@ async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<(
 }
 
 async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = app.state::<AppState>();
+    let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
 

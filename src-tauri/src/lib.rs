@@ -3,9 +3,8 @@ mod command;
 mod event;
 mod menu;
 mod state;
+mod utils;
 mod world;
-
-use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -60,7 +59,7 @@ pub fn run() {
             let handle = app.handle();
             specta_builder.mount_events(handle);
 
-            let state = handle.state::<state::AppState>();
+            let state = state::get_state(handle);
             let menu_manager = state.menu_manager();
             tauri::async_runtime::block_on(menu_manager.init(handle))?;
 
