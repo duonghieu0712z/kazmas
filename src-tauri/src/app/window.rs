@@ -1,7 +1,5 @@
 use std::{future::Future, path::PathBuf};
 
-use serde::Deserialize;
-use specta::Type;
 use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
     async_runtime::spawn,
@@ -24,13 +22,6 @@ const WEBVIEW_URL: &str = "index.html";
 const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub(crate) enum ProjectPlacement {
-    CurrentWindow,
-    NewWindow,
-}
 
 pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
@@ -184,7 +175,7 @@ pub(crate) async fn confirm_project_transition(
     }
 }
 
-pub(crate) fn choose_project_placement(app: &AppHandle) -> Option<ProjectPlacement> {
+pub(crate) fn choose_new_window(app: &AppHandle) -> Option<bool> {
     let result = app
         .dialog()
         .message("Use a new window for this world?")
@@ -198,14 +189,10 @@ pub(crate) fn choose_project_placement(app: &AppHandle) -> Option<ProjectPlaceme
         .blocking_show_with_result();
 
     match result {
-        MessageDialogResult::Yes => Some(ProjectPlacement::NewWindow),
-        MessageDialogResult::Custom(value) if value == "New Window" => {
-            Some(ProjectPlacement::NewWindow)
-        }
-        MessageDialogResult::No => Some(ProjectPlacement::CurrentWindow),
-        MessageDialogResult::Custom(value) if value == "Current Window" => {
-            Some(ProjectPlacement::CurrentWindow)
-        }
+        MessageDialogResult::Yes => Some(true),
+        MessageDialogResult::Custom(value) if value == "New Window" => Some(true),
+        MessageDialogResult::No => Some(false),
+        MessageDialogResult::Custom(value) if value == "Current Window" => Some(false),
         _ => None,
     }
 }
@@ -213,7 +200,7 @@ pub(crate) fn choose_project_placement(app: &AppHandle) -> Option<ProjectPlaceme
 pub(crate) async fn place_project(
     app: &AppHandle,
     window_id: Option<&Uuid>,
-    placement: ProjectPlacement,
+    new_window: bool,
     project: WorldProject,
 ) -> KazmasResult<()> {
     let state = get_state(app);
@@ -221,31 +208,29 @@ pub(crate) async fn place_project(
     let project_manager = state.project_manager();
     let manifest = project.manifest();
 
-    match placement {
-        ProjectPlacement::CurrentWindow => {
-            let Some(window_id) = window_id else {
-                return Err(KazmasError::Invalid(
-                    "no window available for CurrentWindow placement".into(),
-                ));
-            };
+    if new_window {
+        open_project_or_close(project_manager, project, async {
+            spawn_window(app, Some(&manifest.id)).await
+        })
+        .await?;
+        return Ok(());
+    }
 
-            let prev_project_id = open_project_or_close(project_manager, project, async {
-                registry.replace_project(window_id, &manifest.id).await
-            })
-            .await?;
+    let Some(window_id) = window_id else {
+        return Err(KazmasError::Invalid(
+            "no window available for current window placement".into(),
+        ));
+    };
 
-            if let Some(prev_project_id) = prev_project_id
-                && prev_project_id != manifest.id
-            {
-                project_manager.close_project(&prev_project_id).await?;
-            }
-        }
-        ProjectPlacement::NewWindow => {
-            open_project_or_close(project_manager, project, async {
-                spawn_window(app, Some(&manifest.id)).await
-            })
-            .await?;
-        }
+    let prev_project_id = open_project_or_close(project_manager, project, async {
+        registry.replace_project(window_id, &manifest.id).await
+    })
+    .await?;
+
+    if let Some(prev_project_id) = prev_project_id
+        && prev_project_id != manifest.id
+    {
+        project_manager.close_project(&prev_project_id).await?;
     }
 
     Ok(())

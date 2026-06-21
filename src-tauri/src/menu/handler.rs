@@ -10,8 +10,7 @@ use uuid::Uuid;
 use super::command::MenuCommand;
 use crate::{
     app::{
-        KazmasResult, choose_project_placement, confirm_project_transition, place_project,
-        spawn_window,
+        KazmasResult, choose_new_window, confirm_project_transition, place_project, spawn_window,
     },
     state::get_state,
     utils::{app_temp_dir, window_label},
@@ -60,7 +59,7 @@ async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<
         return Ok(());
     }
 
-    let Some(placement) = choose_project_placement(app) else {
+    let Some(new_window) = choose_new_window(app) else {
         return Ok(());
     };
 
@@ -79,7 +78,7 @@ async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::create_world(name, &dir, &temp_dir).await?;
 
-    place_project(app, window_id.as_ref(), placement, project).await?;
+    place_project(app, window_id.as_ref(), new_window, project).await?;
 
     Ok(())
 }
@@ -92,7 +91,7 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
         return Ok(());
     }
 
-    let Some(placement) = choose_project_placement(app) else {
+    let Some(new_window) = choose_new_window(app) else {
         return Ok(());
     };
 
@@ -120,7 +119,7 @@ async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
 
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::open_world(&file, &temp_dir).await?;
-    place_project(app, window_id.as_ref(), placement, project).await?;
+    place_project(app, window_id.as_ref(), new_window, project).await?;
 
     Ok(())
 }

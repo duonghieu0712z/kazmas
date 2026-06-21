@@ -7,7 +7,7 @@ use tauri_plugin_dialog::DialogExt;
 
 use super::error::CommandResult;
 use crate::{
-    app::{KazmasError, ProjectPlacement, place_project},
+    app::{KazmasError, place_project},
     state::get_state,
     utils::{app_temp_dir, window_label},
     world::{EXTENSION, WorldProject, read_manifest},
@@ -111,13 +111,13 @@ pub(super) fn pick_world_file(app: AppHandle) -> CommandResult<Option<String>> {
 pub(super) async fn create_world(
     app: AppHandle,
     dir: String,
-    placement: ProjectPlacement,
+    new_window: bool,
 ) -> CommandResult<()> {
     let window_id = get_state(&app).registry().focused_window().await;
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::create_world(NEW_WORLD_NAME, PathBuf::from(dir), temp_dir).await?;
 
-    place_project(&app, window_id.as_ref(), placement, project).await?;
+    place_project(&app, window_id.as_ref(), new_window, project).await?;
     Ok(())
 }
 
@@ -126,7 +126,7 @@ pub(super) async fn create_world(
 pub(super) async fn open_world(
     app: AppHandle,
     file: String,
-    placement: ProjectPlacement,
+    new_window: bool,
 ) -> CommandResult<()> {
     let state = get_state(&app);
     let registry = state.registry();
@@ -149,7 +149,7 @@ pub(super) async fn open_world(
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::open_world(file, temp_dir).await?;
 
-    place_project(&app, window_id.as_ref(), placement, project).await?;
+    place_project(&app, window_id.as_ref(), new_window, project).await?;
     Ok(())
 }
 

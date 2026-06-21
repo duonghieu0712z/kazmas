@@ -11,8 +11,8 @@ export const commands = {
 	saveFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_focused_world")),
 	pickNewWorldDir: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_new_world_dir")),
 	pickWorldFile: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_world_file")),
-	createWorld: (dir: string, placement: ProjectPlacement) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { dir, placement })),
-	openWorld: (file: string, placement: ProjectPlacement) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, placement })),
+	createWorld: (dir: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { dir, newWindow })),
+	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeFocusedWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_focused_world")),
 };
 
@@ -40,8 +40,6 @@ export type MenuSection = {
 	text: string,
 	items: MenuItem[],
 };
-
-export type ProjectPlacement = "currentWindow" | "newWindow";
 
 export type ProjectTransitionInfo = {
 	dirty: boolean,

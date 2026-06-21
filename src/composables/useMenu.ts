@@ -1,4 +1,4 @@
-import type { MenuCommand, MenuSection, ProjectPlacement } from '@/generated/bindings';
+import type { MenuCommand, MenuSection } from '@/generated/bindings';
 
 import { createGlobalState } from '@vueuse/core';
 
@@ -56,8 +56,8 @@ async function newWorld() {
         return;
     }
 
-    const placement = await chooseProjectPlacement();
-    if (!placement) {
+    const newWindow = await chooseNewWindow();
+    if (newWindow === null) {
         return;
     }
 
@@ -70,7 +70,7 @@ async function newWorld() {
         return;
     }
 
-    await commands.createWorld(dir.data, placement);
+    await commands.createWorld(dir.data, newWindow);
 }
 
 async function openWorld() {
@@ -78,8 +78,8 @@ async function openWorld() {
         return;
     }
 
-    const placement = await chooseProjectPlacement();
-    if (!placement) {
+    const newWindow = await chooseNewWindow();
+    if (newWindow === null) {
         return;
     }
 
@@ -92,7 +92,7 @@ async function openWorld() {
         return;
     }
 
-    await commands.openWorld(file.data, placement);
+    await commands.openWorld(file.data, newWindow);
 }
 
 async function closeWorld() {
@@ -122,14 +122,13 @@ async function confirmProjectTransition() {
     return result === AlertDialogResult.No;
 }
 
-async function chooseProjectPlacement(): Promise<ProjectPlacement | null> {
+async function chooseNewWindow(): Promise<boolean | null> {
     const result = await openWindowPlacementDialog();
-
     switch (result) {
         case AlertDialogResult.Yes:
-            return 'newWindow';
+            return true;
         case AlertDialogResult.No:
-            return 'currentWindow';
+            return false;
         default:
             return null;
     }

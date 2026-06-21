@@ -143,7 +143,7 @@ fn item(id: MenuCommand, app_name: &str) -> MenuItem {
 }
 
 #[allow(dead_code)]
-fn check(id: MenuCommand, checked: bool, app_name: &str) -> MenuItem {
+fn check(id: MenuCommand, app_name: &str, checked: bool) -> MenuItem {
     MenuItem::Check {
         id,
         text: id.text(app_name),
@@ -153,7 +153,6 @@ fn check(id: MenuCommand, checked: bool, app_name: &str) -> MenuItem {
     }
 }
 
-#[allow(dead_code)]
 fn submenu(id: MenuCommand, app_name: &str, items: Vec<MenuItem>) -> MenuItem {
     MenuItem::Submenu {
         id,
