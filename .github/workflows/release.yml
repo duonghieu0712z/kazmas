@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   changelog:
+    name: Read release changelog
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,9 +70,12 @@ jobs:
           RUBY
 
   build:
+    name: Build release (${{ matrix.os }})
     needs: changelog
     permissions:
       contents: write
+    runs-on: ${{ matrix.platform }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -82,8 +86,6 @@ jobs:
             args: --target x86_64-apple-darwin
           - platform: windows-latest
             args: ''
-
-    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout repository

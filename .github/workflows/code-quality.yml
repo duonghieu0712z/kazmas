@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   frontend-quality:
+    name: Frontend quality
     runs-on: ubuntu-latest
 
     steps:
