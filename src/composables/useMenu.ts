@@ -18,7 +18,7 @@ function createMenu() {
         }
         initialized = true;
 
-        if (platform() === 'macos') {
+        if (platform() !== 'macos') {
             const result = await commands.getAppMenu();
             if (result.status === 'ok') {
                 menus.value = result.data;

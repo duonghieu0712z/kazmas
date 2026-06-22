@@ -1,5 +1,3 @@
 allowBuilds:
   esbuild: true
   vue-demi: true
-minimumReleaseAgeExclude:
-  - '@vue/eslint-config-typescript@14.9.0'
