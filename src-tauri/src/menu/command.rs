@@ -53,47 +53,35 @@ pub(crate) enum MenuCommand {
 }
 
 impl MenuCommand {
-    pub(super) fn text(self, app_name: &str) -> String {
+    pub(super) fn text(self, app_name: &str) -> Option<String> {
         match self {
-            Self::About => format!("About {app_name}"),
+            Self::About => Some(format!("About {app_name}")),
+            Self::ClearWorlds => Some("Clear Worlds...".into()),
+            Self::CloseWorld => Some("Close World".into()),
+            Self::CloseWindow => Some("Close Window".into()),
+            Self::Copy => Some("Copy".into()),
+            Self::Cut => Some("Cut".into()),
             #[cfg(target_os = "macos")]
-            Self::BringAllToFront => "Bring All to Front".into(),
-            Self::ClearWorlds => "Clear Worlds...".into(),
-            Self::CloseWorld => "Close World".into(),
-            Self::CloseWindow => "Close Window".into(),
-            Self::Copy => "Copy".into(),
-            Self::Cut => "Cut".into(),
+            Self::Hide => Some(format!("Hide {app_name}")),
+            Self::NewFile => Some("New File...".into()),
+            Self::NewWindow => Some("New Window...".into()),
+            Self::NewWorld => Some("New World...".into()),
+            Self::OpenWorld => Some("Open World...".into()),
+            Self::Paste => Some("Paste".into()),
             #[cfg(target_os = "macos")]
-            Self::Fullscreen => "Enter Full Screen".into(),
-            #[cfg(target_os = "macos")]
-            Self::Hide => format!("Hide {app_name}"),
-            #[cfg(target_os = "macos")]
-            Self::HideOthers => "Hide Others".into(),
-            #[cfg(target_os = "macos")]
-            Self::Maximize => "Zoom".into(),
-            #[cfg(target_os = "macos")]
-            Self::Minimize => "Minimize".into(),
-            Self::NewFile => "New File...".into(),
-            Self::NewWindow => "New Window...".into(),
-            Self::NewWorld => "New World...".into(),
-            Self::OpenWorld => "Open World...".into(),
-            Self::Paste => "Paste".into(),
-            #[cfg(target_os = "macos")]
-            Self::Quit => format!("Quit {app_name}"),
+            Self::Quit => Some(format!("Quit {app_name}")),
             #[cfg(not(target_os = "macos"))]
-            Self::Quit => "Exit".into(),
-            Self::Redo => "Redo".into(),
-            Self::RecentWorlds => "Recent Worlds".into(),
-            Self::Save => "Save".into(),
-            Self::SaveAs => "Save As...".into(),
-            Self::Settings => "Settings...".into(),
+            Self::Quit => Some("Exit".into()),
+            Self::Redo => Some("Redo".into()),
+            Self::RecentWorlds => Some("Recent Worlds".into()),
+            Self::Save => Some("Save".into()),
+            Self::SaveAs => Some("Save As...".into()),
+            Self::Settings => Some("Settings...".into()),
+            Self::SelectAll => Some("Select All".into()),
+            Self::Undo => Some("Undo".into()),
+            Self::Updates => Some("Check for Updates...".into()),
             #[cfg(target_os = "macos")]
-            Self::Services => "Services".into(),
-            Self::SelectAll => "Select All".into(),
-            #[cfg(target_os = "macos")]
-            Self::ShowAll => "Show All".into(),
-            Self::Undo => "Undo".into(),
-            Self::Updates => "Check for Updates...".into(),
+            _ => None,
         }
     }
 
@@ -108,7 +96,6 @@ impl MenuCommand {
             Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
             Self::OpenWorld => Some("CmdOrCtrl+O"),
             Self::Paste => Some("CmdOrCtrl+V"),
-            Self::Quit => Some("CmdOrCtrl+Q"),
             Self::Redo => Some("CmdOrCtrl+Shift+Z"),
             Self::Save => Some("CmdOrCtrl+S"),
             Self::SaveAs => Some("CmdOrCtrl+Shift+S"),

@@ -52,8 +52,15 @@ fn build_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> Result<MenuItem
             let item = builder.build(app)?;
             Ok(MenuItemKind::Check(item))
         }
-        MenuItemDescriptor::Submenu { id, text, items } => {
-            let submenu = SubmenuBuilder::with_id(app, id, text).build()?;
+        MenuItemDescriptor::Submenu {
+            id,
+            text,
+            items,
+            enabled,
+        } => {
+            let submenu = SubmenuBuilder::with_id(app, id.as_ref(), text)
+                .enabled(enabled)
+                .build()?;
             for item in items {
                 submenu.append(&build_menu_item(app, item)?)?;
             }
@@ -90,25 +97,39 @@ fn predefined_item(
     command: MenuCommand,
     text: &str,
 ) -> Result<Option<PredefinedMenuItem<Wry>>> {
+    let text = predefined_text(command, text);
     let item = match command {
-        MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, Some(text))?,
-        MenuCommand::Copy => PredefinedMenuItem::copy(app, Some(text))?,
-        MenuCommand::Cut => PredefinedMenuItem::cut(app, Some(text))?,
-        MenuCommand::Paste => PredefinedMenuItem::paste(app, Some(text))?,
-        MenuCommand::Quit => PredefinedMenuItem::quit(app, Some(text))?,
-        MenuCommand::Redo => PredefinedMenuItem::redo(app, Some(text))?,
-        MenuCommand::SelectAll => PredefinedMenuItem::select_all(app, Some(text))?,
-        MenuCommand::Undo => PredefinedMenuItem::undo(app, Some(text))?,
-        // MenuCommand::BringAllToFront => PredefinedMenuItem::bring_all_to_front(app, Some(text))?,
-        // MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, Some(text))?,
-        // MenuCommand::Hide => PredefinedMenuItem::hide(app, Some(text))?,
-        // MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, Some(text))?,
-        // MenuCommand::Maximize => PredefinedMenuItem::maximize(app, Some(text))?,
-        // MenuCommand::Minimize => PredefinedMenuItem::minimize(app, Some(text))?,
-        // MenuCommand::Services => PredefinedMenuItem::services(app, Some(text))?,
-        // MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, Some(text))?,
+        MenuCommand::BringAllToFront => PredefinedMenuItem::bring_all_to_front(app, text)?,
+        MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, text)?,
+        MenuCommand::Copy => PredefinedMenuItem::copy(app, text)?,
+        MenuCommand::Cut => PredefinedMenuItem::cut(app, text)?,
+        MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, text)?,
+        MenuCommand::Hide => PredefinedMenuItem::hide(app, text)?,
+        MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, text)?,
+        MenuCommand::Maximize => PredefinedMenuItem::maximize(app, text)?,
+        MenuCommand::Minimize => PredefinedMenuItem::minimize(app, text)?,
+        MenuCommand::Paste => PredefinedMenuItem::paste(app, text)?,
+        MenuCommand::Quit => PredefinedMenuItem::quit(app, text)?,
+        MenuCommand::Redo => PredefinedMenuItem::redo(app, text)?,
+        MenuCommand::SelectAll => PredefinedMenuItem::select_all(app, text)?,
+        MenuCommand::Services => PredefinedMenuItem::services(app, text)?,
+        MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, text)?,
+        MenuCommand::Undo => PredefinedMenuItem::undo(app, text)?,
         _ => return Ok(None),
     };
 
     Ok(Some(item))
+}
+
+fn predefined_text(command: MenuCommand, text: &str) -> Option<&str> {
+    match command {
+        MenuCommand::BringAllToFront
+        | MenuCommand::Fullscreen
+        | MenuCommand::HideOthers
+        | MenuCommand::Maximize
+        | MenuCommand::Minimize
+        | MenuCommand::Services
+        | MenuCommand::ShowAll => None,
+        _ => Some(text),
+    }
 }

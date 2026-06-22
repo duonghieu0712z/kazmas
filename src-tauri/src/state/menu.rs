@@ -1,6 +1,6 @@
 use tauri::{AppHandle, async_runtime::spawn};
 #[cfg(target_os = "macos")]
-use tauri::{Manager, Wry, menu::Menu};
+use tauri::{Wry, menu::Menu};
 use tokio::sync::{
     Mutex,
     watch::{Receiver, Sender},

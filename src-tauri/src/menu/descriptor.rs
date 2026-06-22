@@ -136,7 +136,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
 fn item(id: MenuCommand, app_name: &str) -> MenuItem {
     MenuItem::Item {
         id,
-        text: id.text(app_name),
+        text: text(id, app_name),
         shortcut: id.accelerator(),
         enabled: true,
     }
@@ -146,7 +146,7 @@ fn item(id: MenuCommand, app_name: &str) -> MenuItem {
 fn check(id: MenuCommand, app_name: &str, checked: bool) -> MenuItem {
     MenuItem::Check {
         id,
-        text: id.text(app_name),
+        text: text(id, app_name),
         shortcut: id.accelerator(),
         checked,
         enabled: true,
@@ -156,7 +156,7 @@ fn check(id: MenuCommand, app_name: &str, checked: bool) -> MenuItem {
 fn submenu(id: MenuCommand, app_name: &str, items: Vec<MenuItem>) -> MenuItem {
     MenuItem::Submenu {
         id,
-        text: id.text(app_name),
+        text: text(id, app_name),
         items,
         enabled: true,
     }
@@ -164,4 +164,8 @@ fn submenu(id: MenuCommand, app_name: &str, items: Vec<MenuItem>) -> MenuItem {
 
 fn separator(id: &'static str) -> MenuItem {
     MenuItem::Separator { id }
+}
+
+fn text(id: MenuCommand, app_name: &str) -> String {
+    id.text(app_name).unwrap_or_default()
 }
