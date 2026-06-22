@@ -1,11 +1,14 @@
 use std::sync::Arc;
 
-use super::{project::ProjectManager, window::WindowRegistry};
+use tauri::{Manager, Runtime, State};
+
+use super::{menu::MenuManager, project::ProjectManager, registry::WindowRegistry};
 
 #[derive(Default)]
 pub(crate) struct AppState {
     registry: Arc<WindowRegistry>,
-    manager: Arc<ProjectManager>,
+    menu_manager: Arc<MenuManager>,
+    project_manager: Arc<ProjectManager>,
 }
 
 impl AppState {
@@ -13,7 +16,15 @@ impl AppState {
         &self.registry
     }
 
-    pub(crate) fn manager(&self) -> &Arc<ProjectManager> {
-        &self.manager
+    pub(crate) fn menu_manager(&self) -> &Arc<MenuManager> {
+        &self.menu_manager
     }
+
+    pub(crate) fn project_manager(&self) -> &Arc<ProjectManager> {
+        &self.project_manager
+    }
+}
+
+pub(crate) fn get_state<R: Runtime, M: Manager<R>>(manager: &M) -> State<'_, AppState> {
+    manager.state::<AppState>()
 }

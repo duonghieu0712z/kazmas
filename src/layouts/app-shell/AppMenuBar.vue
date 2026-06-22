@@ -1,3 +1,22 @@
+<script setup lang="ts">
+import { useMenu } from '@/composables/useMenu';
+import AppMenuItem from '@/layouts/app-shell/AppMenuItem.vue';
+
+const { menus, executeMenuCommand } = useMenu();
+</script>
+
 <template>
-    <div class="flex h-full items-center text-xs">Menu Bar</div>
+    <Menubar class="border-b">
+        <MenubarMenu v-for="menu in menus" :key="menu.id">
+            <MenubarTrigger>{{ menu.text }}</MenubarTrigger>
+            <MenubarContent>
+                <AppMenuItem
+                    v-for="item in menu.items"
+                    :key="item.id"
+                    :item="item"
+                    @select="executeMenuCommand"
+                />
+            </MenubarContent>
+        </MenubarMenu>
+    </Menubar>
 </template>

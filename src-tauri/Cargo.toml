@@ -29,8 +29,9 @@ tauri-plugin-devtools = "2.1.0"
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-fs = "2.5.1"
 tauri-plugin-log = "2.8.0"
+tauri-plugin-os = "2.3.2"
 tauri-plugin-prevent-default = "5.0.0"
-tauri-specta = { version = "2.0.0-rc.25", features = ["javascript", "typescript"] }
+tauri-specta = { version = "2.0.0-rc.25", features = ["derive", "typescript"] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["fs", "sync"] }
 uuid = { version = "1.23.2", features = ["serde", "v7"] }
@@ -39,6 +40,9 @@ zip = { version = "8.6.0", default-features = false, features = ["zstd"] }
 
 [build-dependencies]
 tauri-build = { version = "2.6.2", features = [] }
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2.4.2"
 
 [profile.dev]
 incremental = true
