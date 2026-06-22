@@ -36,7 +36,7 @@ function displayShortcut(shortcut: string) {
         </MenubarShortcut>
     </MenubarCheckboxItem>
 
-    <MenubarSub v-else>
+    <MenubarSub v-else-if="item.type === 'submenu'">
         <MenubarSubTrigger :disabled="!item.enabled">{{ item.text }}</MenubarSubTrigger>
         <MenubarSubContent>
             <AppMenuItem

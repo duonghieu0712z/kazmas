@@ -17,6 +17,12 @@ pub(crate) struct MenuSection {
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub(crate) enum MenuItem {
+    #[cfg(target_os = "macos")]
+    #[specta(skip)]
+    Predefined {
+        id: MenuCommand,
+        text: Option<String>,
+    },
     Item {
         id: MenuCommand,
         text: String,
@@ -53,13 +59,13 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
                 separator("app-settings-separator"),
                 item(MenuCommand::Settings, app_name),
                 separator("app-services-separator"),
-                item(MenuCommand::Services, app_name),
+                predefined(MenuCommand::Services, app_name),
                 separator("app-hide-separator"),
-                item(MenuCommand::Hide, app_name),
-                item(MenuCommand::HideOthers, app_name),
-                item(MenuCommand::ShowAll, app_name),
+                predefined(MenuCommand::Hide, app_name),
+                predefined(MenuCommand::HideOthers, app_name),
+                predefined(MenuCommand::ShowAll, app_name),
                 separator("app-quit-separator"),
-                item(MenuCommand::Quit, app_name),
+                predefined(MenuCommand::Quit, app_name),
             ],
         },
         MenuSection {
@@ -84,7 +90,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
                 item(MenuCommand::Settings, app_name),
                 separator("file-close-separator"),
                 item(MenuCommand::CloseWorld, app_name),
-                item(MenuCommand::CloseWindow, app_name),
+                native(MenuCommand::CloseWindow, app_name),
                 #[cfg(not(target_os = "macos"))]
                 separator("file-quit-separator"),
                 #[cfg(not(target_os = "macos"))]
@@ -95,14 +101,14 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             id: "edit",
             text: "Edit".into(),
             items: vec![
-                item(MenuCommand::Undo, app_name),
-                item(MenuCommand::Redo, app_name),
+                native(MenuCommand::Undo, app_name),
+                native(MenuCommand::Redo, app_name),
                 separator("edit-clipboard-separator"),
-                item(MenuCommand::Cut, app_name),
-                item(MenuCommand::Copy, app_name),
-                item(MenuCommand::Paste, app_name),
+                native(MenuCommand::Cut, app_name),
+                native(MenuCommand::Copy, app_name),
+                native(MenuCommand::Paste, app_name),
                 separator("edit-select-separator"),
-                item(MenuCommand::SelectAll, app_name),
+                native(MenuCommand::SelectAll, app_name),
             ],
         },
         #[cfg(target_os = "macos")]
@@ -110,12 +116,12 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             id: WINDOW_SUBMENU_ID,
             text: "Window".into(),
             items: vec![
-                item(MenuCommand::Minimize, app_name),
-                item(MenuCommand::Maximize, app_name),
+                predefined(MenuCommand::Minimize, app_name),
+                predefined(MenuCommand::Maximize, app_name),
                 separator("window-fullscreen-separator"),
-                item(MenuCommand::Fullscreen, app_name),
+                predefined(MenuCommand::Fullscreen, app_name),
                 separator("window-front-separator"),
-                item(MenuCommand::BringAllToFront, app_name),
+                predefined(MenuCommand::BringAllToFront, app_name),
             ],
         },
         MenuSection {
@@ -131,6 +137,24 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             ],
         },
     ]
+}
+
+#[cfg(target_os = "macos")]
+fn native(id: MenuCommand, app_name: &str) -> MenuItem {
+    predefined(id, app_name)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn native(id: MenuCommand, app_name: &str) -> MenuItem {
+    item(id, app_name)
+}
+
+#[cfg(target_os = "macos")]
+fn predefined(id: MenuCommand, app_name: &str) -> MenuItem {
+    MenuItem::Predefined {
+        id,
+        text: id.text(app_name),
+    }
 }
 
 fn item(id: MenuCommand, app_name: &str) -> MenuItem {
@@ -162,10 +186,10 @@ fn submenu(id: MenuCommand, app_name: &str, items: Vec<MenuItem>) -> MenuItem {
     }
 }
 
-fn separator(id: &'static str) -> MenuItem {
-    MenuItem::Separator { id }
-}
-
 fn text(id: MenuCommand, app_name: &str) -> String {
     id.text(app_name).unwrap_or_default()
+}
+
+fn separator(id: &'static str) -> MenuItem {
+    MenuItem::Separator { id }
 }
