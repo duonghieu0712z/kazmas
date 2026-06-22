@@ -1,27 +1,37 @@
 import type { MenuCommand, MenuSection } from '@/generated/bindings';
 
+import { open } from '@tauri-apps/plugin-dialog';
+import { platform } from '@tauri-apps/plugin-os';
 import { createGlobalState } from '@vueuse/core';
 
 import { openAboutDialog, openWindowPlacementDialog } from '@/dialogs';
-import { commands, events } from '@/generated/bindings';
+import { commands, events, EXTENSION } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 
 function createMenu() {
     const menus = ref<MenuSection[]>([]);
+    let initialized = false;
 
-    onMounted(async () => {
-        const result = await commands.getAppMenu();
-        if (result.status === 'ok') {
-            menus.value = result.data;
+    const initMenu = async () => {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+
+        if (platform() === 'macos') {
+            const result = await commands.getAppMenu();
+            if (result.status === 'ok') {
+                menus.value = result.data;
+            }
         }
 
         events.menuEvents.listen(async ({ payload }) => {
-            await executeMenuCommand(payload);
+            await handleMenuCommand(payload);
         });
-    });
+    };
 
     const executeMenuCommand = async (command: MenuCommand) => {
-        if (await executeClientMenuCommand(command)) {
+        if (await handleMenuCommand(command)) {
             return;
         }
         await commands.executeMenuCommand(command);
@@ -29,13 +39,14 @@ function createMenu() {
 
     return {
         menus,
+        initMenu,
         executeMenuCommand,
     };
 }
 
 export const useMenu = createGlobalState(createMenu);
 
-async function executeClientMenuCommand(command: MenuCommand) {
+async function handleMenuCommand(command: MenuCommand) {
     switch (command) {
         case 'about':
             await openAboutDialog();
@@ -67,16 +78,17 @@ async function newWorld() {
         return;
     }
 
-    const dir = await commands.pickNewWorldDir();
-    if (dir.status === 'error') {
+    const path = await open({
+        title: 'New World',
+        multiple: false,
+        directory: true,
+        canCreateDirectories: true,
+    });
+    if (!path) {
         return;
     }
 
-    if (!dir.data) {
-        return;
-    }
-
-    await commands.createWorld(dir.data, newWindow);
+    await commands.createWorld('New World', path, newWindow);
 }
 
 async function openWorld() {
@@ -85,16 +97,23 @@ async function openWorld() {
         return;
     }
 
-    const file = await commands.pickWorldFile();
-    if (file.status === 'error') {
+    const file = await open({
+        title: 'Open World',
+        multiple: false,
+        directory: false,
+        canCreateDirectories: false,
+        filters: [
+            {
+                name: 'Kazmas World',
+                extensions: [EXTENSION],
+            },
+        ],
+    });
+    if (!file) {
         return;
     }
 
-    if (!file.data) {
-        return;
-    }
-
-    await commands.openWorld(file.data, newWindow);
+    await commands.openWorld(file, newWindow);
 }
 
 async function closeWorld() {

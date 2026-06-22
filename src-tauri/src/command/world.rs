@@ -1,65 +1,30 @@
 use std::path::PathBuf;
 
-use tauri::{AppHandle, Manager, State, WebviewWindow};
-use tauri_plugin_dialog::DialogExt;
+use tauri::{AppHandle, State, WebviewWindow};
 
 use super::error::CommandResult;
 use crate::{
-    app::{KazmasError, place_project},
+    app::{focus_existing_world, open_project_in_window},
     state::AppState,
-    utils::{app_temp_dir, parse_window_label, window_label},
-    world::{EXTENSION, WorldProject, read_manifest},
+    utils::{app_temp_dir, parse_window_label},
+    world::WorldProject,
 };
-
-const NEW_WORLD_NAME: &str = "New World";
-
-#[tauri::command]
-#[specta::specta]
-pub(super) fn pick_new_world_dir(app: AppHandle) -> CommandResult<Option<String>> {
-    let dir = app
-        .dialog()
-        .file()
-        .set_title("New World")
-        .set_can_create_directories(true)
-        .blocking_pick_folder()
-        .map(|path| path.into_path())
-        .transpose()
-        .map_err(KazmasError::from)?
-        .map(|path| path.to_string_lossy().to_string());
-
-    Ok(dir)
-}
-
-#[tauri::command]
-#[specta::specta]
-pub(super) fn pick_world_file(app: AppHandle) -> CommandResult<Option<String>> {
-    let file = app
-        .dialog()
-        .file()
-        .set_title("Open World")
-        .add_filter("Kazmas world", &[EXTENSION])
-        .blocking_pick_file()
-        .map(|path| path.into_path())
-        .transpose()
-        .map_err(KazmasError::from)?
-        .map(|path| path.to_string_lossy().to_string());
-
-    Ok(file)
-}
 
 #[tauri::command]
 #[specta::specta]
 pub(super) async fn create_world(
     app: AppHandle,
+    state: State<'_, AppState>,
     window: WebviewWindow,
+    name: &str,
     path: PathBuf,
     new_window: bool,
 ) -> CommandResult<()> {
     let window_id = parse_window_label(window.label())?;
     let temp_dir = app_temp_dir(&app).await?;
-    let project = WorldProject::create_world(NEW_WORLD_NAME, path, temp_dir).await?;
+    let project = WorldProject::create_world(name, path, temp_dir).await?;
 
-    place_project(&app, window_id.as_ref(), new_window, project).await?;
+    open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
     Ok(())
 }
 
@@ -69,29 +34,18 @@ pub(super) async fn open_world(
     app: AppHandle,
     state: State<'_, AppState>,
     window: WebviewWindow,
-    file: String,
+    file: PathBuf,
     new_window: bool,
 ) -> CommandResult<()> {
-    let registry = state.registry();
-
-    let manifest = read_manifest(&file)?;
-    if let Some(window_id) = registry.get_window_id(&manifest.id).await {
-        let label = window_label(&window_id);
-        if let Some(window) = app.get_webview_window(&label) {
-            window
-                .set_title(&manifest.name)
-                .map_err(KazmasError::from)?;
-            window.show().map_err(KazmasError::from)?;
-            window.set_focus().map_err(KazmasError::from)?;
-            return Ok(());
-        }
+    if focus_existing_world(&app, &file).await?.is_none() {
+        return Ok(());
     }
 
     let window_id = parse_window_label(window.label())?;
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::open_world(file, temp_dir).await?;
 
-    place_project(&app, window_id.as_ref(), new_window, project).await?;
+    open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
     Ok(())
 }
 

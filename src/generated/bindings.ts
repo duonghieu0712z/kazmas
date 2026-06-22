@@ -8,9 +8,7 @@ export const commands = {
 	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
 	saveWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_world")),
-	pickNewWorldDir: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_new_world_dir")),
-	pickWorldFile: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_world_file")),
-	createWorld: (path: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { path, newWindow })),
+	createWorld: (name: string, path: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
 	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),
 };
@@ -19,6 +17,9 @@ export const commands = {
 export const events = {
 	menuEvents: makeEvent<MenuEvents>("menu-events"),
 };
+
+/* Constants */
+export const EXTENSION = "kazmas" as const;
 
 /* Types */
 export type CommandError = {

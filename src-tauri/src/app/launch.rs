@@ -3,10 +3,17 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use tauri::{AppHandle, async_runtime::spawn};
+use tauri::{AppHandle, Manager, async_runtime::spawn};
 
-use super::{KazmasResult, focus_existing_window, open_world_path, spawn_window};
-use crate::world::EXTENSION;
+use super::{
+    error::KazmasResult,
+    window::{focus_existing_world, focus_window, spawn_window},
+};
+use crate::{
+    state::get_state,
+    utils::{app_temp_dir, window_label},
+    world::{EXTENSION, WorldProject},
+};
 
 pub(crate) async fn open_initial_windows(app: &AppHandle) -> KazmasResult<()> {
     let mut opened = false;
@@ -49,9 +56,46 @@ pub(crate) fn handle_single_instance_launch(app: &AppHandle, args: Vec<String>, 
     });
 }
 
+async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
+    let state = get_state(app);
+    let registry = state.registry();
+
+    if let Some(window_id) = registry.focused_window().await {
+        let label = window_label(&window_id);
+        if let Some(window) = app.get_webview_window(&label) {
+            focus_window(&window)?;
+            return Ok(());
+        }
+    }
+
+    if let Some(window) = app.webview_windows().into_values().next() {
+        focus_window(&window)?;
+    }
+
+    Ok(())
+}
+
+async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
+    let state = get_state(app);
+    let project_manager = state.project_manager();
+
+    let Some(manifest) = focus_existing_world(app, &file).await? else {
+        return Ok(());
+    };
+
+    let temp_dir = app_temp_dir(app).await?;
+    let project = WorldProject::open_world(&file, &temp_dir).await?;
+    project_manager
+        .open_project_or_close(project, async {
+            spawn_window(app, Some(&manifest.id)).await
+        })
+        .await?;
+
+    Ok(())
+}
+
 fn launch_world_paths(args: Vec<String>, cwd: impl AsRef<Path>) -> Vec<PathBuf> {
     let cwd = cwd.as_ref();
-
     args.into_iter()
         .filter(|arg| !arg.starts_with('-'))
         .map(PathBuf::from)

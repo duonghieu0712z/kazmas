@@ -3,18 +3,16 @@ use std::str::FromStr;
 
 #[cfg(target_os = "macos")]
 use tauri::menu::MenuEvent;
-use tauri::{AppHandle, Manager};
-use tauri_plugin_dialog::DialogExt;
+use tauri::{AppHandle, EventTarget};
+use tauri_specta::Event;
 use uuid::Uuid;
 
 use super::command::MenuCommand;
 use crate::{
-    app::{
-        KazmasResult, choose_new_window, confirm_project_transition, place_project, spawn_window,
-    },
+    app::{KazmasResult, spawn_window},
+    event::MenuEvents,
     state::get_state,
-    utils::{app_temp_dir, window_label},
-    world::{EXTENSION, WorldProject, read_manifest},
+    utils::window_label,
 };
 
 #[cfg(target_os = "macos")]
@@ -53,92 +51,29 @@ pub(crate) async fn handle_command(
 }
 
 async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    if !confirm_project_transition(app, window_id.as_ref()).await? {
-        return Ok(());
+    if let Some(window_id) = window_id {
+        MenuEvents(MenuCommand::NewWorld).emit_to(app, EventTarget::WebviewWindow {
+            label: window_label(&window_id),
+        })?;
     }
-
-    let Some(new_window) = choose_new_window(app) else {
-        return Ok(());
-    };
-
-    let Some(dir) = app
-        .dialog()
-        .file()
-        .set_title("New World")
-        .set_can_create_directories(true)
-        .blocking_pick_folder()
-    else {
-        return Ok(());
-    };
-    let dir = dir.into_path()?;
-
-    let name = "New World";
-    let temp_dir = app_temp_dir(app).await?;
-    let project = WorldProject::create_world(name, &dir, &temp_dir).await?;
-
-    place_project(app, window_id.as_ref(), new_window, project).await?;
-
     Ok(())
 }
 
 async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = get_state(app);
-    let registry = state.registry();
-
-    if !confirm_project_transition(app, window_id.as_ref()).await? {
-        return Ok(());
+    if let Some(window_id) = window_id {
+        MenuEvents(MenuCommand::OpenWorld).emit_to(app, EventTarget::WebviewWindow {
+            label: window_label(&window_id),
+        })?;
     }
-
-    let Some(new_window) = choose_new_window(app) else {
-        return Ok(());
-    };
-
-    let Some(file) = app
-        .dialog()
-        .file()
-        .set_title("Open World")
-        .add_filter("Kazmas world", &[EXTENSION])
-        .blocking_pick_file()
-    else {
-        return Ok(());
-    };
-    let file = file.into_path()?;
-
-    let manifest = read_manifest(&file)?;
-    if let Some(window_id) = registry.get_window_id(&manifest.id).await {
-        let label = window_label(&window_id);
-        if let Some(window) = app.get_webview_window(&label) {
-            window.set_title(&manifest.name)?;
-            window.show()?;
-            window.set_focus()?;
-            return Ok(());
-        }
-    }
-
-    let temp_dir = app_temp_dir(app).await?;
-    let project = WorldProject::open_world(&file, &temp_dir).await?;
-    place_project(app, window_id.as_ref(), new_window, project).await?;
-
     Ok(())
 }
 
 async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let state = get_state(app);
-    let registry = state.registry();
-    let project_manager = state.project_manager();
-
-    let Some(window_id) = window_id else {
-        return Ok(());
-    };
-
-    if !confirm_project_transition(app, Some(&window_id)).await? {
-        return Ok(());
+    if let Some(window_id) = window_id {
+        MenuEvents(MenuCommand::CloseWorld).emit_to(app, EventTarget::WebviewWindow {
+            label: window_label(&window_id),
+        })?;
     }
-
-    if let Some(project_id) = registry.close_project(&window_id).await {
-        project_manager.close_project(&project_id).await?;
-    }
-
     Ok(())
 }
 

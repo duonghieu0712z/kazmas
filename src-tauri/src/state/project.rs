@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, future::Future};
 
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -21,12 +21,27 @@ impl ProjectManager {
         Ok(manifest)
     }
 
-    pub(crate) async fn is_project_dirty(&self, id: &Uuid) -> bool {
-        let projects = self.projects.lock().await;
-        projects.get(id).is_some_and(WorldProject::is_dirty)
+    pub(crate) async fn open_project_or_close<T>(
+        &self,
+        project: WorldProject,
+        action: impl Future<Output = KazmasResult<T>>,
+    ) -> KazmasResult<T> {
+        let project_id = project.manifest().id;
+        self.open_project(project).await?;
+
+        let result = action.await;
+        if let Err(error) = result {
+            if let Err(cleanup_error) = self.close_project(&project_id).await {
+                return Err(KazmasError::Invalid(format!(
+                    "{error}; cleanup failed: {cleanup_error}"
+                )));
+            }
+            return Err(error);
+        }
+        result
     }
 
-    pub(crate) async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
+    async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
         let mut projects = self.projects.lock().await;
         let project_id = project.manifest().id;
         if projects.contains_key(&project_id) {
