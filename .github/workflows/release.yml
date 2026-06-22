@@ -32,6 +32,7 @@ jobs:
           ref = ENV.fetch('GITHUB_REF_NAME')
           version = ref.sub(/^v/, '')
           if version == ref
+            abort 'package.json is required to resolve the release version.' unless File.exist?('package.json')
             version = JSON.parse(File.read('package.json')).fetch('version')
           end
 
