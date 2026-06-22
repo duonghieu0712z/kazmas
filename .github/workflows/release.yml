@@ -13,6 +13,8 @@ concurrency:
 jobs:
   changelog:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       body: ${{ steps.changelog.outputs.body }}
 
