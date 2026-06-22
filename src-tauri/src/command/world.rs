@@ -51,22 +51,6 @@ pub(super) async fn open_world(
 
 #[tauri::command]
 #[specta::specta]
-pub(super) async fn save_world(
-    state: State<'_, AppState>,
-    window: WebviewWindow,
-) -> CommandResult<()> {
-    let registry = state.registry();
-    if let Some(window_id) = parse_window_label(window.label())?
-        && let Some(project_id) = registry.get_project_id(&window_id).await
-    {
-        let project_manager = state.project_manager();
-        project_manager.save_project(&project_id).await?;
-    }
-    Ok(())
-}
-
-#[tauri::command]
-#[specta::specta]
 pub(super) async fn close_world(
     state: State<'_, AppState>,
     window: WebviewWindow,

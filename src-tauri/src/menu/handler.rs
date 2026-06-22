@@ -40,39 +40,13 @@ pub(crate) async fn handle_command(
     window_id: Option<Uuid>,
 ) -> KazmasResult<()> {
     match command {
+        MenuCommand::About => emit_menu_event(app, window_id, MenuCommand::About)?,
+        MenuCommand::CloseWorld => emit_menu_event(app, window_id, MenuCommand::CloseWorld)?,
         MenuCommand::NewWindow => spawn_window(app, None).await?,
-        MenuCommand::NewWorld => create_world(app, window_id).await?,
-        MenuCommand::OpenWorld => open_world(app, window_id).await?,
+        MenuCommand::NewWorld => emit_menu_event(app, window_id, MenuCommand::NewWorld)?,
+        MenuCommand::OpenWorld => emit_menu_event(app, window_id, MenuCommand::OpenWorld)?,
         MenuCommand::Save => save_world(app, window_id).await?,
-        MenuCommand::CloseWorld => close_world(app, window_id).await?,
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
-    }
-    Ok(())
-}
-
-async fn create_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    if let Some(window_id) = window_id {
-        MenuEvents(MenuCommand::NewWorld).emit_to(app, EventTarget::WebviewWindow {
-            label: window_label(&window_id),
-        })?;
-    }
-    Ok(())
-}
-
-async fn open_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    if let Some(window_id) = window_id {
-        MenuEvents(MenuCommand::OpenWorld).emit_to(app, EventTarget::WebviewWindow {
-            label: window_label(&window_id),
-        })?;
-    }
-    Ok(())
-}
-
-async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
-    if let Some(window_id) = window_id {
-        MenuEvents(MenuCommand::CloseWorld).emit_to(app, EventTarget::WebviewWindow {
-            label: window_label(&window_id),
-        })?;
     }
     Ok(())
 }
@@ -80,13 +54,25 @@ async fn close_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<(
 async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
     let state = get_state(app);
     let registry = state.registry();
-    let project_manager = state.project_manager();
-
     if let Some(window_id) = window_id
         && let Some(project_id) = registry.get_project_id(&window_id).await
     {
+        let project_manager = state.project_manager();
         project_manager.save_project(&project_id).await?;
     }
 
+    Ok(())
+}
+
+fn emit_menu_event(
+    app: &AppHandle,
+    window_id: Option<Uuid>,
+    command: MenuCommand,
+) -> KazmasResult<()> {
+    if let Some(window_id) = window_id {
+        MenuEvents(command).emit_to(app, EventTarget::WebviewWindow {
+            label: window_label(&window_id),
+        })?;
+    }
     Ok(())
 }

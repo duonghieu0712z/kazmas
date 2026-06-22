@@ -7,7 +7,6 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
-	saveWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_world")),
 	createWorld: (name: string, path: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
 	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),

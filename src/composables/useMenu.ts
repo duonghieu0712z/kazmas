@@ -52,20 +52,16 @@ async function handleMenuCommand(command: MenuCommand) {
             await openAboutDialog();
             return true;
 
+        case 'close-world':
+            await closeWorld();
+            return true;
+
         case 'new-world':
             await newWorld();
             return true;
 
         case 'open-world':
             await openWorld();
-            return true;
-
-        case 'close-world':
-            await closeWorld();
-            return true;
-
-        case 'save':
-            await commands.saveWorld();
             return true;
     }
 
