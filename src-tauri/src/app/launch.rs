@@ -48,10 +48,16 @@ pub(crate) fn handle_single_instance_launch(app: &AppHandle, args: Vec<String>, 
             return;
         }
 
+        let mut opened = false;
         for path in paths {
-            if let Err(error) = open_world_path(&app, path).await {
-                log::error!("{error}");
+            match open_world_path(&app, path).await {
+                Ok(()) => opened = true,
+                Err(error) => log::error!("{error}"),
             }
+        }
+
+        if !opened && let Err(error) = focus_existing_window(&app).await {
+            log::error!("{error}");
         }
     });
 }
