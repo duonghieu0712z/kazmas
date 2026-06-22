@@ -1,25 +1,13 @@
+#[cfg(target_os = "macos")]
 mod builder;
 mod command;
+mod descriptor;
 mod handler;
 
-use tauri::{AppHandle, Manager, Result, async_runtime::spawn};
-
-pub(crate) fn create_menu(app: &AppHandle) -> Result<()> {
-    builder::build_menu(app)?;
-    app.on_menu_event(|app, event| {
-        let app = app.clone();
-        let event = event.clone();
-        spawn(async move {
-            let window_id = app
-                .state::<crate::state::AppState>()
-                .registry()
-                .focused_window()
-                .await;
-            if let Err(error) = handler::handle_menu_event(&app, event, window_id).await {
-                log::error!("{error}");
-            }
-        });
-    });
-
-    Ok(())
-}
+#[cfg(target_os = "macos")]
+pub(crate) use builder::build_menu;
+pub(crate) use command::MenuCommand;
+pub(crate) use descriptor::{MenuSection, menu_sections};
+pub(crate) use handler::handle_command;
+#[cfg(target_os = "macos")]
+pub(crate) use handler::handle_menu_event;
