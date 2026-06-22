@@ -11,33 +11,85 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changelog:
+    name: Read release changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      body: ${{ steps.changelog.outputs.body }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Read release changelog
+        id: changelog
+        run: |
+          ruby <<'RUBY'
+          require 'json'
+          require 'securerandom'
+
+          ref = ENV.fetch('GITHUB_REF_NAME')
+          version = ref.sub(/^v/, '')
+          if version == ref
+            abort 'package.json is required to resolve the release version.' unless File.exist?('package.json')
+            version = JSON.parse(File.read('package.json')).fetch('version')
+          end
+
+          body = "Version #{version} release artifacts."
+
+          if File.exist?('CHANGELOG.md')
+            begin
+              content = File.read('CHANGELOG.md')
+              escaped_version = Regexp.escape(version)
+              pattern = /^##\s+(?<heading>\[?v?#{escaped_version}\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)/m
+              match = content.match(pattern)
+
+              if match && !match[:body].strip.empty?
+                anchor = match[:heading]
+                  .strip
+                  .downcase
+                  .gsub(/[\[\].]/, '')
+                  .gsub(/[^a-z0-9 _-]/, '')
+                  .gsub(/\s+/, '-')
+                changelog_url = "#{ENV.fetch('GITHUB_SERVER_URL')}/#{ENV.fetch('GITHUB_REPOSITORY')}/blob/#{ref}/CHANGELOG.md##{anchor}"
+                body = "#{match[:body].strip}\n\n[See full changelog](#{changelog_url})"
+              end
+            rescue StandardError
+              warn 'Failed to read release changelog. Using fallback release body.'
+            end
+          end
+
+          delimiter = SecureRandom.uuid
+          File.open(ENV.fetch('GITHUB_OUTPUT'), 'a') do |output|
+            output.puts "body<<#{delimiter}"
+            output.puts body
+            output.puts delimiter
+          end
+          RUBY
+
   build:
+    name: Build release (${{ matrix.os }})
+    needs: changelog
     permissions:
       contents: write
+    runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest
+          - os: macos-latest
             args: --target aarch64-apple-darwin
-          - platform: macos-latest
+          - os: macos-latest
             args: --target x86_64-apple-darwin
-          - platform: ubuntu-22.04
+          - os: windows-latest
             args: ''
-          - platform: windows-latest
-            args: ''
-
-    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -53,7 +105,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -63,44 +115,6 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Read release changelog
-        id: changelog
-        shell: pwsh
-        run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
-          if ($version -eq $env:GITHUB_REF_NAME) {
-            $version = node -p "require('./package.json').version"
-          }
-
-          $body = "Version $version release artifacts."
-
-          if (Test-Path -LiteralPath CHANGELOG.md) {
-            try {
-              $content = Get-Content CHANGELOG.md -Raw -ErrorAction Stop
-              $escapedVersion = [regex]::Escape($version)
-              $pattern = "(?ms)^##\s+(?<heading>\[?v?$escapedVersion\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)"
-              $match = [regex]::Match($content, $pattern)
-
-              if ($match.Success -and ![string]::IsNullOrWhiteSpace($match.Groups["body"].Value)) {
-                $ref = $env:GITHUB_REF_NAME
-                $anchor = $match.Groups["heading"].Value.Trim().ToLowerInvariant()
-                $anchor = $anchor -replace '[\[\]\.]', ''
-                $anchor = $anchor -replace '[^a-z0-9 _-]', ''
-                $anchor = $anchor -replace '\s+', '-'
-                $changelogUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/blob/$ref/CHANGELOG.md#$anchor"
-                $body = $match.Groups["body"].Value.Trim() + "`n`n[See full changelog]($changelogUrl)"
-              }
-            } catch {
-              Write-Warning "Failed to read release changelog. Using fallback release body."
-            }
-          }
-
-          $delimiter = [guid]::NewGuid().ToString()
-
-          "body<<$delimiter" >> $env:GITHUB_OUTPUT
-          $body >> $env:GITHUB_OUTPUT
-          $delimiter >> $env:GITHUB_OUTPUT
-
       - name: Build and upload release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -108,7 +122,7 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: Kazmas v__VERSION__
-          releaseBody: ${{ steps.changelog.outputs.body }}
+          releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

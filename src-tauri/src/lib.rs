@@ -1,12 +1,17 @@
 mod app;
 mod command;
+mod event;
 mod menu;
 mod state;
+mod utils;
 mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let specta_builder = tauri_specta::Builder::<tauri::Wry>::new().commands(command::commands());
+    let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
+        .commands(command::commands())
+        .events(event::events())
+        .constant("EXTENSION", world::EXTENSION);
 
     #[cfg(all(debug_assertions, not(mobile)))]
     {
@@ -17,8 +22,16 @@ pub fn run() {
             .unwrap();
     }
 
-    let builder = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(
+        app::handle_single_instance_launch,
+    ));
+
+    let builder = builder
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_prevent_default::debug());
 
     #[cfg(debug_assertions)]
@@ -43,10 +56,20 @@ pub fn run() {
     builder
         .manage(state::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
-        .setup(|app| {
+        .setup(move |app| {
             let handle = app.handle();
-            menu::create_menu(handle)?;
+            specta_builder.mount_events(handle);
+
+            let state = state::get_state(handle);
+            let menu_manager = state.menu_manager();
+            tauri::async_runtime::block_on(menu_manager.init(handle))?;
+
+            #[cfg(desktop)]
+            tauri::async_runtime::block_on(app::open_initial_windows(handle))?;
+
+            #[cfg(not(desktop))]
             tauri::async_runtime::block_on(app::spawn_window(handle, None))?;
+
             Ok(())
         })
         .run(tauri::generate_context!())

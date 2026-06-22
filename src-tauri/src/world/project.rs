@@ -28,10 +28,6 @@ impl WorldProject {
         self.manifest.clone()
     }
 
-    pub(crate) fn is_dirty(&self) -> bool {
-        self.dirty
-    }
-
     pub(crate) async fn create_world(
         name: &str,
         path: impl AsRef<Path>,
