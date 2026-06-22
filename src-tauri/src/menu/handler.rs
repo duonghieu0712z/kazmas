@@ -26,7 +26,6 @@ pub(crate) async fn handle_menu_event(
     let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
         return Ok(());
     };
-
     handle_command_id(app, id, window_id).await
 }
 
@@ -37,7 +36,7 @@ async fn handle_command_id(app: &AppHandle, id: &str, window_id: Option<Uuid>) -
     handle_command(app, command, window_id).await
 }
 
-pub(super) async fn handle_command(
+pub(crate) async fn handle_command(
     app: &AppHandle,
     command: MenuCommand,
     window_id: Option<Uuid>,
@@ -50,7 +49,6 @@ pub(super) async fn handle_command(
         MenuCommand::CloseWorld => close_world(app, window_id).await?,
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
-
     Ok(())
 }
 

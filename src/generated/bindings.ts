@@ -10,7 +10,7 @@ export const commands = {
 	saveWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("save_world")),
 	pickNewWorldDir: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_new_world_dir")),
 	pickWorldFile: () => typedError<string | null, CommandError>(__TAURI_INVOKE("pick_world_file")),
-	createWorld: (dir: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { dir, newWindow })),
+	createWorld: (path: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { path, newWindow })),
 	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),
 };

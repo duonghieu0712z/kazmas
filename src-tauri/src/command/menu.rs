@@ -1,9 +1,10 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, WebviewWindow};
 
 use super::error::CommandResult;
 use crate::{
-    menu::{MenuCommand, MenuSection, execute_command},
+    menu::{MenuCommand, MenuSection, handle_command},
     state::AppState,
+    utils::parse_window_label,
 };
 
 #[tauri::command]
@@ -15,7 +16,12 @@ pub(super) async fn get_app_menu(state: State<'_, AppState>) -> CommandResult<Ve
 
 #[tauri::command]
 #[specta::specta]
-pub(super) async fn execute_menu_command(app: AppHandle, id: MenuCommand) -> CommandResult<()> {
-    execute_command(&app, id).await?;
+pub(super) async fn execute_menu_command(
+    app: AppHandle,
+    window: WebviewWindow,
+    id: MenuCommand,
+) -> CommandResult<()> {
+    let window_id = parse_window_label(window.label())?;
+    handle_command(&app, id, window_id).await?;
     Ok(())
 }
