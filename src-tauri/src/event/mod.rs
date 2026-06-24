@@ -5,8 +5,9 @@ use tauri_specta::{Event, Events, collect_events};
 use crate::menu::MenuCommand;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Event)]
-pub(crate) struct MenuEvents(pub(crate) MenuCommand);
+#[tauri_specta(event_name = "menu-command")]
+pub(crate) struct MenuCommandEvent(pub(crate) MenuCommand);
 
 pub(crate) fn events() -> Events {
-    collect_events![MenuEvents]
+    collect_events![MenuCommandEvent]
 }

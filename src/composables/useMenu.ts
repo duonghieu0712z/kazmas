@@ -24,7 +24,7 @@ function createMenu() {
             }
         }
 
-        events.menuEvents.listen(async ({ payload }) => {
+        events.menuCommand.listen(async ({ payload }) => {
             await handleMenuCommand(payload);
         });
     };

@@ -10,7 +10,7 @@ use uuid::Uuid;
 use super::command::MenuCommand;
 use crate::{
     app::{KazmasResult, spawn_window},
-    event::MenuEvents,
+    event::MenuCommandEvent,
     state::get_state,
     utils::window_label,
 };
@@ -88,7 +88,7 @@ fn emit_menu_event(
     command: MenuCommand,
 ) -> KazmasResult<()> {
     if let Some(window_id) = window_id {
-        MenuEvents(command).emit_to(app, EventTarget::WebviewWindow {
+        MenuCommandEvent(command).emit_to(app, EventTarget::WebviewWindow {
             label: window_label(&window_id),
         })?;
     }
