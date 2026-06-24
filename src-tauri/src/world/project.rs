@@ -50,8 +50,8 @@ impl WorldProject {
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = open_database(world_db).await?;
         initialize_schema(&mut conn).await?;
-        checkpoint_wal(&mut conn).await?;
 
+        checkpoint_wal(&mut conn).await?;
         pack_world(&workspace_path, &package_path)?;
 
         Ok(Self {
@@ -89,7 +89,7 @@ impl WorldProject {
             )));
         }
 
-        let manifest = read_manifest(&package_path)?;
+        let mut manifest = read_manifest(&package_path)?;
 
         let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
         unpack_world(&package_path, &workspace_path)?;
@@ -97,6 +97,11 @@ impl WorldProject {
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = open_database(world_db).await?;
         validate_database(&mut conn).await?;
+
+        checkpoint_wal(&mut conn).await?;
+        manifest.open();
+        write_manifest(&manifest, &workspace_path).await?;
+        pack_world(&workspace_path, &package_path)?;
 
         Ok(Self {
             manifest,
@@ -110,7 +115,7 @@ impl WorldProject {
     pub(crate) async fn save_world(&mut self) -> KazmasResult<()> {
         checkpoint_wal(&mut self.conn).await?;
 
-        self.manifest.touch();
+        self.manifest.modify();
         write_manifest(&self.manifest, &self.workspace).await?;
 
         pack_world(&self.workspace, &self.package)?;
