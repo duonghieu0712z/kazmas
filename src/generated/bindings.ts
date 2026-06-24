@@ -7,8 +7,14 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
-	createWorld: (name: string, path: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
-	openWorld: (file: string, newWindow: boolean) => typedError<null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
+	createWorld: (name: string, path: string, newWindow: boolean) => typedError<WorldManifestDto, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
+	openWorld: (file: string, newWindow: boolean) => typedError<{
+	id: string,
+	name: string,
+	createdAt: string,
+	modifiedAt: string,
+	openedAt: string,
+} | null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),
 };
 
@@ -38,6 +44,14 @@ export type MenuSection = {
 	id: string,
 	text: string,
 	items: MenuItem[],
+};
+
+export type WorldManifestDto = {
+	id: string,
+	name: string,
+	createdAt: string,
+	modifiedAt: string,
+	openedAt: string,
 };
 
 /* Tauri Specta runtime */
