@@ -48,6 +48,7 @@ pub(crate) enum MenuCommand {
     #[cfg(target_os = "macos")]
     #[specta(skip)]
     ShowAll,
+    ToggleDevtools,
     Undo,
     Updates,
 }
@@ -78,6 +79,7 @@ impl MenuCommand {
             Self::SaveAs => Some("Save As...".into()),
             Self::Settings => Some("Settings...".into()),
             Self::SelectAll => Some("Select All".into()),
+            Self::ToggleDevtools => Some("Toggle Developer Tools".into()),
             Self::Undo => Some("Undo".into()),
             Self::Updates => Some("Check for Updates...".into()),
             #[cfg(target_os = "macos")]

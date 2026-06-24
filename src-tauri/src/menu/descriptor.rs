@@ -129,11 +129,12 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             text: "Help".into(),
             items: vec![
                 #[cfg(not(target_os = "macos"))]
+                item(MenuCommand::About, app_name),
+                #[cfg(not(target_os = "macos"))]
                 item(MenuCommand::Updates, app_name),
                 #[cfg(not(target_os = "macos"))]
-                separator("help-about-separator"),
-                #[cfg(not(target_os = "macos"))]
-                item(MenuCommand::About, app_name),
+                separator("help-devtools-separator"),
+                item(MenuCommand::ToggleDevtools, app_name),
             ],
         },
     ]
