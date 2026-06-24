@@ -12,7 +12,7 @@ use super::error::{KazmasError, KazmasResult};
 use crate::{
     state::{AppState, get_state},
     utils::{parse_window_label, window_label},
-    world::{WorldManifest, WorldProject, read_manifest},
+    world::{WorldProject, read_manifest},
 };
 
 const WEBVIEW_URL: &str = "index.html";
@@ -80,23 +80,23 @@ pub(crate) fn focus_window(window: &WebviewWindow) -> KazmasResult<()> {
 pub(crate) async fn focus_existing_world(
     app: &AppHandle,
     file: impl AsRef<Path>,
-) -> KazmasResult<Option<WorldManifest>> {
+) -> KazmasResult<bool> {
     let manifest = read_manifest(file)?;
 
     let state = get_state(app);
     let registry = state.registry();
     let Some(window_id) = registry.get_window_id(&manifest.id).await else {
-        return Ok(Some(manifest));
+        return Ok(false);
     };
 
     let label = window_label(&window_id);
     let Some(window) = app.get_webview_window(&label) else {
-        return Ok(Some(manifest));
+        return Ok(false);
     };
 
     window.set_title(&manifest.name)?;
     focus_window(&window)?;
-    Ok(None)
+    Ok(true)
 }
 
 pub(crate) async fn open_project_in_window(
@@ -108,12 +108,12 @@ pub(crate) async fn open_project_in_window(
 ) -> KazmasResult<()> {
     let registry = state.registry();
     let project_manager = state.project_manager();
-    let manifest = project.manifest();
+    let project_id = project.id();
 
     if new_window {
         project_manager
             .open_project_or_close(project, async {
-                spawn_window(app, Some(&manifest.id)).await
+                spawn_window(app, Some(&project_id)).await
             })
             .await?;
         return Ok(());
@@ -127,12 +127,12 @@ pub(crate) async fn open_project_in_window(
 
     let prev_project_id = project_manager
         .open_project_or_close(project, async {
-            registry.replace_project(window_id, &manifest.id).await
+            registry.replace_project(window_id, &project_id).await
         })
         .await?;
 
     if let Some(prev_project_id) = prev_project_id
-        && prev_project_id != manifest.id
+        && prev_project_id != project_id
     {
         project_manager.close_project(&prev_project_id).await?;
     }

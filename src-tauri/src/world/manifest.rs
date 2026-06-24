@@ -22,7 +22,9 @@ pub(crate) struct WorldManifest {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub(crate) created_at: DateTime<Utc>,
     #[serde(with = "chrono::serde::ts_seconds")]
-    pub(crate) updated_at: DateTime<Utc>,
+    pub(crate) modified_at: DateTime<Utc>,
+    #[serde(with = "chrono::serde::ts_seconds")]
+    pub(crate) opened_at: DateTime<Utc>,
 }
 
 impl WorldManifest {
@@ -33,7 +35,8 @@ impl WorldManifest {
             name: name.into(),
             paths: Default::default(),
             created_at: now,
-            updated_at: now,
+            modified_at: now,
+            opened_at: now,
         }
     }
 
@@ -45,8 +48,12 @@ impl WorldManifest {
         self.paths.assets.clone()
     }
 
-    pub(super) fn touch(&mut self) {
-        self.updated_at = Utc::now();
+    pub(super) fn modify(&mut self) {
+        self.modified_at = Utc::now();
+    }
+
+    pub(super) fn open(&mut self) {
+        self.opened_at = Utc::now();
     }
 }
 

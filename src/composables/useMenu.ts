@@ -1,12 +1,11 @@
 import type { MenuCommand, MenuSection } from '@/generated/bindings';
 
-import { open } from '@tauri-apps/plugin-dialog';
 import { platform } from '@tauri-apps/plugin-os';
 import { createGlobalState } from '@vueuse/core';
 
-import { openAboutDialog, openWindowPlacementDialog } from '@/dialogs';
-import { commands, events, EXTENSION } from '@/generated/bindings';
-import { AlertDialogResult } from '@/providers/dialog';
+import { closeWorld, newWorld, openWorld } from '@/actions/world';
+import { openAboutDialog } from '@/dialogs';
+import { commands, events } from '@/generated/bindings';
 
 function createMenu() {
     const menus = ref<MenuSection[]>([]);
@@ -66,64 +65,4 @@ async function handleMenuCommand(command: MenuCommand) {
     }
 
     return false;
-}
-
-async function newWorld() {
-    const newWindow = await chooseNewWindow();
-    if (newWindow === null) {
-        return;
-    }
-
-    const path = await open({
-        title: 'New World',
-        multiple: false,
-        directory: true,
-        canCreateDirectories: true,
-    });
-    if (!path) {
-        return;
-    }
-
-    await commands.createWorld('New World', path, newWindow);
-}
-
-async function openWorld() {
-    const newWindow = await chooseNewWindow();
-    if (newWindow === null) {
-        return;
-    }
-
-    const file = await open({
-        title: 'Open World',
-        multiple: false,
-        directory: false,
-        canCreateDirectories: false,
-        filters: [
-            {
-                name: 'Kazmas World',
-                extensions: [EXTENSION],
-            },
-        ],
-    });
-    if (!file) {
-        return;
-    }
-
-    await commands.openWorld(file, newWindow);
-}
-
-async function closeWorld() {
-    await commands.closeWorld();
-}
-
-async function chooseNewWindow() {
-    const result = await openWindowPlacementDialog();
-    switch (result) {
-        case AlertDialogResult.Yes:
-            return true;
-        case AlertDialogResult.No:
-            return false;
-        default:
-            return null;
-    }
 }
