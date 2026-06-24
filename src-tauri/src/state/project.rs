@@ -26,7 +26,7 @@ impl ProjectManager {
         project: WorldProject,
         action: impl Future<Output = KazmasResult<T>>,
     ) -> KazmasResult<T> {
-        let project_id = project.manifest().id;
+        let project_id = project.id();
         self.open_project(project).await?;
 
         let result = action.await;
@@ -43,7 +43,7 @@ impl ProjectManager {
 
     async fn open_project(&self, project: WorldProject) -> KazmasResult<()> {
         let mut projects = self.projects.lock().await;
-        let project_id = project.manifest().id;
+        let project_id = project.id();
         if projects.contains_key(&project_id) {
             return Err(KazmasError::AlreadyExists(format!(
                 "project {project_id} is already open"

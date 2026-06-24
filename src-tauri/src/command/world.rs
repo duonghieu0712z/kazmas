@@ -88,7 +88,7 @@ pub(super) async fn open_world(
     file: PathBuf,
     new_window: bool,
 ) -> CommandResult<Option<WorldManifestDto>> {
-    if focus_existing_world(&app, &file).await?.is_none() {
+    if focus_existing_world(&app, &file).await? {
         return Ok(None);
     }
 
@@ -98,7 +98,7 @@ pub(super) async fn open_world(
     let manifest = project.manifest();
 
     open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
-    Ok(Some(manifest.into()))
+    Ok((!new_window).then(|| manifest.into()))
 }
 
 #[tauri::command]

@@ -24,6 +24,10 @@ pub(crate) struct WorldProject {
 }
 
 impl WorldProject {
+    pub(crate) fn id(&self) -> Uuid {
+        self.manifest.id
+    }
+
     pub(crate) fn manifest(&self) -> WorldManifest {
         self.manifest.clone()
     }

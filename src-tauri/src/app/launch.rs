@@ -85,15 +85,16 @@ async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
     let state = get_state(app);
     let project_manager = state.project_manager();
 
-    let Some(manifest) = focus_existing_world(app, &file).await? else {
+    if focus_existing_world(app, &file).await? {
         return Ok(());
-    };
+    }
 
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::open_world(&file, &temp_dir).await?;
+    let project_id = project.id();
     project_manager
         .open_project_or_close(project, async {
-            spawn_window(app, Some(&manifest.id)).await
+            spawn_window(app, Some(&project_id)).await
         })
         .await?;
 
