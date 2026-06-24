@@ -1,6 +1,6 @@
 import { open } from '@tauri-apps/plugin-dialog';
 
-import { openWindowPlacementDialog } from '@/dialogs';
+import { openNewWorldDialog, openSaveWorldDialog, openWindowPlacementDialog } from '@/dialogs';
 import { commands, EXTENSION } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
@@ -21,22 +21,21 @@ export async function loadWorld() {
 
 export async function newWorld() {
     const world = useWorldStore();
+    if (!(await confirmWorldTransition())) {
+        return;
+    }
+
     const newWindow = await chooseNewWindow();
     if (newWindow === null) {
         return;
     }
 
-    const path = await open({
-        title: 'New World',
-        multiple: false,
-        directory: true,
-        canCreateDirectories: true,
-    });
-    if (!path) {
+    const input = await openNewWorldDialog();
+    if (!input) {
         return;
     }
 
-    const result = await commands.createWorld('New World', path, newWindow);
+    const result = await commands.createWorld(input.name, input.path, newWindow);
     if (result.status === 'ok' && result.data) {
         world.setManifest(result.data);
     }
@@ -44,6 +43,10 @@ export async function newWorld() {
 
 export async function openWorld() {
     const world = useWorldStore();
+    if (!(await confirmWorldTransition())) {
+        return;
+    }
+
     const newWindow = await chooseNewWindow();
     if (newWindow === null) {
         return;
@@ -73,10 +76,32 @@ export async function openWorld() {
 
 export async function closeWorld() {
     const world = useWorldStore();
+    if (!(await confirmWorldTransition())) {
+        return;
+    }
+
     const result = await commands.closeWorld();
     if (result.status === 'ok') {
         world.clearManifest();
     }
+}
+
+async function confirmWorldTransition() {
+    const world = useWorldStore();
+    if (!world.isDirty) {
+        return true;
+    }
+
+    const result = await openSaveWorldDialog(world.worldName ?? undefined);
+    if (result === AlertDialogResult.Yes) {
+        const saveResult = await commands.executeMenuCommand('save');
+        if (saveResult.status === 'ok') {
+            return true;
+        }
+        return false;
+    }
+
+    return result === AlertDialogResult.No;
 }
 
 async function chooseNewWindow() {
