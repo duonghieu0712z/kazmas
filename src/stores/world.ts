@@ -4,21 +4,26 @@ import { defineStore } from 'pinia';
 
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
+    const dirty = shallowRef(false);
 
     const hasWorld = computed(() => manifest.value !== null);
+    const isDirty = computed(() => dirty.value);
     const worldName = computed(() => manifest.value?.name ?? null);
 
     const setManifest = (value: WorldManifestDto) => {
         console.debug('World manifest set', value);
         manifest.value = value;
+        dirty.value = false;
     };
 
     const clearManifest = () => {
         manifest.value = null;
+        dirty.value = false;
     };
 
     return {
         manifest,
+        isDirty,
         hasWorld,
         worldName,
         setManifest,
