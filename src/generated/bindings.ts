@@ -33,7 +33,7 @@ export const commands = {
 
 /** Events */
 export const events = {
-	menuEvents: makeEvent<MenuEvents>("menu-events"),
+	menuCommand: makeEvent<MenuCommandEvent>("menu-command"),
 };
 
 /* Constants */
@@ -49,7 +49,7 @@ export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO"
 
 export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
-export type MenuEvents = MenuCommand;
+export type MenuCommandEvent = MenuCommand;
 
 export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: MenuCommand; text: string; items: MenuItem[]; enabled: boolean } | { type: "separator"; id: string };
 
