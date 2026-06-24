@@ -1,6 +1,6 @@
 import { open } from '@tauri-apps/plugin-dialog';
 
-import { openWindowPlacementDialog } from '@/dialogs';
+import { openNewWorldDialog, openWindowPlacementDialog } from '@/dialogs';
 import { commands, EXTENSION } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
@@ -26,17 +26,12 @@ export async function newWorld() {
         return;
     }
 
-    const path = await open({
-        title: 'New World',
-        multiple: false,
-        directory: true,
-        canCreateDirectories: true,
-    });
-    if (!path) {
+    const input = await openNewWorldDialog();
+    if (!input) {
         return;
     }
 
-    const result = await commands.createWorld('New World', path, newWindow);
+    const result = await commands.createWorld(input.name, input.path, newWindow);
     if (result.status === 'ok' && result.data) {
         world.setManifest(result.data);
     }

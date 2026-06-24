@@ -9,6 +9,7 @@ export const useWorldStore = defineStore('world', () => {
     const worldName = computed(() => manifest.value?.name ?? null);
 
     const setManifest = (value: WorldManifestDto) => {
+        console.debug('World manifest set', value);
         manifest.value = value;
     };
 
