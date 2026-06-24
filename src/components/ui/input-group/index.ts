@@ -22,9 +22,9 @@ export const inputGroupAddonVariants = cva(
                 'inline-start': 'order-first pl-2 has-[>button]:-ml-1 has-[>kbd]:ml-[-0.15rem]',
                 'inline-end': 'order-last pr-2 has-[>button]:-mr-1 has-[>kbd]:mr-[-0.15rem]',
                 'block-start':
-                    'order-first w-full justify-start px-2 pt-1 group-has-[>input]/input-group:pt-2.5 [.border-b]:pb-3',
+                    'order-first w-full justify-start px-2 pt-1 group-has-[>[data-slot=input-group-control]]/input-group:pt-2.5 [.border-b]:pb-3',
                 'block-end':
-                    'order-last w-full justify-start px-2 pb-1 group-has-[>input]/input-group:pb-2.5 [.border-t]:pt-3',
+                    'order-last w-full justify-start px-2 pb-1 group-has-[>[data-slot=input-group-control]]/input-group:pb-2.5 [.border-t]:pt-3',
             },
         },
         defaultVariants: {
