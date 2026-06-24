@@ -46,7 +46,7 @@ pub(crate) async fn handle_command(
         MenuCommand::NewWorld => emit_menu_event(app, window_id, MenuCommand::NewWorld)?,
         MenuCommand::OpenWorld => emit_menu_event(app, window_id, MenuCommand::OpenWorld)?,
         MenuCommand::Save => save_world(app, window_id).await?,
-        MenuCommand::ToggleDevtools => toggle_devtools(app, window_id).await?,
+        MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
     Ok(())
@@ -65,14 +65,14 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
     Ok(())
 }
 
-async fn toggle_devtools(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
+fn toggle_devtools(app: &AppHandle, window_id: Option<Uuid>) {
     let Some(window_id) = window_id else {
-        return Ok(());
+        return;
     };
 
     let label = window_label(&window_id);
     let Some(window) = app.get_webview_window(&label) else {
-        return Ok(());
+        return;
     };
 
     if window.is_devtools_open() {
@@ -80,8 +80,6 @@ async fn toggle_devtools(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResu
     } else {
         window.open_devtools();
     }
-
-    Ok(())
 }
 
 fn emit_menu_event(
