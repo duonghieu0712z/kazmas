@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 #[cfg(target_os = "macos")]
 use tauri::menu::MenuEvent;
-use tauri::{AppHandle, EventTarget};
+use tauri::{AppHandle, EventTarget, Manager};
 use tauri_specta::Event;
 use uuid::Uuid;
 
@@ -46,6 +46,7 @@ pub(crate) async fn handle_command(
         MenuCommand::NewWorld => emit_menu_event(app, window_id, MenuCommand::NewWorld)?,
         MenuCommand::OpenWorld => emit_menu_event(app, window_id, MenuCommand::OpenWorld)?,
         MenuCommand::Save => save_world(app, window_id).await?,
+        MenuCommand::ToggleDevtools => toggle_devtools(app, window_id).await?,
         _ => log::debug!("Menu item {} not handled", command.as_ref()),
     }
     Ok(())
@@ -59,6 +60,25 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
     {
         let project_manager = state.project_manager();
         project_manager.save_project(&project_id).await?;
+    }
+
+    Ok(())
+}
+
+async fn toggle_devtools(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()> {
+    let Some(window_id) = window_id else {
+        return Ok(());
+    };
+
+    let label = window_label(&window_id);
+    let Some(window) = app.get_webview_window(&label) else {
+        return Ok(());
+    };
+
+    if window.is_devtools_open() {
+        window.close_devtools();
+    } else {
+        window.open_devtools();
     }
 
     Ok(())
