@@ -42,6 +42,26 @@ impl From<WorldManifest> for WorldManifestDto {
 
 #[tauri::command]
 #[specta::specta]
+pub(super) async fn get_world(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<WorldManifestDto>> {
+    let Some(window_id) = parse_window_label(window.label())? else {
+        return Ok(None);
+    };
+
+    let registry = state.registry();
+    let Some(project_id) = registry.get_project_id(&window_id).await else {
+        return Ok(None);
+    };
+
+    let project_manager = state.project_manager();
+    let manifest = project_manager.world_manifest(&project_id).await?;
+    Ok(manifest.map(Into::into))
+}
+
+#[tauri::command]
+#[specta::specta]
 pub(super) async fn create_world(
     app: AppHandle,
     state: State<'_, AppState>,
@@ -49,14 +69,14 @@ pub(super) async fn create_world(
     name: &str,
     path: PathBuf,
     new_window: bool,
-) -> CommandResult<WorldManifestDto> {
+) -> CommandResult<Option<WorldManifestDto>> {
     let window_id = parse_window_label(window.label())?;
     let temp_dir = app_temp_dir(&app).await?;
     let project = WorldProject::create_world(name, path, temp_dir).await?;
     let manifest = project.manifest();
 
     open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
-    Ok(manifest.into())
+    Ok((!new_window).then(|| manifest.into()))
 }
 
 #[tauri::command]
