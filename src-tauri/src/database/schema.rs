@@ -14,7 +14,7 @@ const SCHEMA_SQL: &str = include_str!(concat!(
 ));
 
 pub(crate) async fn initialize_schema(conn: &mut SqliteConnection) -> KazmasResult<()> {
-    sqlx::query(SCHEMA_SQL).execute(conn).await?;
+    sqlx::raw_sql(SCHEMA_SQL).execute(conn).await?;
     Ok(())
 }
 
