@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS nodes (
     kind TEXT NOT NULL,
     name TEXT NOT NULL DEFAULT 'Untitled' CHECK (length(trim(name)) > 0),
     created_at INTEGER NOT NULL CHECK (created_at > 0),
-    modified_at INTEGER NOT NULL CHECK (modified_at > 0)
+    modified_at INTEGER NOT NULL CHECK (modified_at > 0),
+    deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at > 0)
 );
 
 CREATE INDEX IF NOT EXISTS idx_nodes_parent_id ON nodes(parent_id);

@@ -22,6 +22,7 @@ pub(crate) struct Node {
     pub(crate) name: String,
     pub(crate) created_at: DateTime<Utc>,
     pub(crate) modified_at: DateTime<Utc>,
+    pub(crate) deleted_at: Option<DateTime<Utc>>,
 }
 
 impl Node {
@@ -34,12 +35,13 @@ impl Node {
             name: name.unwrap_or(DEFAULT_NAME).into(),
             created_at: now,
             modified_at: now,
+            deleted_at: None,
         }
     }
 }
 
 const SELECT_NODE: &str = r#"
-SELECT id, parent_id, kind, name, created_at, modified_at
+SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM nodes
 WHERE id = ?
 "#;
@@ -56,8 +58,20 @@ WHERE id = ?
 "#;
 
 const DELETE_NODE: &str = r#"
+UPDATE nodes
+SET modified_at = ?, deleted_at = ?
+WHERE id = ? AND deleted_at IS NULL
+"#;
+
+const PURGE_NODE: &str = r#"
 DELETE FROM nodes
 WHERE id = ?
+"#;
+
+const RESTORE_NODE: &str = r#"
+UPDATE nodes
+SET modified_at = ?, deleted_at = NULL
+WHERE id = ? AND deleted_at IS NOT NULL
 "#;
 
 pub(crate) async fn get_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<Node> {
@@ -93,6 +107,27 @@ pub(crate) async fn update_node(conn: &mut SqliteConnection, node: &Node) -> Kaz
 }
 
 pub(crate) async fn delete_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
-    let result = sqlx::query(DELETE_NODE).bind(id).execute(conn).await?;
+    let now = Utc::now().timestamp();
+    let result = sqlx::query(DELETE_NODE)
+        .bind(now)
+        .bind(now)
+        .bind(id)
+        .execute(conn)
+        .await?;
+    Ok(result.rows_affected() == 1)
+}
+
+pub(crate) async fn purge_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
+    let result = sqlx::query(PURGE_NODE).bind(id).execute(conn).await?;
+    Ok(result.rows_affected() == 1)
+}
+
+pub(crate) async fn restore_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
+    let now = Utc::now().timestamp();
+    let result = sqlx::query(RESTORE_NODE)
+        .bind(now)
+        .bind(id)
+        .execute(conn)
+        .await?;
     Ok(result.rows_affected() == 1)
 }
