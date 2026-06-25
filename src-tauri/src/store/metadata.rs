@@ -36,7 +36,7 @@ pub(crate) async fn create_metadata(
     metadata: &NodeMetadata,
 ) -> KazmasResult<bool> {
     let result = sqlx::query(INSERT_METADATA)
-        .bind(&metadata.node_id)
+        .bind(metadata.node_id)
         .bind(&metadata.data)
         .execute(conn)
         .await?;
@@ -49,7 +49,7 @@ pub(crate) async fn update_metadata(
 ) -> KazmasResult<bool> {
     let result = sqlx::query(UPDATE_METADATA)
         .bind(&metadata.data)
-        .bind(&metadata.node_id)
+        .bind(metadata.node_id)
         .execute(conn)
         .await?;
     Ok(result.rows_affected() == 1)

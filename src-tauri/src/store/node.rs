@@ -48,9 +48,9 @@ pub(crate) async fn get_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasRe
 
 pub(crate) async fn create_node(conn: &mut SqliteConnection, node: &Node) -> KazmasResult<bool> {
     let result = sqlx::query(INSERT_NODE)
-        .bind(&node.id)
-        .bind(&node.parent_id)
-        .bind(&node.kind)
+        .bind(node.id)
+        .bind(node.parent_id)
+        .bind(node.kind)
         .bind(&node.name)
         .bind(node.created_at.timestamp())
         .bind(node.modified_at.timestamp())
@@ -61,10 +61,10 @@ pub(crate) async fn create_node(conn: &mut SqliteConnection, node: &Node) -> Kaz
 
 pub(crate) async fn update_node(conn: &mut SqliteConnection, node: &Node) -> KazmasResult<bool> {
     let result = sqlx::query(UPDATE_NODE)
-        .bind(&node.parent_id)
+        .bind(node.parent_id)
         .bind(&node.name)
         .bind(node.modified_at.timestamp())
-        .bind(&node.id)
+        .bind(node.id)
         .execute(conn)
         .await?;
     Ok(result.rows_affected() == 1)

@@ -36,7 +36,7 @@ pub(crate) async fn create_document(
     document: &Document,
 ) -> KazmasResult<bool> {
     let result = sqlx::query(INSERT_DOCUMENT)
-        .bind(&document.node_id)
+        .bind(document.node_id)
         .bind(&document.content)
         .execute(conn)
         .await?;
@@ -49,7 +49,7 @@ pub(crate) async fn update_document(
 ) -> KazmasResult<bool> {
     let result = sqlx::query(UPDATE_DOCUMENT)
         .bind(&document.content)
-        .bind(&document.node_id)
+        .bind(document.node_id)
         .execute(conn)
         .await?;
     Ok(result.rows_affected() == 1)
