@@ -2,6 +2,7 @@ mod app;
 mod command;
 mod event;
 mod menu;
+mod model;
 mod state;
 mod utils;
 mod world;
