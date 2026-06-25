@@ -6,10 +6,14 @@ use uuid::Uuid;
 
 use super::{
     archive::{pack_world, unpack_world},
-    db::{checkpoint_wal, close_database, initialize_schema, open_database, validate_database},
     manifest::{WorldManifest, read_manifest, write_manifest},
 };
-use crate::app::{KazmasError, KazmasResult};
+use crate::{
+    app::{KazmasError, KazmasResult},
+    database::{
+        checkpoint_wal, close_database, initialize_schema, open_database, validate_database,
+    },
+};
 
 pub(crate) const EXTENSION: &str = "kazmas";
 
