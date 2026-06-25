@@ -7,6 +7,26 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
+	getNode: (nodeId: string) => typedError<{
+	id: string,
+	parentId: string | null,
+	kind: NodeKind,
+	name: string,
+	createdAt: string,
+	modifiedAt: string,
+	deletedAt: string | null,
+} | null, CommandError>(__TAURI_INVOKE("get_node", { nodeId })),
+	getMetadata: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_metadata", { nodeId })),
+	getDocument: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_document", { nodeId })),
+	createFolder: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_folder", { name, parentId })),
+	createChapter: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_chapter", { name, parentId })),
+	createWikiEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_wiki_entry", { name, parentId })),
+	updateNode: (node: UpdateNodeDto) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_node", { node })),
+	updateMetadata: (nodeId: string, data: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_metadata", { nodeId, data })),
+	updateDocument: (nodeId: string, content: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_document", { nodeId, content })),
+	deleteNode: (nodeId: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("delete_node", { nodeId })),
+	restoreNode: (nodeId: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("restore_node", { nodeId })),
+	purgeNode: (nodeId: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("purge_node", { nodeId })),
 	getWorld: () => typedError<{
 	id: string,
 	name: string,
@@ -57,6 +77,24 @@ export type MenuSection = {
 	id: string,
 	text: string,
 	items: MenuItem[],
+};
+
+export type NodeDto = {
+	id: string,
+	parentId: string | null,
+	kind: NodeKind,
+	name: string,
+	createdAt: string,
+	modifiedAt: string,
+	deletedAt: string | null,
+};
+
+export type NodeKind = "world" | "folder" | "chapter" | "wikiEntry";
+
+export type UpdateNodeDto = {
+	id: string,
+	parentId: string | null,
+	name: string,
 };
 
 export type WorldManifestDto = {

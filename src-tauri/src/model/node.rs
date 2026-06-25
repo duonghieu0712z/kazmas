@@ -1,13 +1,17 @@
 use chrono::{DateTime, Utc};
-use sqlx::{FromRow, Type};
+use serde::{Deserialize, Serialize};
+use specta::Type;
+use sqlx::{FromRow, Type as SqlxType};
 use uuid::Uuid;
 
 const DEFAULT_NAME: &str = "Untitled";
 
-#[derive(Debug, Clone, Copy, Type)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, Type, SqlxType)]
+#[serde(rename_all = "camelCase")]
 #[sqlx(rename_all = "snake_case")]
 pub(crate) enum NodeKind {
     World,
+    Folder,
     Chapter,
     WikiEntry,
 }

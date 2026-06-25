@@ -13,6 +13,11 @@ use crate::{
     database::{
         checkpoint_wal, close_database, initialize_schema, open_database, validate_database,
     },
+    model::{Document, Node, NodeKind, NodeMetadata},
+    store::{
+        create_document, create_metadata, create_node, delete_node, get_document, get_metadata,
+        get_node, purge_node, restore_node, update_document, update_metadata, update_node,
+    },
 };
 
 pub(crate) const EXTENSION: &str = "kazmas";
@@ -135,6 +140,88 @@ impl WorldProject {
         close_database(self.conn).await?;
         fs::remove_dir_all(&self.workspace).await?;
         Ok(())
+    }
+
+    pub(crate) async fn get_node(&mut self, id: &Uuid) -> KazmasResult<Node> {
+        get_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn get_metadata(&mut self, node_id: &Uuid) -> KazmasResult<NodeMetadata> {
+        get_metadata(&mut self.conn, node_id).await
+    }
+
+    pub(crate) async fn get_document(&mut self, node_id: &Uuid) -> KazmasResult<Document> {
+        get_document(&mut self.conn, node_id).await
+    }
+
+    async fn create_node(
+        &mut self,
+        name: Option<&str>,
+        kind: NodeKind,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let node = Node::new(kind, name, parent_id);
+        create_node(&mut self.conn, &node).await?;
+        create_metadata(
+            &mut self.conn,
+            &NodeMetadata::new(node.id, serde_json::json!({})),
+        )
+        .await?;
+        Ok(node.id)
+    }
+
+    pub(crate) async fn create_folder(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        self.create_node(name, NodeKind::Folder, parent_id).await
+    }
+
+    pub(crate) async fn create_chapter(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let id = self.create_node(name, NodeKind::Chapter, parent_id).await?;
+        create_document(&mut self.conn, &Document::new(id, serde_json::json!({}))).await?;
+        Ok(id)
+    }
+
+    pub(crate) async fn create_wiki_entry(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let id = self
+            .create_node(name, NodeKind::WikiEntry, parent_id)
+            .await?;
+        create_document(&mut self.conn, &Document::new(id, serde_json::json!({}))).await?;
+        Ok(id)
+    }
+
+    pub(crate) async fn update_node(&mut self, node: &Node) -> KazmasResult<bool> {
+        update_node(&mut self.conn, node).await
+    }
+
+    pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
+        update_metadata(&mut self.conn, metadata).await
+    }
+
+    pub(crate) async fn update_document(&mut self, document: &Document) -> KazmasResult<bool> {
+        update_document(&mut self.conn, document).await
+    }
+
+    pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        delete_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn restore_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        restore_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn purge_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        purge_node(&mut self.conn, id).await
     }
 }
 

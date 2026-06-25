@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     app::{KazmasError, KazmasResult},
+    model::{Document, Node, NodeMetadata},
     world::{WorldManifest, WorldProject},
 };
 
@@ -70,5 +71,140 @@ impl ProjectManager {
         }
 
         Ok(())
+    }
+
+    pub(crate) async fn get_node(&self, id: &Uuid, node_id: &Uuid) -> KazmasResult<Option<Node>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.get_node(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn get_metadata(
+        &self,
+        id: &Uuid,
+        node_id: &Uuid,
+    ) -> KazmasResult<Option<NodeMetadata>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.get_metadata(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn get_document(
+        &self,
+        id: &Uuid,
+        node_id: &Uuid,
+    ) -> KazmasResult<Option<Document>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.get_document(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn create_folder(
+        &self,
+        id: &Uuid,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Option<Uuid>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.create_folder(name, parent_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn create_chapter(
+        &self,
+        id: &Uuid,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Option<Uuid>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.create_chapter(name, parent_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn create_wiki_entry(
+        &self,
+        id: &Uuid,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Option<Uuid>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.create_wiki_entry(name, parent_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn update_node(&self, id: &Uuid, node: &Node) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.update_node(node).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn update_metadata(
+        &self,
+        id: &Uuid,
+        metadata: &NodeMetadata,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.update_metadata(metadata).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn update_document(
+        &self,
+        id: &Uuid,
+        document: &Document,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.update_document(document).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn delete_node(
+        &self,
+        id: &Uuid,
+        node_id: &Uuid,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.delete_node(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn restore_node(
+        &self,
+        id: &Uuid,
+        node_id: &Uuid,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.restore_node(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn purge_node(&self, id: &Uuid, node_id: &Uuid) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(id) {
+            return project.purge_node(node_id).await.map(Some);
+        }
+        Ok(None)
     }
 }
