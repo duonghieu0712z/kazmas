@@ -11,7 +11,10 @@ onMounted(async () => {
 </script>
 
 <template>
-    <DialogContent class="h-40 w-100 items-center justify-center p-0" :show-close-button="false">
+    <DialogContent
+        class="h-40 w-100 items-center justify-center p-0 outline-none"
+        :show-close-button="false"
+    >
         <VisuallyHidden feature="fully-hidden">
             <DialogHeader>
                 <DialogTitle>About</DialogTitle>
@@ -27,7 +30,7 @@ onMounted(async () => {
             <div class="relative flex flex-col items-center justify-center overflow-visible">
                 <div
                     :class="[
-                        'font-title text-7xl underline decoration-2 underline-offset-3',
+                        'font-title inline-block text-7xl',
                         'bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text pr-1.5 pl-4 text-transparent',
                     ]"
                 >
