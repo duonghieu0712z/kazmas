@@ -5,20 +5,6 @@ import { commands, EXTENSION } from '@/generated/bindings';
 import { AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
-export async function loadWorld() {
-    const world = useWorldStore();
-    const result = await commands.getWorld();
-    if (result.status !== 'ok') {
-        return;
-    }
-
-    if (result.data) {
-        world.setManifest(result.data);
-    } else {
-        world.clearManifest();
-    }
-}
-
 export async function newWorld() {
     const world = useWorldStore();
     if (!(await confirmWorldTransition())) {

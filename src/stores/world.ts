@@ -2,9 +2,12 @@ import type { WorldManifestDto } from '@/generated/bindings';
 
 import { defineStore } from 'pinia';
 
+import { commands, events } from '@/generated/bindings';
+
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
     const dirty = shallowRef(false);
+    let initialized = false;
 
     const hasWorld = computed(() => manifest.value !== null);
     const isDirty = computed(() => dirty.value);
@@ -21,11 +24,38 @@ export const useWorldStore = defineStore('world', () => {
         dirty.value = false;
     };
 
+    const loadWorld = async () => {
+        const result = await commands.getWorld();
+        if (result.status !== 'ok') {
+            return;
+        }
+
+        if (result.data) {
+            setManifest(result.data);
+        } else {
+            clearManifest();
+        }
+    };
+
+    const initWorld = async () => {
+        if (initialized) {
+            return;
+        }
+
+        await events.worldChanged.listen(({ payload }) => {
+            dirty.value = payload;
+        });
+        await loadWorld();
+
+        initialized = true;
+    };
+
     return {
         manifest,
         isDirty,
         hasWorld,
         worldName,
+        initWorld,
         setManifest,
         clearManifest,
     };

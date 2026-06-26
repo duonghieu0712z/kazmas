@@ -2,11 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{State, WebviewWindow};
+use tauri_specta::Event;
 use uuid::Uuid;
 
 use super::error::CommandResult;
 use crate::{
     app::{KazmasError, KazmasResult},
+    event::WorldChangedEvent,
     model::{Document, Node, NodeKind, NodeMetadata},
     state::AppState,
     utils::parse_window_label,
@@ -118,6 +120,9 @@ pub(super) async fn create_folder(
     let id = project_manager
         .create_folder(&project_id, name, parent_id)
         .await?;
+    if id.is_some() {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
     Ok(id)
 }
 
@@ -137,6 +142,9 @@ pub(super) async fn create_chapter(
     let id = project_manager
         .create_chapter(&project_id, name, parent_id)
         .await?;
+    if id.is_some() {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
     Ok(id)
 }
 
@@ -156,6 +164,9 @@ pub(super) async fn create_wiki_entry(
     let id = project_manager
         .create_wiki_entry(&project_id, name, parent_id)
         .await?;
+    if id.is_some() {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
     Ok(id)
 }
 
@@ -179,10 +190,11 @@ pub(super) async fn update_node(
     existing.name = node.name;
     existing.modified_at = Utc::now();
 
-    project_manager
-        .update_node(&project_id, &existing)
-        .await
-        .map_err(Into::into)
+    let updated = project_manager.update_node(&project_id, &existing).await?;
+    if updated == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(updated)
 }
 
 #[tauri::command]
@@ -199,10 +211,13 @@ pub(super) async fn update_metadata(
 
     let project_manager = state.project_manager();
     let data = serde_json::from_str(data).map_err(KazmasError::from)?;
-    project_manager
+    let updated = project_manager
         .update_metadata(&project_id, &NodeMetadata::new(node_id, data))
-        .await
-        .map_err(Into::into)
+        .await?;
+    if updated == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(updated)
 }
 
 #[tauri::command]
@@ -219,10 +234,13 @@ pub(super) async fn update_document(
 
     let project_manager = state.project_manager();
     let content = serde_json::from_str(content).map_err(KazmasError::from)?;
-    project_manager
+    let updated = project_manager
         .update_document(&project_id, &Document::new(node_id, content))
-        .await
-        .map_err(Into::into)
+        .await?;
+    if updated == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(updated)
 }
 
 #[tauri::command]
@@ -237,10 +255,11 @@ pub(super) async fn delete_node(
     };
 
     let project_manager = state.project_manager();
-    project_manager
-        .delete_node(&project_id, &node_id)
-        .await
-        .map_err(Into::into)
+    let deleted = project_manager.delete_node(&project_id, &node_id).await?;
+    if deleted == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(deleted)
 }
 
 #[tauri::command]
@@ -255,10 +274,11 @@ pub(super) async fn restore_node(
     };
 
     let project_manager = state.project_manager();
-    project_manager
-        .restore_node(&project_id, &node_id)
-        .await
-        .map_err(Into::into)
+    let restored = project_manager.restore_node(&project_id, &node_id).await?;
+    if restored == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(restored)
 }
 
 #[tauri::command]
@@ -273,10 +293,11 @@ pub(super) async fn purge_node(
     };
 
     let project_manager = state.project_manager();
-    project_manager
-        .purge_node(&project_id, &node_id)
-        .await
-        .map_err(Into::into)
+    let purged = project_manager.purge_node(&project_id, &node_id).await?;
+    if purged == Some(true) {
+        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+    }
+    Ok(purged)
 }
 
 async fn current_project_id(
@@ -289,4 +310,11 @@ async fn current_project_id(
 
     let registry = state.registry();
     Ok(registry.get_project_id(&window_id).await)
+}
+
+fn emit_world_changed(window: &WebviewWindow, dirty: Option<bool>) -> KazmasResult<()> {
+    if let Some(dirty) = dirty {
+        WorldChangedEvent(dirty).emit(window)?;
+    }
+    Ok(())
 }

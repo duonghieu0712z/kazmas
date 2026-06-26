@@ -1,12 +1,17 @@
 <script setup lang="ts">
+import { CircleSmallIcon } from '@lucide/vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { platform } from '@tauri-apps/plugin-os';
+
+import { useWorldStore } from '@/stores/world';
 
 import AppMenuBar from './AppMenuBar.vue';
 import AppWindowControls from './AppWindowControls.vue';
 
 const isMac = platform() === 'macos';
 const window = getCurrentWindow();
+
+const world = useWorldStore();
 
 const title = ref('');
 
@@ -27,7 +32,14 @@ onMounted(async () => {
             <AppMenuBar />
         </div>
 
-        <div class="col-start-2 flex items-center justify-self-center">{{ title }}</div>
+        <div class="col-start-2 flex items-center gap-1 justify-self-center">
+            <span>{{ title }}</span>
+            <CircleSmallIcon
+                v-if="world.isDirty"
+                class="size-3 fill-current"
+                title="Unsaved changes"
+            />
+        </div>
 
         <AppWindowControls v-if="!isMac" class="justify-self-end" />
     </div>

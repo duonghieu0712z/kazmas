@@ -54,6 +54,7 @@ export const commands = {
 /** Events */
 export const events = {
 	menuCommand: makeEvent<MenuCommandEvent>("menu-command"),
+	worldChanged: makeEvent<WorldChangedEvent>("world-changed"),
 };
 
 /* Constants */
@@ -96,6 +97,8 @@ export type UpdateNodeDto = {
 	parentId: string | null,
 	name: string,
 };
+
+export type WorldChangedEvent = boolean;
 
 export type WorldManifestDto = {
 	id: string,
