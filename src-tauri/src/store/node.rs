@@ -21,6 +21,12 @@ SET parent_id = ?, name = ?, modified_at = ?
 WHERE id = ?
 "#;
 
+const UPDATE_NODE_MODIFIED_AT: &str = r#"
+UPDATE nodes
+SET modified_at = ?
+WHERE id = ?
+"#;
+
 const DELETE_NODE: &str = r#"
 UPDATE nodes
 SET modified_at = ?, deleted_at = ?
@@ -63,8 +69,20 @@ pub(crate) async fn update_node(conn: &mut SqliteConnection, node: &Node) -> Kaz
     let result = sqlx::query(UPDATE_NODE)
         .bind(node.parent_id)
         .bind(&node.name)
-        .bind(node.modified_at.timestamp())
+        .bind(Utc::now().timestamp())
         .bind(node.id)
+        .execute(conn)
+        .await?;
+    Ok(result.rows_affected() == 1)
+}
+
+pub(crate) async fn update_node_modified_at(
+    conn: &mut SqliteConnection,
+    id: &Uuid,
+) -> KazmasResult<bool> {
+    let result = sqlx::query(UPDATE_NODE_MODIFIED_AT)
+        .bind(Utc::now().timestamp())
+        .bind(id)
         .execute(conn)
         .await?;
     Ok(result.rows_affected() == 1)

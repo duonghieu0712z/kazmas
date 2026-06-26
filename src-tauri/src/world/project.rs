@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use sqlx::SqliteConnection;
+use sqlx::{Acquire, SqliteConnection};
 use tokio::fs;
 use uuid::Uuid;
 
@@ -17,6 +17,7 @@ use crate::{
     store::{
         create_document, create_metadata, create_node, delete_node, get_document, get_metadata,
         get_node, purge_node, restore_node, update_document, update_metadata, update_node,
+        update_node_modified_at,
     },
 };
 
@@ -154,28 +155,17 @@ impl WorldProject {
         get_document(&mut self.conn, node_id).await
     }
 
-    async fn create_node(
-        &mut self,
-        name: Option<&str>,
-        kind: NodeKind,
-        parent_id: Option<Uuid>,
-    ) -> KazmasResult<Uuid> {
-        let node = Node::new(kind, name, parent_id);
-        create_node(&mut self.conn, &node).await?;
-        create_metadata(
-            &mut self.conn,
-            &NodeMetadata::new(node.id, serde_json::json!({})),
-        )
-        .await?;
-        Ok(node.id)
-    }
-
     pub(crate) async fn create_folder(
         &mut self,
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
-        self.create_node(name, NodeKind::Folder, parent_id).await
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::Folder, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
     }
 
     pub(crate) async fn create_chapter(
@@ -183,9 +173,13 @@ impl WorldProject {
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
-        let id = self.create_node(name, NodeKind::Chapter, parent_id).await?;
-        create_document(&mut self.conn, &Document::new(id, serde_json::json!({}))).await?;
-        Ok(id)
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::Chapter, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
     }
 
     pub(crate) async fn create_wiki_entry(
@@ -193,11 +187,13 @@ impl WorldProject {
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
-        let id = self
-            .create_node(name, NodeKind::WikiEntry, parent_id)
-            .await?;
-        create_document(&mut self.conn, &Document::new(id, serde_json::json!({}))).await?;
-        Ok(id)
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::WikiEntry, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
     }
 
     pub(crate) async fn update_node(&mut self, node: &Node) -> KazmasResult<bool> {
@@ -205,11 +201,19 @@ impl WorldProject {
     }
 
     pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
-        update_metadata(&mut self.conn, metadata).await
+        let mut tx = self.conn.begin().await?;
+        let updated = update_metadata(&mut tx, metadata).await?;
+        let node_updated = update_node_modified_at(&mut tx, &metadata.node_id).await?;
+        tx.commit().await?;
+        Ok(updated && node_updated)
     }
 
     pub(crate) async fn update_document(&mut self, document: &Document) -> KazmasResult<bool> {
-        update_document(&mut self.conn, document).await
+        let mut tx = self.conn.begin().await?;
+        let updated = update_document(&mut tx, document).await?;
+        let node_updated = update_node_modified_at(&mut tx, &document.node_id).await?;
+        tx.commit().await?;
+        Ok(updated && node_updated)
     }
 
     pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
