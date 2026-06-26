@@ -203,17 +203,27 @@ impl WorldProject {
     pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
         let mut tx = self.conn.begin().await?;
         let updated = update_metadata(&mut tx, metadata).await?;
+        if !updated {
+            tx.rollback().await?;
+            return Ok(false);
+        }
+
         let node_updated = update_node_modified_at(&mut tx, &metadata.node_id).await?;
         tx.commit().await?;
-        Ok(updated && node_updated)
+        Ok(node_updated)
     }
 
     pub(crate) async fn update_document(&mut self, document: &Document) -> KazmasResult<bool> {
         let mut tx = self.conn.begin().await?;
         let updated = update_document(&mut tx, document).await?;
+        if !updated {
+            tx.rollback().await?;
+            return Ok(false);
+        }
+
         let node_updated = update_node_modified_at(&mut tx, &document.node_id).await?;
         tx.commit().await?;
-        Ok(updated && node_updated)
+        Ok(node_updated)
     }
 
     pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
