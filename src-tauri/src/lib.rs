@@ -1,8 +1,11 @@
 mod app;
 mod command;
+mod database;
 mod event;
 mod menu;
+mod model;
 mod state;
+mod store;
 mod utils;
 mod world;
 

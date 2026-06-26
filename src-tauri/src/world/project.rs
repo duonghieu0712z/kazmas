@@ -1,15 +1,25 @@
 use std::path::{Path, PathBuf};
 
-use sqlx::SqliteConnection;
+use sqlx::{Acquire, SqliteConnection};
 use tokio::fs;
 use uuid::Uuid;
 
 use super::{
     archive::{pack_world, unpack_world},
-    db::{checkpoint_wal, close_database, initialize_schema, open_database, validate_database},
     manifest::{WorldManifest, read_manifest, write_manifest},
 };
-use crate::app::{KazmasError, KazmasResult};
+use crate::{
+    app::{KazmasError, KazmasResult},
+    database::{
+        checkpoint_wal, close_database, initialize_schema, open_database, validate_database,
+    },
+    model::{Document, Node, NodeKind, NodeMetadata},
+    store::{
+        create_document, create_metadata, create_node, delete_node, get_document, get_metadata,
+        get_node, purge_node, restore_node, update_document, update_metadata, update_node,
+        update_node_modified_at,
+    },
+};
 
 pub(crate) const EXTENSION: &str = "kazmas";
 
@@ -131,6 +141,101 @@ impl WorldProject {
         close_database(self.conn).await?;
         fs::remove_dir_all(&self.workspace).await?;
         Ok(())
+    }
+
+    pub(crate) async fn get_node(&mut self, id: &Uuid) -> KazmasResult<Node> {
+        get_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn get_metadata(&mut self, node_id: &Uuid) -> KazmasResult<NodeMetadata> {
+        get_metadata(&mut self.conn, node_id).await
+    }
+
+    pub(crate) async fn get_document(&mut self, node_id: &Uuid) -> KazmasResult<Document> {
+        get_document(&mut self.conn, node_id).await
+    }
+
+    pub(crate) async fn create_folder(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::Folder, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
+    }
+
+    pub(crate) async fn create_chapter(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::Chapter, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
+    }
+
+    pub(crate) async fn create_wiki_entry(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+    ) -> KazmasResult<Uuid> {
+        let mut tx = self.conn.begin().await?;
+        let node = Node::new(NodeKind::WikiEntry, name, parent_id);
+        create_node(&mut tx, &node).await?;
+        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        tx.commit().await?;
+        Ok(node.id)
+    }
+
+    pub(crate) async fn update_node(&mut self, node: &Node) -> KazmasResult<bool> {
+        update_node(&mut self.conn, node).await
+    }
+
+    pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
+        let mut tx = self.conn.begin().await?;
+        let updated = update_metadata(&mut tx, metadata).await?;
+        if !updated {
+            tx.rollback().await?;
+            return Ok(false);
+        }
+
+        let node_updated = update_node_modified_at(&mut tx, &metadata.node_id).await?;
+        tx.commit().await?;
+        Ok(node_updated)
+    }
+
+    pub(crate) async fn update_document(&mut self, document: &Document) -> KazmasResult<bool> {
+        let mut tx = self.conn.begin().await?;
+        let updated = update_document(&mut tx, document).await?;
+        if !updated {
+            tx.rollback().await?;
+            return Ok(false);
+        }
+
+        let node_updated = update_node_modified_at(&mut tx, &document.node_id).await?;
+        tx.commit().await?;
+        Ok(node_updated)
+    }
+
+    pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        delete_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn restore_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        restore_node(&mut self.conn, id).await
+    }
+
+    pub(crate) async fn purge_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+        purge_node(&mut self.conn, id).await
     }
 }
 
