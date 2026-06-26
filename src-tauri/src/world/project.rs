@@ -10,15 +10,9 @@ use super::{
 };
 use crate::{
     app::{KazmasError, KazmasResult},
-    database::{
-        checkpoint_wal, close_database, initialize_schema, open_database, validate_database,
-    },
+    database,
     model::{Document, Node, NodeKind, NodeMetadata},
-    store::{
-        create_document, create_metadata, create_node, delete_node, get_document, get_metadata,
-        get_node, purge_node, restore_node, update_document, update_metadata, update_node,
-        update_node_modified_at,
-    },
+    store,
 };
 
 pub(crate) const EXTENSION: &str = "kazmas";
@@ -62,10 +56,10 @@ impl WorldProject {
         create_assets_dir(&manifest, &workspace_path).await?;
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
-        let mut conn = open_database(world_db).await?;
-        initialize_schema(&mut conn).await?;
+        let mut conn = database::open_database(world_db).await?;
+        database::initialize_schema(&mut conn).await?;
 
-        checkpoint_wal(&mut conn).await?;
+        database::checkpoint_wal(&mut conn).await?;
         pack_world(&workspace_path, &package_path)?;
 
         Ok(Self {
@@ -109,10 +103,10 @@ impl WorldProject {
         unpack_world(&package_path, &workspace_path)?;
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
-        let mut conn = open_database(world_db).await?;
-        validate_database(&mut conn).await?;
+        let mut conn = database::open_database(world_db).await?;
+        database::validate_database(&mut conn).await?;
 
-        checkpoint_wal(&mut conn).await?;
+        database::checkpoint_wal(&mut conn).await?;
         manifest.open();
         write_manifest(&manifest, &workspace_path).await?;
         pack_world(&workspace_path, &package_path)?;
@@ -127,7 +121,7 @@ impl WorldProject {
     }
 
     pub(crate) async fn save_world(&mut self) -> KazmasResult<()> {
-        checkpoint_wal(&mut self.conn).await?;
+        database::checkpoint_wal(&mut self.conn).await?;
 
         self.manifest.modify();
         write_manifest(&self.manifest, &self.workspace).await?;
@@ -138,21 +132,21 @@ impl WorldProject {
     }
 
     pub(crate) async fn close_world(self) -> KazmasResult<()> {
-        close_database(self.conn).await?;
+        database::close_database(self.conn).await?;
         fs::remove_dir_all(&self.workspace).await?;
         Ok(())
     }
 
     pub(crate) async fn get_node(&mut self, id: &Uuid) -> KazmasResult<Node> {
-        get_node(&mut self.conn, id).await
+        store::get_node(&mut self.conn, id).await
     }
 
     pub(crate) async fn get_metadata(&mut self, node_id: &Uuid) -> KazmasResult<NodeMetadata> {
-        get_metadata(&mut self.conn, node_id).await
+        store::get_metadata(&mut self.conn, node_id).await
     }
 
     pub(crate) async fn get_document(&mut self, node_id: &Uuid) -> KazmasResult<Document> {
-        get_document(&mut self.conn, node_id).await
+        store::get_document(&mut self.conn, node_id).await
     }
 
     pub(crate) async fn create_folder(
@@ -162,8 +156,8 @@ impl WorldProject {
     ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
         let node = Node::new(NodeKind::Folder, name, parent_id);
-        create_node(&mut tx, &node).await?;
-        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        store::create_node(&mut tx, &node).await?;
+        store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
         Ok(node.id)
     }
@@ -175,9 +169,9 @@ impl WorldProject {
     ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
         let node = Node::new(NodeKind::Chapter, name, parent_id);
-        create_node(&mut tx, &node).await?;
-        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
-        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        store::create_node(&mut tx, &node).await?;
+        store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
         Ok(node.id)
     }
@@ -189,53 +183,53 @@ impl WorldProject {
     ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
         let node = Node::new(NodeKind::WikiEntry, name, parent_id);
-        create_node(&mut tx, &node).await?;
-        create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
-        create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        store::create_node(&mut tx, &node).await?;
+        store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
         Ok(node.id)
     }
 
     pub(crate) async fn update_node(&mut self, node: &Node) -> KazmasResult<bool> {
-        update_node(&mut self.conn, node).await
+        store::update_node(&mut self.conn, node).await
     }
 
     pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
         let mut tx = self.conn.begin().await?;
-        let updated = update_metadata(&mut tx, metadata).await?;
+        let updated = store::update_metadata(&mut tx, metadata).await?;
         if !updated {
             tx.rollback().await?;
             return Ok(false);
         }
 
-        let node_updated = update_node_modified_at(&mut tx, &metadata.node_id).await?;
+        let node_updated = store::update_node_modified_at(&mut tx, &metadata.node_id).await?;
         tx.commit().await?;
         Ok(node_updated)
     }
 
     pub(crate) async fn update_document(&mut self, document: &Document) -> KazmasResult<bool> {
         let mut tx = self.conn.begin().await?;
-        let updated = update_document(&mut tx, document).await?;
+        let updated = store::update_document(&mut tx, document).await?;
         if !updated {
             tx.rollback().await?;
             return Ok(false);
         }
 
-        let node_updated = update_node_modified_at(&mut tx, &document.node_id).await?;
+        let node_updated = store::update_node_modified_at(&mut tx, &document.node_id).await?;
         tx.commit().await?;
         Ok(node_updated)
     }
 
     pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        delete_node(&mut self.conn, id).await
+        store::delete_node(&mut self.conn, id).await
     }
 
     pub(crate) async fn restore_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        restore_node(&mut self.conn, id).await
+        store::restore_node(&mut self.conn, id).await
     }
 
     pub(crate) async fn purge_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        purge_node(&mut self.conn, id).await
+        store::purge_node(&mut self.conn, id).await
     }
 }
 
