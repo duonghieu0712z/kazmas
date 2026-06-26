@@ -61,9 +61,6 @@ impl MenuManager {
 
         let menu_sections = self.menu_sections().await;
         let menu = build_menu(app, menu_sections)?;
-        if let Some(item) = menu.get("menu:about") {
-            log::error!("menu item: {:?}", item.id());
-        }
 
         *self.menu.lock().await = Some(menu);
         Ok(())
