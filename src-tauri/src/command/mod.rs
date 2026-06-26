@@ -9,6 +9,10 @@ pub(crate) fn commands() -> Commands<tauri::Wry> {
     collect_commands![
         menu::get_app_menu,
         menu::execute_menu_command,
+        world::get_world,
+        world::create_world,
+        world::open_world,
+        world::close_world,
         node::get_node,
         node::get_metadata,
         node::get_document,
@@ -21,9 +25,5 @@ pub(crate) fn commands() -> Commands<tauri::Wry> {
         node::delete_node,
         node::restore_node,
         node::purge_node,
-        world::get_world,
-        world::create_world,
-        world::open_world,
-        world::close_world
     ]
 }

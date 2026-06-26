@@ -15,17 +15,12 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct NodeDto {
-    #[specta(type = String)]
     id: Uuid,
-    #[specta(type = Option<String>)]
     parent_id: Option<Uuid>,
     kind: NodeKind,
     name: String,
-    #[specta(type = String)]
     created_at: DateTime<Utc>,
-    #[specta(type = String)]
     modified_at: DateTime<Utc>,
-    #[specta(type = Option<String>)]
     deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -46,8 +41,8 @@ impl From<Node> for NodeDto {
 #[derive(Debug, Clone, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct UpdateNodeDto {
-    id: String,
-    parent_id: Option<String>,
+    id: Uuid,
+    parent_id: Option<Uuid>,
     name: String,
 }
 
@@ -56,12 +51,11 @@ pub(super) struct UpdateNodeDto {
 pub(super) async fn get_node(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<NodeDto>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     let node = project_manager.get_node(&project_id, &node_id).await?;
@@ -73,16 +67,19 @@ pub(super) async fn get_node(
 pub(super) async fn get_metadata(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<String>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     let metadata = project_manager.get_metadata(&project_id, &node_id).await?;
-    Ok(metadata.map(|metadata| metadata.data.to_string()))
+    let metadata = metadata
+        .map(|metadata| serde_json::to_string(&metadata.data))
+        .transpose()
+        .map_err(KazmasError::from)?;
+    Ok(metadata)
 }
 
 #[tauri::command]
@@ -90,16 +87,19 @@ pub(super) async fn get_metadata(
 pub(super) async fn get_document(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<String>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     let document = project_manager.get_document(&project_id, &node_id).await?;
-    Ok(document.map(|document| document.content.to_string()))
+    let document = document
+        .map(|document| serde_json::to_string(&document.content))
+        .transpose()
+        .map_err(KazmasError::from)?;
+    Ok(document)
 }
 
 #[tauri::command]
@@ -107,19 +107,18 @@ pub(super) async fn get_document(
 pub(super) async fn create_folder(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    name: Option<String>,
-    parent_id: Option<String>,
-) -> CommandResult<Option<String>> {
+    name: Option<&str>,
+    parent_id: Option<Uuid>,
+) -> CommandResult<Option<Uuid>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let parent_id = parse_optional_uuid(parent_id.as_deref())?;
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_folder(&project_id, name.as_deref(), parent_id)
+        .create_folder(&project_id, name, parent_id)
         .await?;
-    Ok(id.map(|id| id.to_string()))
+    Ok(id)
 }
 
 #[tauri::command]
@@ -127,19 +126,18 @@ pub(super) async fn create_folder(
 pub(super) async fn create_chapter(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    name: Option<String>,
-    parent_id: Option<String>,
-) -> CommandResult<Option<String>> {
+    name: Option<&str>,
+    parent_id: Option<Uuid>,
+) -> CommandResult<Option<Uuid>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let parent_id = parse_optional_uuid(parent_id.as_deref())?;
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_chapter(&project_id, name.as_deref(), parent_id)
+        .create_chapter(&project_id, name, parent_id)
         .await?;
-    Ok(id.map(|id| id.to_string()))
+    Ok(id)
 }
 
 #[tauri::command]
@@ -147,19 +145,18 @@ pub(super) async fn create_chapter(
 pub(super) async fn create_wiki_entry(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    name: Option<String>,
-    parent_id: Option<String>,
-) -> CommandResult<Option<String>> {
+    name: Option<&str>,
+    parent_id: Option<Uuid>,
+) -> CommandResult<Option<Uuid>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let parent_id = parse_optional_uuid(parent_id.as_deref())?;
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_wiki_entry(&project_id, name.as_deref(), parent_id)
+        .create_wiki_entry(&project_id, name, parent_id)
         .await?;
-    Ok(id.map(|id| id.to_string()))
+    Ok(id)
 }
 
 #[tauri::command]
@@ -172,15 +169,13 @@ pub(super) async fn update_node(
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node.id)?;
-    let parent_id = parse_optional_uuid(node.parent_id.as_deref())?;
 
     let project_manager = state.project_manager();
-    let Some(mut existing) = project_manager.get_node(&project_id, &node_id).await? else {
+    let Some(mut existing) = project_manager.get_node(&project_id, &node.id).await? else {
         return Ok(None);
     };
 
-    existing.parent_id = parent_id;
+    existing.parent_id = node.parent_id;
     existing.name = node.name;
     existing.modified_at = Utc::now();
 
@@ -195,16 +190,15 @@ pub(super) async fn update_node(
 pub(super) async fn update_metadata(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
-    data: String,
+    node_id: Uuid,
+    data: &str,
 ) -> CommandResult<Option<bool>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
-    let data = parse_json(&data)?;
 
     let project_manager = state.project_manager();
+    let data = serde_json::from_str(data).map_err(KazmasError::from)?;
     project_manager
         .update_metadata(&project_id, &NodeMetadata::new(node_id, data))
         .await
@@ -216,16 +210,15 @@ pub(super) async fn update_metadata(
 pub(super) async fn update_document(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
-    content: String,
+    node_id: Uuid,
+    content: &str,
 ) -> CommandResult<Option<bool>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
-    let content = parse_json(&content)?;
 
     let project_manager = state.project_manager();
+    let content = serde_json::from_str(content).map_err(KazmasError::from)?;
     project_manager
         .update_document(&project_id, &Document::new(node_id, content))
         .await
@@ -237,12 +230,11 @@ pub(super) async fn update_document(
 pub(super) async fn delete_node(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<bool>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     project_manager
@@ -256,12 +248,11 @@ pub(super) async fn delete_node(
 pub(super) async fn restore_node(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<bool>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     project_manager
@@ -275,12 +266,11 @@ pub(super) async fn restore_node(
 pub(super) async fn purge_node(
     state: State<'_, AppState>,
     window: WebviewWindow,
-    node_id: String,
+    node_id: Uuid,
 ) -> CommandResult<Option<bool>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
     };
-    let node_id = parse_uuid(&node_id)?;
 
     let project_manager = state.project_manager();
     project_manager
@@ -299,19 +289,4 @@ async fn current_project_id(
 
     let registry = state.registry();
     Ok(registry.get_project_id(&window_id).await)
-}
-
-fn parse_uuid(value: &str) -> KazmasResult<Uuid> {
-    value
-        .parse()
-        .map_err(|error| KazmasError::Invalid(format!("invalid uuid {value}: {error}")))
-}
-
-fn parse_optional_uuid(value: Option<&str>) -> KazmasResult<Option<Uuid>> {
-    value.map(parse_uuid).transpose()
-}
-
-fn parse_json(value: &str) -> KazmasResult<serde_json::Value> {
-    serde_json::from_str(value)
-        .map_err(|error| KazmasError::Invalid(format!("invalid json payload: {error}")))
 }

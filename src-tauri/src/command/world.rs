@@ -17,14 +17,10 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct WorldManifestDto {
-    #[specta(type = String)]
     id: Uuid,
     name: String,
-    #[specta(type = String)]
     created_at: DateTime<Utc>,
-    #[specta(type = String)]
     modified_at: DateTime<Utc>,
-    #[specta(type = String)]
     opened_at: DateTime<Utc>,
 }
 
