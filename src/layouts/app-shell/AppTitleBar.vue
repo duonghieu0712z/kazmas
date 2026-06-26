@@ -11,7 +11,7 @@ import AppWindowControls from './AppWindowControls.vue';
 const isMac = platform() === 'macos';
 const window = getCurrentWindow();
 
-const { isDirty } = useWorldStore();
+const world = useWorldStore();
 
 const title = ref('');
 
@@ -34,7 +34,11 @@ onMounted(async () => {
 
         <div class="col-start-2 flex items-center gap-1 justify-self-center">
             <span>{{ title }}</span>
-            <CircleSmallIcon v-if="isDirty" class="size-3 fill-current" title="Unsaved changes" />
+            <CircleSmallIcon
+                v-if="world.isDirty"
+                class="size-3 fill-current"
+                title="Unsaved changes"
+            />
         </div>
 
         <AppWindowControls v-if="!isMac" class="justify-self-end" />
