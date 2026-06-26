@@ -41,12 +41,13 @@ export const useWorldStore = defineStore('world', () => {
         if (initialized) {
             return;
         }
-        initialized = true;
 
         await events.worldChanged.listen(({ payload }) => {
             dirty.value = payload;
         });
         await loadWorld();
+
+        initialized = true;
     };
 
     return {
