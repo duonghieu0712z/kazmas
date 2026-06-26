@@ -15,6 +15,7 @@ pub(crate) enum MenuCommand {
     CloseWindow,
     Copy,
     Cut,
+    EmptyTrash,
     #[cfg(target_os = "macos")]
     #[specta(skip)]
     Fullscreen,
@@ -66,6 +67,7 @@ impl MenuCommand {
             Self::CloseWindow => Some("Close Window".into()),
             Self::Copy => Some("Copy".into()),
             Self::Cut => Some("Cut".into()),
+            Self::EmptyTrash => Some("Empty Trash".into()),
             #[cfg(target_os = "macos")]
             Self::Hide => Some(format!("Hide {app_name}")),
             Self::NewChapter => Some("New Chapter".into()),
@@ -85,6 +87,9 @@ impl MenuCommand {
             Self::RecentWorlds => Some("Recent Worlds".into()),
             Self::Save => Some("Save".into()),
             Self::SaveAs => Some("Save As...".into()),
+            #[cfg(target_os = "macos")]
+            Self::Settings => Some("Preferences".into()),
+            #[cfg(not(target_os = "macos"))]
             Self::Settings => Some("Settings...".into()),
             Self::SelectAll => Some("Select All".into()),
             Self::ToggleDevtools => Some("Toggle Developer Tools".into()),

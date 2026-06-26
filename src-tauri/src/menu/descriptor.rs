@@ -121,6 +121,8 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
                 item(MenuCommand::NewFolder, app_name),
                 separator("project-settings-separator"),
                 item(MenuCommand::ProjectSettings, app_name),
+                separator("project-trash-separator"),
+                item(MenuCommand::EmptyTrash, app_name),
             ],
         },
         #[cfg(target_os = "macos")]
