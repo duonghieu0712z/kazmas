@@ -30,11 +30,15 @@ pub(crate) enum MenuCommand {
     #[cfg(target_os = "macos")]
     #[specta(skip)]
     Minimize,
+    NewChapter,
     NewFile,
+    NewFolder,
     NewWindow,
     NewWorld,
+    NewWikiEntry,
     OpenWorld,
     Paste,
+    ProjectSettings,
     Quit,
     Redo,
     RecentWorlds,
@@ -64,11 +68,15 @@ impl MenuCommand {
             Self::Cut => Some("Cut".into()),
             #[cfg(target_os = "macos")]
             Self::Hide => Some(format!("Hide {app_name}")),
+            Self::NewChapter => Some("New Chapter".into()),
             Self::NewFile => Some("New File...".into()),
+            Self::NewFolder => Some("New Folder".into()),
             Self::NewWindow => Some("New Window...".into()),
             Self::NewWorld => Some("New World...".into()),
+            Self::NewWikiEntry => Some("New Wiki".into()),
             Self::OpenWorld => Some("Open World...".into()),
             Self::Paste => Some("Paste".into()),
+            Self::ProjectSettings => Some("Project Settings...".into()),
             #[cfg(target_os = "macos")]
             Self::Quit => Some(format!("Quit {app_name}")),
             #[cfg(not(target_os = "macos"))]
@@ -87,23 +95,23 @@ impl MenuCommand {
         }
     }
 
-    pub(super) fn accelerator(self) -> Option<&'static str> {
+    pub(super) fn accelerator(self) -> Option<String> {
         match self {
-            Self::CloseWorld => Some("CmdOrCtrl+Alt+W"),
-            Self::CloseWindow => Some("CmdOrCtrl+W"),
-            Self::Copy => Some("CmdOrCtrl+C"),
-            Self::Cut => Some("CmdOrCtrl+X"),
-            Self::NewFile => Some("CmdOrCtrl+N"),
-            Self::NewWindow => Some("CmdOrCtrl+Shift+W"),
-            Self::NewWorld => Some("CmdOrCtrl+Shift+N"),
-            Self::OpenWorld => Some("CmdOrCtrl+O"),
-            Self::Paste => Some("CmdOrCtrl+V"),
-            Self::Redo => Some("CmdOrCtrl+Shift+Z"),
-            Self::Save => Some("CmdOrCtrl+S"),
-            Self::SaveAs => Some("CmdOrCtrl+Shift+S"),
-            Self::Settings => Some("CmdOrCtrl+,"),
-            Self::SelectAll => Some("CmdOrCtrl+A"),
-            Self::Undo => Some("CmdOrCtrl+Z"),
+            Self::CloseWorld => Some("CmdOrCtrl+Alt+W".into()),
+            Self::CloseWindow => Some("CmdOrCtrl+W".into()),
+            Self::Copy => Some("CmdOrCtrl+C".into()),
+            Self::Cut => Some("CmdOrCtrl+X".into()),
+            Self::NewWindow => Some("CmdOrCtrl+Shift+W".into()),
+            Self::NewWorld => Some("CmdOrCtrl+Shift+N".into()),
+            Self::OpenWorld => Some("CmdOrCtrl+O".into()),
+            Self::Paste => Some("CmdOrCtrl+V".into()),
+            Self::ProjectSettings => Some("CmdOrCtrl+Shift+,".into()),
+            Self::Redo => Some("CmdOrCtrl+Shift+Z".into()),
+            Self::Save => Some("CmdOrCtrl+S".into()),
+            Self::SaveAs => Some("CmdOrCtrl+Shift+S".into()),
+            Self::Settings => Some("CmdOrCtrl+,".into()),
+            Self::SelectAll => Some("CmdOrCtrl+A".into()),
+            Self::Undo => Some("CmdOrCtrl+Z".into()),
             _ => None,
         }
     }

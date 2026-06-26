@@ -68,7 +68,7 @@ export type CommandError = {
 
 export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
 
-export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "new-file" | "new-window" | "new-world" | "open-world" | "paste" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
+export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "new-chapter" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
 export type MenuCommandEvent = MenuCommand;
 
