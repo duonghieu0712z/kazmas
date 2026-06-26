@@ -1,6 +1,9 @@
 use tauri::{AppHandle, async_runtime::spawn};
 #[cfg(target_os = "macos")]
-use tauri::{Wry, menu::Menu};
+use tauri::{
+    Wry,
+    menu::{Menu, MenuItemKind},
+};
 use tokio::sync::{
     Mutex,
     watch::{Receiver, Sender},
@@ -12,7 +15,7 @@ use super::get_state;
 use crate::menu::{build_menu, handle_menu_event};
 use crate::{
     app::{KazmasError, KazmasResult},
-    menu::{self, MenuSection},
+    menu::{self, MenuCommand, MenuSection},
 };
 
 #[derive(Default)]
@@ -45,8 +48,6 @@ impl MenuManager {
 
     #[cfg(target_os = "macos")]
     async fn build_menu(&self, app: &AppHandle) -> KazmasResult<()> {
-        let menu_sections = self.menu_sections().await;
-        let menu = build_menu(app, menu_sections)?;
         app.on_menu_event(|app, event| {
             let app = app.clone();
             let event = event.clone();
@@ -58,7 +59,29 @@ impl MenuManager {
             });
         });
 
+        let menu_sections = self.menu_sections().await;
+        let menu = build_menu(app, menu_sections)?;
+        if let Some(item) = menu.get("menu:about") {
+            log::error!("menu item: {:?}", item.id());
+        }
+
         *self.menu.lock().await = Some(menu);
+        Ok(())
+    }
+
+    pub(crate) async fn set_command_enabled(
+        &self,
+        command: MenuCommand,
+        enabled: bool,
+    ) -> KazmasResult<()> {
+        self.update_menu(|menu_sections| {
+            menu::set_command_enabled(menu_sections, command, enabled);
+        })
+        .await?;
+
+        #[cfg(target_os = "macos")]
+        self.set_native_command_enabled(command, enabled).await?;
+
         Ok(())
     }
 
@@ -93,4 +116,46 @@ impl MenuManager {
     fn subscribe(&self) -> Receiver<Vec<MenuSection>> {
         self.menu_sections_tx.subscribe()
     }
+
+    #[cfg(target_os = "macos")]
+    async fn set_native_command_enabled(
+        &self,
+        command: MenuCommand,
+        enabled: bool,
+    ) -> KazmasResult<()> {
+        let Some(menu) = self.menu.lock().await.clone() else {
+            return Ok(());
+        };
+
+        for item in menu.items()? {
+            set_native_item_enabled(&item, command, enabled)?;
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn set_native_item_enabled(
+    item: &MenuItemKind<Wry>,
+    command: MenuCommand,
+    enabled: bool,
+) -> KazmasResult<()> {
+    if item.id().as_ref() == command.as_ref() {
+        match item {
+            MenuItemKind::MenuItem(item) => item.set_enabled(enabled)?,
+            MenuItemKind::Submenu(item) => item.set_enabled(enabled)?,
+            MenuItemKind::Check(item) => item.set_enabled(enabled)?,
+            MenuItemKind::Icon(item) => item.set_enabled(enabled)?,
+            MenuItemKind::Predefined(_) => {}
+        }
+    }
+
+    if let MenuItemKind::Submenu(submenu) = item {
+        for item in submenu.items()? {
+            set_native_item_enabled(&item, command, enabled)?;
+        }
+    }
+
+    Ok(())
 }

@@ -206,3 +206,42 @@ fn text(id: MenuCommand, app_name: &str) -> String {
 fn separator(id: &'static str) -> MenuItem {
     MenuItem::Separator { id: id.into() }
 }
+
+pub(crate) fn set_command_enabled(
+    menu_sections: &mut [MenuSection],
+    command: MenuCommand,
+    enabled: bool,
+) {
+    for section in menu_sections {
+        set_item_enabled(&mut section.items, command, enabled);
+    }
+}
+
+fn set_item_enabled(items: &mut [MenuItem], command: MenuCommand, enabled: bool) {
+    for item in items {
+        match item {
+            MenuItem::Item {
+                id,
+                enabled: item_enabled,
+                ..
+            }
+            | MenuItem::Check {
+                id,
+                enabled: item_enabled,
+                ..
+            } if *id == command => *item_enabled = enabled,
+            MenuItem::Submenu {
+                id,
+                enabled: item_enabled,
+                items,
+                ..
+            } => {
+                if *id == command {
+                    *item_enabled = enabled;
+                }
+                set_item_enabled(items, command, enabled);
+            }
+            _ => {}
+        }
+    }
+}
