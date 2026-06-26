@@ -36,6 +36,10 @@ impl WorldProject {
         self.manifest.clone()
     }
 
+    pub(crate) fn is_dirty(&self) -> bool {
+        self.dirty
+    }
+
     pub(crate) async fn create_world(
         name: &str,
         path: impl AsRef<Path>,
@@ -159,6 +163,7 @@ impl WorldProject {
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
+        self.dirty = true;
         Ok(node.id)
     }
 
@@ -173,6 +178,7 @@ impl WorldProject {
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
         store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
+        self.dirty = true;
         Ok(node.id)
     }
 
@@ -187,11 +193,16 @@ impl WorldProject {
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
         store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
         tx.commit().await?;
+        self.dirty = true;
         Ok(node.id)
     }
 
     pub(crate) async fn update_node(&mut self, node: &Node) -> KazmasResult<bool> {
-        store::update_node(&mut self.conn, node).await
+        let updated = store::update_node(&mut self.conn, node).await?;
+        if updated {
+            self.dirty = true;
+        }
+        Ok(updated)
     }
 
     pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
@@ -204,6 +215,9 @@ impl WorldProject {
 
         let node_updated = store::update_node_modified_at(&mut tx, &metadata.node_id).await?;
         tx.commit().await?;
+        if node_updated {
+            self.dirty = true;
+        }
         Ok(node_updated)
     }
 
@@ -217,19 +231,34 @@ impl WorldProject {
 
         let node_updated = store::update_node_modified_at(&mut tx, &document.node_id).await?;
         tx.commit().await?;
+        if node_updated {
+            self.dirty = true;
+        }
         Ok(node_updated)
     }
 
     pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        store::delete_node(&mut self.conn, id).await
+        let deleted = store::delete_node(&mut self.conn, id).await?;
+        if deleted {
+            self.dirty = true;
+        }
+        Ok(deleted)
     }
 
     pub(crate) async fn restore_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        store::restore_node(&mut self.conn, id).await
+        let restored = store::restore_node(&mut self.conn, id).await?;
+        if restored {
+            self.dirty = true;
+        }
+        Ok(restored)
     }
 
     pub(crate) async fn purge_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
-        store::purge_node(&mut self.conn, id).await
+        let purged = store::purge_node(&mut self.conn, id).await?;
+        if purged {
+            self.dirty = true;
+        }
+        Ok(purged)
     }
 }
 

@@ -10,7 +10,7 @@ use uuid::Uuid;
 use super::command::MenuCommand;
 use crate::{
     app::{KazmasResult, spawn_window},
-    event::MenuCommandEvent,
+    event::{MenuCommandEvent, WorldChangedEvent},
     state::get_state,
     utils::window_label,
 };
@@ -60,6 +60,11 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
     {
         let project_manager = state.project_manager();
         project_manager.save_project(&project_id).await?;
+        if let Some(dirty) = project_manager.project_dirty(&project_id).await {
+            WorldChangedEvent(dirty).emit_to(app, EventTarget::WebviewWindow {
+                label: window_label(&window_id),
+            })?;
+        }
     }
 
     Ok(())

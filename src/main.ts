@@ -1,8 +1,8 @@
 import { createPinia } from 'pinia';
 
-import { loadWorld } from '@/actions/world';
 import App from '@/App.vue';
 import { useMenu } from '@/composables/useMenu';
+import { useWorldStore } from '@/stores/world';
 
 import '@/styles/globals.css';
 
@@ -11,4 +11,4 @@ app.use(createPinia());
 app.mount('#app');
 
 await useMenu().initMenu();
-await loadWorld();
+await useWorldStore().initWorld();

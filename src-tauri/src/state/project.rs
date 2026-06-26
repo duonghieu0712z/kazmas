@@ -22,6 +22,11 @@ impl ProjectManager {
         Ok(manifest)
     }
 
+    pub(crate) async fn project_dirty(&self, id: &Uuid) -> Option<bool> {
+        let projects = self.projects.lock().await;
+        projects.get(id).map(|project| project.is_dirty())
+    }
+
     pub(crate) async fn open_project_or_close<T>(
         &self,
         project: WorldProject,
