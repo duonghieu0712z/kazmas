@@ -47,7 +47,7 @@ pub(crate) async fn handle_command(
         MenuCommand::OpenWorld => emit_menu_event(app, window_id, MenuCommand::OpenWorld)?,
         MenuCommand::Save => save_world(app, window_id).await?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),
-        _ => log::debug!("Menu item {} not handled", command.as_ref()),
+        _ => (),
     }
     Ok(())
 }

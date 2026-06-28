@@ -6,7 +6,7 @@ use tauri::menu::WINDOW_SUBMENU_ID;
 
 use super::MenuCommand;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MenuSection {
     pub(super) id: String,
@@ -14,7 +14,7 @@ pub(crate) struct MenuSection {
     pub(super) items: Vec<MenuItem>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub(crate) enum MenuItem {
     #[cfg(target_os = "macos")]

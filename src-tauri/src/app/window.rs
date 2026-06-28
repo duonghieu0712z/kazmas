@@ -52,8 +52,6 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
         });
     });
 
-    focus_window(&window)?;
-
     let state = get_state(app);
     let registry = state.registry();
     let project_manager = state.project_manager();
@@ -64,6 +62,8 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<&Uuid>) -> 
     {
         window.set_title(&manifest.name)?;
     }
+
+    focus_window(&window)?;
 
     #[cfg(debug_assertions)]
     window.open_devtools();
@@ -137,6 +137,9 @@ pub(crate) async fn open_project_in_window(
         project_manager.close_project(&prev_project_id).await?;
     }
 
+    let menu_manager = state.menu_manager();
+    menu_manager.set_project_commands_enabled(true).await?;
+
     Ok(())
 }
 
@@ -146,6 +149,7 @@ async fn handle_webview_window_event(
 ) -> KazmasResult<()> {
     let state = get_state(window);
     let registry = state.registry();
+    let menu_manager = state.menu_manager();
     let project_manager = state.project_manager();
 
     let Some(window_id) = parse_window_label(window.label())? else {
@@ -155,7 +159,13 @@ async fn handle_webview_window_event(
     match event {
         WindowEvent::Focused(flag) => {
             if *flag {
-                registry.set_focus(Some(&window_id)).await;
+                if Some(window_id) != registry.focused_window().await {
+                    registry.set_focus(Some(&window_id)).await;
+                    let has_project = registry.get_project_id(&window_id).await.is_some();
+                    menu_manager
+                        .set_project_commands_enabled(has_project)
+                        .await?;
+                }
             } else if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
             }
@@ -163,12 +173,13 @@ async fn handle_webview_window_event(
         WindowEvent::Destroyed => {
             if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
+                menu_manager.set_project_commands_enabled(false).await?;
             }
             if let Some(project_id) = registry.unregister_window(&window_id).await {
                 project_manager.close_project(&project_id).await?;
             }
         }
-        _ => log::debug!("Window unhandled event {event:?}"),
+        _ => (),
     }
     Ok(())
 }

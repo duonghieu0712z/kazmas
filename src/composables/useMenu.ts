@@ -15,18 +15,23 @@ function createMenu() {
         if (initialized) {
             return;
         }
-        initialized = true;
 
         if (platform() !== 'macos') {
             const result = await commands.getAppMenu();
             if (result.status === 'ok') {
                 menus.value = result.data;
             }
+
+            await events.menuChanged.listen(({ payload }) => {
+                menus.value = payload;
+            });
         }
 
         await events.menuCommand.listen(async ({ payload }) => {
             await handleMenuCommand(payload);
         });
+
+        initialized = true;
     };
 
     const executeMenuCommand = async (command: MenuCommand) => {

@@ -53,6 +53,7 @@ export const commands = {
 
 /** Events */
 export const events = {
+	menuChanged: makeEvent<MenuChangedEvent>("menu-changed"),
 	menuCommand: makeEvent<MenuCommandEvent>("menu-command"),
 	worldChanged: makeEvent<WorldChangedEvent>("world-changed"),
 };
@@ -67,6 +68,8 @@ export type CommandError = {
 };
 
 export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
+
+export type MenuChangedEvent = MenuSection[];
 
 export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-chapter" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
