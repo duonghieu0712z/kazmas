@@ -40,12 +40,12 @@ pub(crate) async fn handle_command(
     window_id: Option<Uuid>,
 ) -> KazmasResult<()> {
     match command {
-        MenuCommand::About => emit_menu_event(app, window_id, MenuCommand::About)?,
-        MenuCommand::CloseWorld => emit_menu_event(app, window_id, MenuCommand::CloseWorld)?,
         MenuCommand::NewWindow => spawn_window(app, None).await?,
-        MenuCommand::NewWorld => emit_menu_event(app, window_id, MenuCommand::NewWorld)?,
-        MenuCommand::OpenWorld => emit_menu_event(app, window_id, MenuCommand::OpenWorld)?,
         MenuCommand::Save => save_world(app, window_id).await?,
+        menu_command @ (MenuCommand::About
+        | MenuCommand::CloseWorld
+        | MenuCommand::NewWorld
+        | MenuCommand::OpenWorld) => emit_menu_event(app, window_id, menu_command)?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),
         _ => (),
     }
