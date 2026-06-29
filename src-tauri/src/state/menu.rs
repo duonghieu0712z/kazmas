@@ -107,6 +107,7 @@ impl MenuManager {
                 MenuCommand::NewFile,
                 MenuCommand::NewFolder,
                 MenuCommand::ProjectSettings,
+                MenuCommand::EmptyTrash,
             ],
             enabled,
         )
