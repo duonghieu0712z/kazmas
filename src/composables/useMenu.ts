@@ -1,11 +1,11 @@
 import type { MenuCommand, MenuSection } from '@/generated/bindings';
 
-import { platform } from '@tauri-apps/plugin-os';
 import { createGlobalState } from '@vueuse/core';
 
 import { closeWorld, newWorld, openWorld } from '@/actions/world';
 import { openAboutDialog } from '@/dialogs';
 import { commands, events } from '@/generated/bindings';
+import { isMac } from '@/utils/platform';
 
 function createMenu() {
     const menus = ref<MenuSection[]>([]);
@@ -16,7 +16,7 @@ function createMenu() {
             return;
         }
 
-        if (platform() !== 'macos') {
+        if (!isMac()) {
             const result = await commands.getAppMenu();
             if (result.status === 'ok') {
                 menus.value = result.data;
