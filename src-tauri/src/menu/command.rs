@@ -87,9 +87,6 @@ impl MenuCommand {
             Self::RecentWorlds => Some("Recent Worlds".into()),
             Self::Save => Some("Save".into()),
             Self::SaveAs => Some("Save As...".into()),
-            #[cfg(target_os = "macos")]
-            Self::Settings => Some("Preferences".into()),
-            #[cfg(not(target_os = "macos"))]
             Self::Settings => Some("Settings...".into()),
             Self::SelectAll => Some("Select All".into()),
             Self::ToggleDevtools => Some("Toggle Developer Tools".into()),
