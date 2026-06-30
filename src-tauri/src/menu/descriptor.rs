@@ -115,7 +115,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             text: "Project".into(),
             items: vec![
                 submenu(MenuCommand::NewFile, app_name, vec![
-                    item(MenuCommand::NewChapter, app_name),
+                    item(MenuCommand::NewManuscriptEntry, app_name),
                     item(MenuCommand::NewWikiEntry, app_name),
                 ]),
                 item(MenuCommand::NewFolder, app_name),

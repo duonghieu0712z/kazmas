@@ -17,7 +17,7 @@ pub(crate) fn commands() -> Commands<tauri::Wry> {
         node::get_metadata,
         node::get_document,
         node::create_folder,
-        node::create_chapter,
+        node::create_manuscript_entry,
         node::create_wiki_entry,
         node::update_node,
         node::update_metadata,

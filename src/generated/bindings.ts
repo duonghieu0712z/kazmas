@@ -41,7 +41,7 @@ export const commands = {
 	getMetadata: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_metadata", { nodeId })),
 	getDocument: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_document", { nodeId })),
 	createFolder: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_folder", { name, parentId })),
-	createChapter: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_chapter", { name, parentId })),
+	createManuscriptEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_manuscript_entry", { name, parentId })),
 	createWikiEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_wiki_entry", { name, parentId })),
 	updateNode: (node: UpdateNodeDto) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_node", { node })),
 	updateMetadata: (nodeId: string, data: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_metadata", { nodeId, data })),
@@ -71,7 +71,7 @@ export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO"
 
 export type MenuChangedEvent = MenuSection[];
 
-export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-chapter" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
+export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-manuscript-entry" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
 export type MenuCommandEvent = MenuCommand;
 
@@ -93,7 +93,7 @@ export type NodeDto = {
 	deletedAt: string | null,
 };
 
-export type NodeKind = "world" | "folder" | "chapter" | "wikiEntry";
+export type NodeKind = "world" | "manuscript" | "wiki" | "folder" | "manuscriptEntry" | "wikiEntry";
 
 export type UpdateNodeDto = {
 	id: string,

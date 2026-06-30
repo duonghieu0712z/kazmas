@@ -128,7 +128,7 @@ pub(super) async fn create_folder(
 
 #[tauri::command]
 #[specta::specta]
-pub(super) async fn create_chapter(
+pub(super) async fn create_manuscript_entry(
     state: State<'_, AppState>,
     window: WebviewWindow,
     name: Option<&str>,
@@ -140,7 +140,7 @@ pub(super) async fn create_chapter(
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_chapter(&project_id, name, parent_id)
+        .create_manuscript_entry(&project_id, name, parent_id)
         .await?;
     if id.is_some() {
         emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;

@@ -31,7 +31,7 @@ pub(crate) enum MenuCommand {
     #[cfg(target_os = "macos")]
     #[specta(skip)]
     Minimize,
-    NewChapter,
+    NewManuscriptEntry,
     NewFile,
     NewFolder,
     NewWindow,
@@ -70,7 +70,7 @@ impl MenuCommand {
             Self::EmptyTrash => Some("Empty Trash".into()),
             #[cfg(target_os = "macos")]
             Self::Hide => Some(format!("Hide {app_name}")),
-            Self::NewChapter => Some("New Chapter".into()),
+            Self::NewManuscriptEntry => Some("New Manuscript Entry".into()),
             Self::NewFile => Some("New File...".into()),
             Self::NewFolder => Some("New Folder".into()),
             Self::NewWindow => Some("New Window...".into()),
