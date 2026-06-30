@@ -23,7 +23,6 @@
         "format": "oxfmt --check .",
         "format:fix": "oxfmt .",
         "bump": "node bump-version.js",
-        "commitlint": "commitlint --edit",
         "prepare": "husky"
     },
     "dependencies": {
