@@ -37,7 +37,7 @@ jobs:
 
       - name: Lint latest commit message
         if: github.event_name == 'push'
-        run: pnpm exec commitlint --last --verbose
+        run: pnpm exec commitlint --from ${{ github.event.before }} --to ${{ github.sha }} --verbose
 
       - name: Lint PR commit messages
         if: github.event_name == 'pull_request'
