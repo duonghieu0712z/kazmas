@@ -1,6 +1,6 @@
 {
     "extends": "@tsconfig/node24/tsconfig.json",
-    "include": ["vite.config.*", "eslint.config.*", "lint-staged.config.*"],
+    "include": ["vite.config.*", "eslint.config.*", "lint-staged.config.*", "commitlint.config.*"],
     "compilerOptions": {
         "module": "preserve",
         "moduleResolution": "bundler",

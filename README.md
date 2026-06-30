@@ -2,7 +2,7 @@
 
 ## Setup
 
-Install Node.js, pnpm, Rust, and the Tauri system dependencies for your operating system. This project requires Node.js `^20.19.0 || >=22.12.0`.
+Install Node.js, pnpm, Rust, and the Tauri system dependencies for your operating system. This project requires Node.js `>=22.12.0`.
 
 On Ubuntu/Debian, install the Tauri Linux dependencies:
 
