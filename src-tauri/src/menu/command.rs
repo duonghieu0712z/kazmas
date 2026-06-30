@@ -70,7 +70,7 @@ impl MenuCommand {
             Self::EmptyTrash => Some("Empty Trash".into()),
             #[cfg(target_os = "macos")]
             Self::Hide => Some(format!("Hide {app_name}")),
-            Self::NewManuscriptEntry => Some("New Manuscript Entry".into()),
+            Self::NewManuscriptEntry => Some("New Manuscript".into()),
             Self::NewFile => Some("New File...".into()),
             Self::NewFolder => Some("New Folder".into()),
             Self::NewWindow => Some("New Window...".into()),
