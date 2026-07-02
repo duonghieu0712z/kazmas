@@ -167,13 +167,13 @@ impl WorldProject {
         Ok(node.id)
     }
 
-    pub(crate) async fn create_chapter(
+    pub(crate) async fn create_manuscript_entry(
         &mut self,
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
-        let node = Node::new(NodeKind::Chapter, name, parent_id);
+        let node = Node::new(NodeKind::ManuscriptEntry, name, parent_id);
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
         store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;

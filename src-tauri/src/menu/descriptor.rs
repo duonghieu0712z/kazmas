@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::menu::HELP_SUBMENU_ID;
 #[cfg(target_os = "macos")]
@@ -6,15 +6,15 @@ use tauri::menu::WINDOW_SUBMENU_ID;
 
 use super::MenuCommand;
 
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MenuSection {
-    pub(super) id: &'static str,
+    pub(super) id: String,
     pub(super) text: String,
     pub(super) items: Vec<MenuItem>,
 }
 
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub(crate) enum MenuItem {
     #[cfg(target_os = "macos")]
@@ -26,13 +26,13 @@ pub(crate) enum MenuItem {
     Item {
         id: MenuCommand,
         text: String,
-        shortcut: Option<&'static str>,
+        shortcut: Option<String>,
         enabled: bool,
     },
     Check {
         id: MenuCommand,
         text: String,
-        shortcut: Option<&'static str>,
+        shortcut: Option<String>,
         checked: bool,
         enabled: bool,
     },
@@ -43,7 +43,7 @@ pub(crate) enum MenuItem {
         enabled: bool,
     },
     Separator {
-        id: &'static str,
+        id: String,
     },
 }
 
@@ -51,7 +51,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
     vec![
         #[cfg(target_os = "macos")]
         MenuSection {
-            id: "app",
+            id: "app".into(),
             text: app_name.into(),
             items: vec![
                 item(MenuCommand::About, app_name),
@@ -69,10 +69,9 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             ],
         },
         MenuSection {
-            id: "file",
+            id: "file".into(),
             text: "File".into(),
             items: vec![
-                item(MenuCommand::NewFile, app_name),
                 item(MenuCommand::NewWorld, app_name),
                 item(MenuCommand::NewWindow, app_name),
                 separator("file-open-separator"),
@@ -98,7 +97,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             ],
         },
         MenuSection {
-            id: "edit",
+            id: "edit".into(),
             text: "Edit".into(),
             items: vec![
                 native(MenuCommand::Undo, app_name),
@@ -111,9 +110,24 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
                 native(MenuCommand::SelectAll, app_name),
             ],
         },
+        MenuSection {
+            id: "project".into(),
+            text: "Project".into(),
+            items: vec![
+                submenu(MenuCommand::NewFile, app_name, vec![
+                    item(MenuCommand::NewManuscriptEntry, app_name),
+                    item(MenuCommand::NewWikiEntry, app_name),
+                ]),
+                item(MenuCommand::NewFolder, app_name),
+                separator("project-settings-separator"),
+                item(MenuCommand::ProjectSettings, app_name),
+                separator("project-trash-separator"),
+                item(MenuCommand::EmptyTrash, app_name),
+            ],
+        },
         #[cfg(target_os = "macos")]
         MenuSection {
-            id: WINDOW_SUBMENU_ID,
+            id: WINDOW_SUBMENU_ID.into(),
             text: "Window".into(),
             items: vec![
                 predefined(MenuCommand::Minimize, app_name),
@@ -125,7 +139,7 @@ pub(crate) fn menu_sections(app_name: &str) -> Vec<MenuSection> {
             ],
         },
         MenuSection {
-            id: HELP_SUBMENU_ID,
+            id: HELP_SUBMENU_ID.into(),
             text: "Help".into(),
             items: vec![
                 #[cfg(not(target_os = "macos"))]
@@ -192,5 +206,44 @@ fn text(id: MenuCommand, app_name: &str) -> String {
 }
 
 fn separator(id: &'static str) -> MenuItem {
-    MenuItem::Separator { id }
+    MenuItem::Separator { id: id.into() }
+}
+
+pub(crate) fn set_command_enabled(
+    menu_sections: &mut [MenuSection],
+    command: MenuCommand,
+    enabled: bool,
+) {
+    for section in menu_sections {
+        set_item_enabled(&mut section.items, command, enabled);
+    }
+}
+
+fn set_item_enabled(items: &mut [MenuItem], command: MenuCommand, enabled: bool) {
+    for item in items {
+        match item {
+            MenuItem::Item {
+                id,
+                enabled: item_enabled,
+                ..
+            }
+            | MenuItem::Check {
+                id,
+                enabled: item_enabled,
+                ..
+            } if *id == command => *item_enabled = enabled,
+            MenuItem::Submenu {
+                id,
+                enabled: item_enabled,
+                items,
+                ..
+            } => {
+                if *id == command {
+                    *item_enabled = enabled;
+                }
+                set_item_enabled(items, command, enabled);
+            }
+            _ => {}
+        }
+    }
 }
