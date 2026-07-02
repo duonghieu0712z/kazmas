@@ -70,7 +70,7 @@ jobs:
           RUBY
 
   build:
-    name: Build release (${{ matrix.os }})
+    name: Build release (${{ matrix.label }})
     needs: changelog
     permissions:
       contents: write
@@ -81,10 +81,13 @@ jobs:
       matrix:
         include:
           - os: macos-latest
+            label: macos-aarch64
             args: --target aarch64-apple-darwin
           - os: macos-latest
+            label: macos-x86_64
             args: --target x86_64-apple-darwin
           - os: windows-latest
+            label: windows
             args: ''
 
     steps:
@@ -121,7 +124,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: Kazmas v__VERSION__
+          releaseName: v__VERSION__
           releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
