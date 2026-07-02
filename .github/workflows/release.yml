@@ -82,13 +82,11 @@ jobs:
         include:
           - os: macos-latest
             label: macos-aarch64
-            args: --target aarch64-apple-darwin
-          - os: macos-latest
+          - os: macos-15-intel
             label: macos-x86_64
             args: --target x86_64-apple-darwin
           - os: windows-latest
             label: windows
-            args: ''
 
     steps:
       - name: Checkout repository
