@@ -131,16 +131,9 @@ fn create_temp_package_path(package: impl AsRef<Path>) -> PathBuf {
 
 fn replace_package(temp_package: impl AsRef<Path>, package: impl AsRef<Path>) -> KazmasResult<()> {
     let temp_package = temp_package.as_ref();
-    let package = package.as_ref();
-
     if let Err(error) = fs::rename(temp_package, package) {
-        if package.exists() {
-            fs::remove_file(package)?;
-            fs::rename(temp_package, package)?;
-        } else {
-            fs::remove_file(temp_package)?;
-            return Err(error.into());
-        }
+        fs::remove_file(temp_package)?;
+        return Err(error.into());
     }
 
     Ok(())
