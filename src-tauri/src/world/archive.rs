@@ -63,7 +63,7 @@ pub(super) fn pack_world(
     temp.as_file().sync_all()?;
 
     let temp_package = temp.into_temp_path();
-    replace_package(temp_package, package)?;
+    fs::rename(&temp_package, package)?;
 
     Ok(())
 }
@@ -135,14 +135,4 @@ fn create_temp_package(package: impl AsRef<Path>) -> KazmasResult<NamedTempFile>
         .tempfile_in(parent)?;
 
     Ok(temp_package)
-}
-
-fn replace_package(temp_package: impl AsRef<Path>, package: impl AsRef<Path>) -> KazmasResult<()> {
-    let temp_package = temp_package.as_ref();
-    if let Err(error) = fs::rename(temp_package, package) {
-        fs::remove_file(temp_package)?;
-        return Err(error.into());
-    }
-
-    Ok(())
 }
