@@ -1,10 +1,10 @@
 use std::{
     fs::{self, File},
     io,
-    path::{Path, PathBuf},
+    path::Path,
 };
 
-use uuid::Uuid;
+use tempfile::NamedTempFile;
 use walkdir::WalkDir;
 use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
 
@@ -24,14 +24,7 @@ pub(super) fn pack_world(
     package: impl AsRef<Path>,
 ) -> KazmasResult<()> {
     let package = package.as_ref();
-    let temp_package = create_temp_package_path(package);
-
-    if let Some(parent) = package.parent() {
-        fs::create_dir_all(parent)?;
-    }
-
-    let zip_file = File::create(&temp_package)?;
-    let mut writer = ZipWriter::new(zip_file);
+    let mut writer = ZipWriter::new(create_temp_package(package)?);
 
     let options = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Zstd)
@@ -66,7 +59,10 @@ pub(super) fn pack_world(
         io::copy(&mut file, &mut writer)?;
     }
 
-    writer.finish()?;
+    let temp = writer.finish()?;
+    temp.as_file().sync_all()?;
+
+    let temp_package = temp.into_temp_path();
     replace_package(temp_package, package)?;
 
     Ok(())
@@ -124,9 +120,21 @@ fn should_skip_entry(path: impl AsRef<Path>) -> bool {
         .is_some_and(|ext| ext.ends_with(WAL_SUFFIX) || ext.ends_with(SHM_SUFFIX))
 }
 
-fn create_temp_package_path(package: impl AsRef<Path>) -> PathBuf {
-    let temp_file_name = format!(".{}.tmp", Uuid::now_v7().simple());
-    package.as_ref().with_file_name(temp_file_name)
+fn create_temp_package(package: impl AsRef<Path>) -> KazmasResult<NamedTempFile> {
+    let parent = package
+        .as_ref()
+        .parent()
+        .filter(|path| !path.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+
+    fs::create_dir_all(parent)?;
+
+    let temp_package = tempfile::Builder::new()
+        .prefix(".")
+        .suffix(".tmp")
+        .tempfile_in(parent)?;
+
+    Ok(temp_package)
 }
 
 fn replace_package(temp_package: impl AsRef<Path>, package: impl AsRef<Path>) -> KazmasResult<()> {
