@@ -31,19 +31,20 @@ jobs:
           require 'securerandom'
 
           ref = ENV.fetch('GITHUB_REF_NAME')
-          version = ref.sub(/^v/, '')
-          if version == ref
+          event_name = ENV.fetch('GITHUB_EVENT_NAME')
+          heading_name = event_name == 'workflow_dispatch' ? 'Unreleased' : ref.sub(/^v/, '')
+          if heading_name == ref
             abort 'package.json is required to resolve the release version.' unless File.exist?('package.json')
-            version = JSON.parse(File.read('package.json')).fetch('version')
+            heading_name = JSON.parse(File.read('package.json')).fetch('version')
           end
 
-          body = "Version #{version} release artifacts."
+          body = "#{heading_name} release artifacts."
 
           if File.exist?('CHANGELOG.md')
             begin
               content = File.read('CHANGELOG.md')
-              escaped_version = Regexp.escape(version)
-              pattern = /^##\s+(?<heading>\[?v?#{escaped_version}\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)/m
+              escaped_heading = Regexp.escape(heading_name)
+              pattern = /^##\s+(?<heading>\[?v?#{escaped_heading}\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)/m
               match = content.match(pattern)
 
               if match && !match[:body].strip.empty?
@@ -82,10 +83,13 @@ jobs:
         include:
           - os: macos-latest
             label: macos-aarch64
+            platform: macos
           - os: macos-15-intel
             label: macos-x86_64
+            platform: macos
           - os: windows-latest
             label: windows
+            platform: windows
 
     steps:
       - name: Checkout repository
@@ -123,4 +127,4 @@ jobs:
           releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: '[mainBinaryName]-v[version]-[platform]-[arch][setup][ext]'
+          releaseAssetNamePattern: '[name]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'
