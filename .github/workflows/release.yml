@@ -31,19 +31,20 @@ jobs:
           require 'securerandom'
 
           ref = ENV.fetch('GITHUB_REF_NAME')
-          version = ref.sub(/^v/, '')
-          if version == ref
+          event_name = ENV.fetch('GITHUB_EVENT_NAME')
+          heading_name = event_name == 'workflow_dispatch' ? 'Unreleased' : ref.sub(/^v/, '')
+          if heading_name == ref
             abort 'package.json is required to resolve the release version.' unless File.exist?('package.json')
-            version = JSON.parse(File.read('package.json')).fetch('version')
+            heading_name = JSON.parse(File.read('package.json')).fetch('version')
           end
 
-          body = "Version #{version} release artifacts."
+          body = "#{heading_name} release artifacts."
 
           if File.exist?('CHANGELOG.md')
             begin
               content = File.read('CHANGELOG.md')
-              escaped_version = Regexp.escape(version)
-              pattern = /^##\s+(?<heading>\[?v?#{escaped_version}\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)/m
+              escaped_heading = Regexp.escape(heading_name)
+              pattern = /^##\s+(?<heading>\[?v?#{escaped_heading}\]?(?:\s+-[^\r\n]*)?)\r?\n(?<body>.*?)(?=^##\s+|\z)/m
               match = content.match(pattern)
 
               if match && !match[:body].strip.empty?
@@ -70,7 +71,7 @@ jobs:
           RUBY
 
   build:
-    name: Build release (${{ matrix.os }})
+    name: Build release (${{ matrix.label }})
     needs: changelog
     permissions:
       contents: write
@@ -81,11 +82,14 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            args: --target aarch64-apple-darwin
-          - os: macos-latest
-            args: --target x86_64-apple-darwin
+            label: macos-aarch64
+            platform: macos
+          - os: macos-15-intel
+            label: macos-x86_64
+            platform: macos
           - os: windows-latest
-            args: ''
+            label: windows
+            platform: windows
 
     steps:
       - name: Checkout repository
@@ -104,8 +108,6 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -116,13 +118,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build and upload release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: Kazmas v__VERSION__
+          tagName: ${{ github.event_name == 'workflow_dispatch' && 'unreleased' || 'v__VERSION__' }}
+          releaseName: ${{ github.event_name == 'workflow_dispatch' && 'Unreleased' || 'v__VERSION__' }}
           releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
+          releaseAssetNamePattern: '[name]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'
