@@ -11,8 +11,10 @@ const DEFAULT_NAME: &str = "Untitled";
 #[sqlx(rename_all = "snake_case")]
 pub(crate) enum NodeKind {
     World,
+    Manuscript,
+    Wiki,
     Folder,
-    Chapter,
+    ManuscriptEntry,
     WikiEntry,
 }
 

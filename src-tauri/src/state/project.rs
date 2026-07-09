@@ -123,7 +123,7 @@ impl ProjectManager {
         Ok(None)
     }
 
-    pub(crate) async fn create_chapter(
+    pub(crate) async fn create_manuscript_entry(
         &self,
         id: &Uuid,
         name: Option<&str>,
@@ -131,7 +131,10 @@ impl ProjectManager {
     ) -> KazmasResult<Option<Uuid>> {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(id) {
-            return project.create_chapter(name, parent_id).await.map(Some);
+            return project
+                .create_manuscript_entry(name, parent_id)
+                .await
+                .map(Some);
         }
         Ok(None)
     }

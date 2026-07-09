@@ -95,11 +95,11 @@ fn build_item(
     app: &AppHandle,
     command: MenuCommand,
     text: String,
-    shortcut: Option<&'static str>,
+    shortcut: Option<String>,
     enabled: bool,
 ) -> KazmasResult<MenuItemKind<Wry>> {
     let mut builder = MenuItemBuilder::with_id(command.as_ref(), text).enabled(enabled);
-    if let Some(shortcut) = shortcut {
+    if let Some(shortcut) = shortcut.as_deref() {
         builder = builder.accelerator(shortcut);
     }
     let item = builder.build(app)?;
@@ -111,14 +111,14 @@ fn build_check_item(
     app: &AppHandle,
     command: MenuCommand,
     text: String,
-    shortcut: Option<&'static str>,
+    shortcut: Option<String>,
     checked: bool,
     enabled: bool,
 ) -> KazmasResult<MenuItemKind<Wry>> {
     let mut builder = CheckMenuItemBuilder::with_id(command.as_ref(), text)
         .enabled(enabled)
         .checked(checked);
-    if let Some(shortcut) = shortcut {
+    if let Some(shortcut) = shortcut.as_deref() {
         builder = builder.accelerator(shortcut);
     }
     let item = builder.build(app)?;
