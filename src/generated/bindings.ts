@@ -5,7 +5,6 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 
 /** Commands */
 export const commands = {
-	getAppMenu: () => typedError<MenuSection[], CommandError>(__TAURI_INVOKE("get_app_menu")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
 	getWorld: () => typedError<{
 	id: string,
@@ -53,7 +52,6 @@ export const commands = {
 
 /** Events */
 export const events = {
-	menuChanged: makeEvent<MenuChangedEvent>("menu-changed"),
 	menuCommand: makeEvent<MenuCommandEvent>("menu-command"),
 	worldChanged: makeEvent<WorldChangedEvent>("world-changed"),
 };
@@ -69,19 +67,9 @@ export type CommandError = {
 
 export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
 
-export type MenuChangedEvent = MenuSection[];
-
 export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-manuscript-entry" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
 export type MenuCommandEvent = MenuCommand;
-
-export type MenuItem = { type: "item"; id: MenuCommand; text: string; shortcut: string | null; enabled: boolean } | { type: "check"; id: MenuCommand; text: string; shortcut: string | null; checked: boolean; enabled: boolean } | { type: "submenu"; id: MenuCommand; text: string; items: MenuItem[]; enabled: boolean } | { type: "separator"; id: string };
-
-export type MenuSection = {
-	id: string,
-	text: string,
-	items: MenuItem[],
-};
 
 export type NodeDto = {
 	id: string,

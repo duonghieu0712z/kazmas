@@ -1,4 +1,5 @@
 mod app;
+#[cfg(target_os = "macos")]
 mod menu;
 mod project;
 mod registry;

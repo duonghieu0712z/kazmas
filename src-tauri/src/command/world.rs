@@ -108,6 +108,7 @@ pub(super) async fn close_world(
         && let Some(project_id) = registry.close_project(&window_id).await
     {
         state.project_manager().close_project(&project_id).await?;
+        #[cfg(target_os = "macos")]
         state
             .menu_manager()
             .set_project_commands_enabled(false)

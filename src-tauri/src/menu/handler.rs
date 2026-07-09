@@ -7,7 +7,7 @@ use tauri::{AppHandle, EventTarget, Manager};
 use tauri_specta::Event;
 use uuid::Uuid;
 
-use super::command::MenuCommand;
+use super::command::{MenuCommand, MenuCommandTarget};
 use crate::{
     app::{KazmasResult, spawn_window},
     event::{MenuCommandEvent, WorldChangedEvent},
@@ -24,12 +24,6 @@ pub(crate) async fn handle_menu_event(
     let Some(id) = event.id.as_ref().strip_prefix("menu:") else {
         return Ok(());
     };
-    handle_command_id(app, id, window_id).await
-}
-
-#[cfg(target_os = "macos")]
-async fn handle_command_id(app: &AppHandle, id: &str, window_id: Option<Uuid>) -> KazmasResult<()> {
-    let id = id.strip_prefix("menu:").unwrap_or(id);
     let command = MenuCommand::from_str(id)?;
     handle_command(app, command, window_id).await
 }
@@ -39,13 +33,22 @@ pub(crate) async fn handle_command(
     command: MenuCommand,
     window_id: Option<Uuid>,
 ) -> KazmasResult<()> {
+    match command.target() {
+        MenuCommandTarget::Backend => handle_backend_command(app, command, window_id).await?,
+        MenuCommandTarget::Frontend => emit_menu_event(app, window_id, command)?,
+        MenuCommandTarget::Ignored => (),
+    }
+    Ok(())
+}
+
+async fn handle_backend_command(
+    app: &AppHandle,
+    command: MenuCommand,
+    window_id: Option<Uuid>,
+) -> KazmasResult<()> {
     match command {
         MenuCommand::NewWindow => spawn_window(app, None).await?,
         MenuCommand::Save => save_world(app, window_id).await?,
-        menu_command @ (MenuCommand::About
-        | MenuCommand::CloseWorld
-        | MenuCommand::NewWorld
-        | MenuCommand::OpenWorld) => emit_menu_event(app, window_id, menu_command)?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),
         _ => (),
     }

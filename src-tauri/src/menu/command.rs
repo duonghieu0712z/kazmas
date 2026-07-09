@@ -58,6 +58,25 @@ pub(crate) enum MenuCommand {
     Updates,
 }
 
+pub(crate) enum MenuCommandTarget {
+    Backend,
+    Frontend,
+    Ignored,
+}
+
+impl MenuCommand {
+    pub(crate) fn target(self) -> MenuCommandTarget {
+        match self {
+            Self::NewWindow | Self::Save | Self::ToggleDevtools => MenuCommandTarget::Backend,
+            Self::About | Self::CloseWorld | Self::NewWorld | Self::OpenWorld => {
+                MenuCommandTarget::Frontend
+            }
+            _ => MenuCommandTarget::Ignored,
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
 impl MenuCommand {
     pub(super) fn text(self, app_name: &str) -> Option<String> {
         match self {
@@ -68,7 +87,6 @@ impl MenuCommand {
             Self::Copy => Some("Copy".into()),
             Self::Cut => Some("Cut".into()),
             Self::EmptyTrash => Some("Empty Trash".into()),
-            #[cfg(target_os = "macos")]
             Self::Hide => Some(format!("Hide {app_name}")),
             Self::NewManuscriptEntry => Some("New Manuscript".into()),
             Self::NewFile => Some("New File...".into()),
@@ -79,10 +97,7 @@ impl MenuCommand {
             Self::OpenWorld => Some("Open World...".into()),
             Self::Paste => Some("Paste".into()),
             Self::ProjectSettings => Some("Project Settings...".into()),
-            #[cfg(target_os = "macos")]
             Self::Quit => Some(format!("Quit {app_name}")),
-            #[cfg(not(target_os = "macos"))]
-            Self::Quit => Some("Exit".into()),
             Self::Redo => Some("Redo".into()),
             Self::RecentWorlds => Some("Recent Worlds".into()),
             Self::Save => Some("Save".into()),
@@ -92,7 +107,6 @@ impl MenuCommand {
             Self::ToggleDevtools => Some("Toggle Developer Tools".into()),
             Self::Undo => Some("Undo".into()),
             Self::Updates => Some("Check for Updates...".into()),
-            #[cfg(target_os = "macos")]
             _ => None,
         }
     }

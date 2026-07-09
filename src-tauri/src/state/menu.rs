@@ -1,55 +1,23 @@
-use tauri::{AppHandle, EventTarget, async_runtime::spawn};
-#[cfg(target_os = "macos")]
 use tauri::{
-    Wry,
+    AppHandle, Wry,
+    async_runtime::spawn,
     menu::{Menu, MenuItemKind},
 };
-use tauri_specta::Event;
-use tokio::sync::{
-    Mutex,
-    watch::{Receiver, Sender},
-};
+use tokio::sync::Mutex;
 
 use super::get_state;
-#[cfg(target_os = "macos")]
-use crate::menu::{build_menu, handle_menu_event};
 use crate::{
-    app::{KazmasError, KazmasResult},
-    event::MenuChangedEvent,
-    menu::{self, MenuCommand, MenuSection},
-    utils::window_label,
+    app::KazmasResult,
+    menu::{MenuCommand, build_menu, handle_menu_event},
 };
 
 #[derive(Default)]
 pub(crate) struct MenuManager {
-    menu_sections: Mutex<Vec<MenuSection>>,
-    menu_sections_tx: Sender<Vec<MenuSection>>,
-
-    #[cfg(target_os = "macos")]
     menu: Mutex<Option<Menu<Wry>>>,
 }
 
 impl MenuManager {
-    pub(crate) async fn menu_sections(&self) -> Vec<MenuSection> {
-        self.menu_sections.lock().await.clone()
-    }
-
     pub(crate) async fn init(&self, app: &AppHandle) -> KazmasResult<()> {
-        self.watch(app);
-
-        self.update_menu(|menu_sections| {
-            *menu_sections = menu::menu_sections(&app.package_info().name);
-        })
-        .await?;
-
-        #[cfg(target_os = "macos")]
-        self.build_menu(app).await?;
-
-        Ok(())
-    }
-
-    #[cfg(target_os = "macos")]
-    async fn build_menu(&self, app: &AppHandle) -> KazmasResult<()> {
         app.on_menu_event(|app, event| {
             let app = app.clone();
             let event = event.clone();
@@ -61,82 +29,25 @@ impl MenuManager {
             });
         });
 
-        let menu_sections = self.menu_sections().await;
-        let menu = build_menu(app, menu_sections)?;
+        let menu = build_menu(app)?;
 
         *self.menu.lock().await = Some(menu);
         Ok(())
     }
 
-    async fn update_menu<F>(&self, f: F) -> KazmasResult<()>
-    where
-        F: FnOnce(&mut Vec<MenuSection>),
-    {
-        let next = {
-            let mut menu_sections = self.menu_sections.lock().await;
-            f(&mut menu_sections);
-            menu_sections.clone()
-        };
-
-        self.menu_sections_tx.send(next).map_err(|error| {
-            KazmasError::Invalid(format!("failed to publish menu state: {error}"))
-        })?;
-        Ok(())
-    }
-
-    fn watch(&self, app: &AppHandle) {
-        let app = app.clone();
-        let mut rx = self.subscribe();
-        spawn(async move {
-            while rx.changed().await.is_ok() {
-                let menu_sections = rx.borrow().clone();
-                if let Err(error) = emit_menu_changed(&app, menu_sections).await {
-                    log::error!("{error}");
-                }
-            }
-        });
-    }
-
-    fn subscribe(&self) -> Receiver<Vec<MenuSection>> {
-        self.menu_sections_tx.subscribe()
-    }
-
     pub(crate) async fn set_project_commands_enabled(&self, enabled: bool) -> KazmasResult<()> {
-        self.set_commands_enabled(
-            &[
-                MenuCommand::NewFile,
-                MenuCommand::NewFolder,
-                MenuCommand::ProjectSettings,
-                MenuCommand::EmptyTrash,
-            ],
-            enabled,
-        )
-        .await?;
-
-        Ok(())
-    }
-
-    async fn set_commands_enabled(
-        &self,
-        commands: &[MenuCommand],
-        enabled: bool,
-    ) -> KazmasResult<()> {
-        self.update_menu(|menu_sections| {
-            for command in commands {
-                menu::set_command_enabled(menu_sections, *command, enabled);
-            }
-        })
-        .await?;
-
-        #[cfg(target_os = "macos")]
-        for command in commands {
-            self.set_native_command_enabled(*command, enabled).await?;
+        for command in [
+            MenuCommand::NewFile,
+            MenuCommand::NewFolder,
+            MenuCommand::ProjectSettings,
+            MenuCommand::EmptyTrash,
+        ] {
+            self.set_native_command_enabled(command, enabled).await?;
         }
 
         Ok(())
     }
 
-    #[cfg(target_os = "macos")]
     async fn set_native_command_enabled(
         &self,
         command: MenuCommand,
@@ -154,18 +65,6 @@ impl MenuManager {
     }
 }
 
-async fn emit_menu_changed(app: &AppHandle, menu_sections: Vec<MenuSection>) -> KazmasResult<()> {
-    let Some(window_id) = get_state(app).registry().focused_window().await else {
-        return Ok(());
-    };
-
-    MenuChangedEvent(menu_sections).emit_to(app, EventTarget::WebviewWindow {
-        label: window_label(&window_id),
-    })?;
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
 fn set_native_item_enabled(
     item: &MenuItemKind<Wry>,
     command: MenuCommand,

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { MenuCommand, MenuItem } from '@/generated/bindings';
+import type { MenuCommand } from '@/generated/bindings';
+import type { AppMenuItem } from '@/menus/appMenu';
 
-defineProps<{ item: MenuItem }>();
+defineProps<{ item: AppMenuItem }>();
 
 const emit = defineEmits<{ select: [command: MenuCommand] }>();
 

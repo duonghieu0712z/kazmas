@@ -1,61 +1,151 @@
 use tauri::{
     AppHandle, Wry,
     menu::{
-        CheckMenuItemBuilder, Menu, MenuItemBuilder, MenuItemKind, PredefinedMenuItem, Submenu,
-        SubmenuBuilder,
+        HELP_SUBMENU_ID, Menu, MenuItemBuilder, MenuItemKind, PredefinedMenuItem, Submenu,
+        SubmenuBuilder, WINDOW_SUBMENU_ID,
     },
 };
 
-use super::{
-    command::MenuCommand,
-    descriptor::{MenuItem as MenuItemDescriptor, MenuSection},
-};
+use super::MenuCommand;
 use crate::app::{KazmasError, KazmasResult};
 
-pub(crate) fn build_menu(
-    app: &AppHandle,
-    menu_sections: Vec<MenuSection>,
-) -> KazmasResult<Menu<Wry>> {
+pub(crate) fn build_menu(app: &AppHandle) -> KazmasResult<Menu<Wry>> {
+    let app_name = app.package_info().name.as_str();
     let menu = Menu::new(app)?;
-    for section in menu_sections {
-        menu.append(&build_menu_section(app, section)?)?;
-    }
+
+    menu.append(&build_app_menu(app, app_name)?)?;
+    menu.append(&build_file_menu(app)?)?;
+    menu.append(&build_edit_menu(app)?)?;
+    menu.append(&build_project_menu(app)?)?;
+    menu.append(&build_window_menu(app)?)?;
+    menu.append(&build_help_menu(app)?)?;
     menu.set_as_app_menu()?;
+
     Ok(menu)
 }
 
-fn build_menu_section(app: &AppHandle, section: MenuSection) -> KazmasResult<Submenu<Wry>> {
-    let submenu = SubmenuBuilder::with_id(app, section.id, section.text).build()?;
-    for item in section.items {
-        submenu.append(&build_menu_item(app, item)?)?;
-    }
-    Ok(submenu)
+fn build_app_menu(app: &AppHandle, app_name: &str) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, "app", app_name)?;
+
+    append_item(app, &menu, MenuCommand::About)?;
+    append_item(app, &menu, MenuCommand::Updates)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::Settings)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::Services)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::Hide)?;
+    append_predefined(app, &menu, MenuCommand::HideOthers)?;
+    append_predefined(app, &menu, MenuCommand::ShowAll)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::Quit)?;
+
+    Ok(menu)
 }
 
-fn build_menu_item(app: &AppHandle, item: MenuItemDescriptor) -> KazmasResult<MenuItemKind<Wry>> {
-    match item {
-        MenuItemDescriptor::Predefined { id, text } => predefined_item(app, id, text.as_deref()),
-        MenuItemDescriptor::Item {
-            id,
-            text,
-            shortcut,
-            enabled,
-        } => build_item(app, id, text, shortcut, enabled),
-        MenuItemDescriptor::Check {
-            id,
-            text,
-            shortcut,
-            checked,
-            enabled,
-        } => build_check_item(app, id, text, shortcut, checked, enabled),
-        MenuItemDescriptor::Submenu {
-            id,
-            text,
-            items,
-            enabled,
-        } => build_submenu(app, id, text, items, enabled),
-        MenuItemDescriptor::Separator { .. } => build_separator(app),
+fn build_file_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, "file", "File")?;
+    let recent_worlds = command_submenu(app, MenuCommand::RecentWorlds)?;
+
+    append_item(app, &menu, MenuCommand::NewWorld)?;
+    append_item(app, &menu, MenuCommand::NewWindow)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::OpenWorld)?;
+    append_item(app, &recent_worlds, MenuCommand::ClearWorlds)?;
+    menu.append(&recent_worlds)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::Save)?;
+    append_item(app, &menu, MenuCommand::SaveAs)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::CloseWorld)?;
+    append_predefined(app, &menu, MenuCommand::CloseWindow)?;
+
+    Ok(menu)
+}
+
+fn build_edit_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, "edit", "Edit")?;
+
+    append_predefined(app, &menu, MenuCommand::Undo)?;
+    append_predefined(app, &menu, MenuCommand::Redo)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::Cut)?;
+    append_predefined(app, &menu, MenuCommand::Copy)?;
+    append_predefined(app, &menu, MenuCommand::Paste)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::SelectAll)?;
+
+    Ok(menu)
+}
+
+fn build_project_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, "project", "Project")?;
+    let new_file = command_submenu(app, MenuCommand::NewFile)?;
+
+    append_item(app, &new_file, MenuCommand::NewManuscriptEntry)?;
+    append_item(app, &new_file, MenuCommand::NewWikiEntry)?;
+    menu.append(&new_file)?;
+    append_item(app, &menu, MenuCommand::NewFolder)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::ProjectSettings)?;
+    append_separator(app, &menu)?;
+    append_item(app, &menu, MenuCommand::EmptyTrash)?;
+
+    Ok(menu)
+}
+
+fn build_window_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, WINDOW_SUBMENU_ID, "Window")?;
+
+    append_predefined(app, &menu, MenuCommand::Minimize)?;
+    append_predefined(app, &menu, MenuCommand::Maximize)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::Fullscreen)?;
+    append_separator(app, &menu)?;
+    append_predefined(app, &menu, MenuCommand::BringAllToFront)?;
+
+    Ok(menu)
+}
+
+fn build_help_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    let menu = submenu_with_id(app, HELP_SUBMENU_ID, "Help")?;
+
+    append_item(app, &menu, MenuCommand::ToggleDevtools)?;
+
+    Ok(menu)
+}
+
+fn submenu_with_id(app: &AppHandle, id: &str, text: &str) -> KazmasResult<Submenu<Wry>> {
+    Ok(SubmenuBuilder::with_id(app, id, text).build()?)
+}
+
+fn command_submenu(app: &AppHandle, command: MenuCommand) -> KazmasResult<Submenu<Wry>> {
+    let text = command.text(&app.package_info().name).unwrap_or_default();
+    Ok(SubmenuBuilder::with_id(app, command.as_ref(), text).build()?)
+}
+
+fn append_item(app: &AppHandle, menu: &Submenu<Wry>, command: MenuCommand) -> KazmasResult<()> {
+    let text = command.text(&app.package_info().name).unwrap_or_default();
+    let mut builder = MenuItemBuilder::with_id(command.as_ref(), text);
+    if let Some(shortcut) = command.accelerator().as_deref() {
+        builder = builder.accelerator(shortcut);
     }
+
+    menu.append(&MenuItemKind::MenuItem(builder.build(app)?))?;
+    Ok(())
+}
+
+fn append_predefined(
+    app: &AppHandle,
+    menu: &Submenu<Wry>,
+    command: MenuCommand,
+) -> KazmasResult<()> {
+    menu.append(&predefined_item(
+        app,
+        command,
+        command.text(&app.package_info().name).as_deref(),
+    )?)?;
+    Ok(())
 }
 
 fn predefined_item(
@@ -91,60 +181,9 @@ fn predefined_item(
     Ok(MenuItemKind::Predefined(item))
 }
 
-fn build_item(
-    app: &AppHandle,
-    command: MenuCommand,
-    text: String,
-    shortcut: Option<String>,
-    enabled: bool,
-) -> KazmasResult<MenuItemKind<Wry>> {
-    let mut builder = MenuItemBuilder::with_id(command.as_ref(), text).enabled(enabled);
-    if let Some(shortcut) = shortcut.as_deref() {
-        builder = builder.accelerator(shortcut);
-    }
-    let item = builder.build(app)?;
-
-    Ok(MenuItemKind::MenuItem(item))
-}
-
-fn build_check_item(
-    app: &AppHandle,
-    command: MenuCommand,
-    text: String,
-    shortcut: Option<String>,
-    checked: bool,
-    enabled: bool,
-) -> KazmasResult<MenuItemKind<Wry>> {
-    let mut builder = CheckMenuItemBuilder::with_id(command.as_ref(), text)
-        .enabled(enabled)
-        .checked(checked);
-    if let Some(shortcut) = shortcut.as_deref() {
-        builder = builder.accelerator(shortcut);
-    }
-    let item = builder.build(app)?;
-
-    Ok(MenuItemKind::Check(item))
-}
-
-fn build_submenu(
-    app: &AppHandle,
-    command: MenuCommand,
-    text: String,
-    items: Vec<MenuItemDescriptor>,
-    enabled: bool,
-) -> KazmasResult<MenuItemKind<Wry>> {
-    let submenu = SubmenuBuilder::with_id(app, command.as_ref(), text)
-        .enabled(enabled)
-        .build()?;
-    for item in items {
-        submenu.append(&build_menu_item(app, item)?)?;
-    }
-
-    Ok(MenuItemKind::Submenu(submenu))
-}
-
-fn build_separator(app: &AppHandle) -> KazmasResult<MenuItemKind<Wry>> {
-    Ok(MenuItemKind::Predefined(PredefinedMenuItem::separator(
+fn append_separator(app: &AppHandle, menu: &Submenu<Wry>) -> KazmasResult<()> {
+    menu.append(&MenuItemKind::Predefined(PredefinedMenuItem::separator(
         app,
-    )?))
+    )?))?;
+    Ok(())
 }

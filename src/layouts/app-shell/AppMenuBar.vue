@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useMenu } from '@/composables/useMenu';
+import { useAppMenu } from '@/composables/useAppMenu';
 import AppMenuItem from '@/layouts/app-shell/AppMenuItem.vue';
 
-const { menus, executeMenuCommand } = useMenu();
+const { menus, executeMenuCommand } = useAppMenu();
 </script>
 
 <template>
