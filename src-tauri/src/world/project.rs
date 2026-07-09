@@ -160,11 +160,14 @@ impl WorldProject {
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
+
         let node = Node::new(NodeKind::Folder, name, parent_id);
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+
         tx.commit().await?;
         self.dirty = true;
+
         Ok(node.id)
     }
 
@@ -173,25 +176,13 @@ impl WorldProject {
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
-        let mut tx = self.conn.begin().await?;
-
-        let parent_id = match parent_id {
-            Some(parent_id) => Some(parent_id),
-            None => Some(
-                store::get_node_by_kind(&mut tx, NodeKind::Manuscript)
-                    .await?
-                    .id,
-            ),
-        };
-        let node = Node::new(NodeKind::ManuscriptEntry, name, parent_id);
-
-        store::create_node(&mut tx, &node).await?;
-        store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
-        store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
-
-        tx.commit().await?;
-        self.dirty = true;
-        Ok(node.id)
+        self.create_entry(
+            name,
+            parent_id,
+            NodeKind::Manuscript,
+            NodeKind::ManuscriptEntry,
+        )
+        .await
     }
 
     pub(crate) async fn create_wiki_entry(
@@ -199,13 +190,24 @@ impl WorldProject {
         name: Option<&str>,
         parent_id: Option<Uuid>,
     ) -> KazmasResult<Uuid> {
+        self.create_entry(name, parent_id, NodeKind::Wiki, NodeKind::WikiEntry)
+            .await
+    }
+
+    async fn create_entry(
+        &mut self,
+        name: Option<&str>,
+        parent_id: Option<Uuid>,
+        parent_kind: NodeKind,
+        entry_kind: NodeKind,
+    ) -> KazmasResult<Uuid> {
         let mut tx = self.conn.begin().await?;
 
         let parent_id = match parent_id {
             Some(parent_id) => Some(parent_id),
-            None => Some(store::get_node_by_kind(&mut tx, NodeKind::Wiki).await?.id),
+            None => Some(store::get_node_by_kind(&mut tx, parent_kind).await?.id),
         };
-        let node = Node::new(NodeKind::WikiEntry, name, parent_id);
+        let node = Node::new(entry_kind, name, parent_id);
 
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
