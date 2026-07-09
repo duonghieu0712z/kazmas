@@ -2,12 +2,23 @@ use chrono::Utc;
 use sqlx::SqliteConnection;
 use uuid::Uuid;
 
-use crate::{app::KazmasResult, model::Node};
+use crate::{
+    app::KazmasResult,
+    model::{Node, NodeKind},
+};
 
 const SELECT_NODE: &str = r#"
 SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM nodes
 WHERE id = ?
+"#;
+
+const SELECT_NODE_BY_KIND: &str = r#"
+SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
+FROM nodes
+WHERE kind = ? AND deleted_at IS NULL
+ORDER BY created_at
+LIMIT 1
 "#;
 
 const INSERT_NODE: &str = r#"
@@ -47,6 +58,17 @@ WHERE id = ? AND deleted_at IS NOT NULL
 pub(crate) async fn get_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<Node> {
     let result = sqlx::query_as::<_, Node>(SELECT_NODE)
         .bind(id)
+        .fetch_one(conn)
+        .await?;
+    Ok(result)
+}
+
+pub(crate) async fn get_node_by_kind(
+    conn: &mut SqliteConnection,
+    kind: NodeKind,
+) -> KazmasResult<Node> {
+    let result = sqlx::query_as::<_, Node>(SELECT_NODE_BY_KIND)
+        .bind(kind)
         .fetch_one(conn)
         .await?;
     Ok(result)
