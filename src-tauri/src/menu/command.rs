@@ -58,26 +58,32 @@ pub(crate) enum MenuCommand {
     Updates,
 }
 
-pub(crate) enum MenuCommandTarget {
+pub(crate) enum MenuCommandOwner {
     Backend,
     Frontend,
-    Ignored,
+    Native,
+    Unimplemented,
 }
 
 impl MenuCommand {
-    pub(crate) fn target(self) -> MenuCommandTarget {
+    pub(crate) fn owner(self) -> MenuCommandOwner {
         match self {
-            Self::NewWindow | Self::Save | Self::ToggleDevtools => MenuCommandTarget::Backend,
+            Self::NewWindow | Self::Save | Self::ToggleDevtools => MenuCommandOwner::Backend,
             Self::About | Self::CloseWorld | Self::NewWorld | Self::OpenWorld => {
-                MenuCommandTarget::Frontend
+                MenuCommandOwner::Frontend
             }
-            _ => MenuCommandTarget::Ignored,
+            Self::CloseWindow
+            | Self::Copy
+            | Self::Cut
+            | Self::Paste
+            | Self::Redo
+            | Self::SelectAll
+            | Self::Undo => MenuCommandOwner::Native,
+            _ => MenuCommandOwner::Unimplemented,
         }
     }
-}
 
-#[cfg(target_os = "macos")]
-impl MenuCommand {
+    #[cfg(target_os = "macos")]
     pub(super) fn text(self, app_name: &str) -> Option<String> {
         match self {
             Self::About => Some(format!("About {app_name}")),
@@ -111,6 +117,7 @@ impl MenuCommand {
         }
     }
 
+    #[cfg(target_os = "macos")]
     pub(super) fn accelerator(self) -> Option<String> {
         match self {
             Self::CloseWorld => Some("CmdOrCtrl+Alt+W".into()),

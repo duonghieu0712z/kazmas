@@ -3,11 +3,11 @@ use std::str::FromStr;
 
 #[cfg(target_os = "macos")]
 use tauri::menu::MenuEvent;
-use tauri::{AppHandle, EventTarget, Manager};
+use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 use uuid::Uuid;
 
-use super::command::{MenuCommand, MenuCommandTarget};
+use super::command::{MenuCommand, MenuCommandOwner};
 use crate::{
     app::{KazmasResult, spawn_window},
     event::{MenuCommandEvent, WorldChangedEvent},
@@ -33,10 +33,13 @@ pub(crate) async fn handle_command(
     command: MenuCommand,
     window_id: Option<Uuid>,
 ) -> KazmasResult<()> {
-    match command.target() {
-        MenuCommandTarget::Backend => handle_backend_command(app, command, window_id).await?,
-        MenuCommandTarget::Frontend => emit_menu_event(app, window_id, command)?,
-        MenuCommandTarget::Ignored => (),
+    match command.owner() {
+        MenuCommandOwner::Backend => handle_backend_command(app, command, window_id).await?,
+        MenuCommandOwner::Frontend => emit_menu_event(app, window_id, command)?,
+        MenuCommandOwner::Native => (),
+        MenuCommandOwner::Unimplemented => {
+            log::warn!("menu command {} is not implemented", command.as_ref());
+        }
     }
     Ok(())
 }
@@ -63,10 +66,11 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
     {
         let project_manager = state.project_manager();
         project_manager.save_project(&project_id).await?;
-        if let Some(dirty) = project_manager.project_dirty(&project_id).await {
-            WorldChangedEvent(dirty).emit_to(app, EventTarget::WebviewWindow {
-                label: window_label(&window_id),
-            })?;
+
+        if let Some(dirty) = project_manager.project_dirty(&project_id).await
+            && let Some(window) = app.get_webview_window(&window_label(&window_id))
+        {
+            WorldChangedEvent(dirty).emit(&window)?;
         }
     }
 
@@ -95,10 +99,10 @@ fn emit_menu_event(
     window_id: Option<Uuid>,
     command: MenuCommand,
 ) -> KazmasResult<()> {
-    if let Some(window_id) = window_id {
-        MenuCommandEvent(command).emit_to(app, EventTarget::WebviewWindow {
-            label: window_label(&window_id),
-        })?;
+    if let Some(window_id) = window_id
+        && let Some(window) = app.get_webview_window(&window_label(&window_id))
+    {
+        MenuCommandEvent(command).emit(&window)?;
     }
     Ok(())
 }

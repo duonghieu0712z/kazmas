@@ -1,6 +1,47 @@
 import type { MenuCommand } from '@/generated/bindings';
 
-export type AppMenuItem =
+import { getName } from '@tauri-apps/api/app';
+
+const appName = await getName();
+
+type MenuCommandMetadata = {
+    text: string;
+    shortcut?: string;
+};
+
+const menuCommandMetadata: Record<MenuCommand, MenuCommandMetadata> = {
+    about: { text: `About ${appName}` },
+    'clear-worlds': { text: 'Clear Worlds...' },
+    'close-world': { text: 'Close World', shortcut: 'Ctrl+Alt+W' },
+    'close-window': { text: 'Close Window', shortcut: 'Ctrl+W' },
+    copy: { text: 'Copy', shortcut: 'Ctrl+C' },
+    cut: { text: 'Cut', shortcut: 'Ctrl+X' },
+    'empty-trash': { text: 'Empty Trash' },
+    'new-manuscript-entry': { text: 'New Manuscript' },
+    'new-file': { text: 'New File...' },
+    'new-folder': { text: 'New Folder' },
+    'new-window': { text: 'New Window...', shortcut: 'Ctrl+Shift+W' },
+    'new-world': { text: 'New World...', shortcut: 'Ctrl+Shift+N' },
+    'new-wiki-entry': { text: 'New Wiki' },
+    'open-world': { text: 'Open World...', shortcut: 'Ctrl+O' },
+    paste: { text: 'Paste', shortcut: 'Ctrl+V' },
+    'project-settings': {
+        text: 'Project Settings...',
+        shortcut: 'Ctrl+Shift+,',
+    },
+    quit: { text: 'Exit' },
+    redo: { text: 'Redo', shortcut: 'Ctrl+Shift+Z' },
+    'recent-worlds': { text: 'Recent Worlds' },
+    save: { text: 'Save', shortcut: 'Ctrl+S' },
+    'save-as': { text: 'Save As...', shortcut: 'Ctrl+Shift+S' },
+    settings: { text: 'Settings...', shortcut: 'Ctrl+,' },
+    'select-all': { text: 'Select All', shortcut: 'Ctrl+A' },
+    'toggle-devtools': { text: 'Toggle Developer Tools' },
+    undo: { text: 'Undo', shortcut: 'Ctrl+Z' },
+    updates: { text: 'Check for Updates...' },
+};
+
+export type MenuItem =
     | {
           type: 'item';
           id: MenuCommand;
@@ -20,7 +61,7 @@ export type AppMenuItem =
           type: 'submenu';
           id: MenuCommand;
           text: string;
-          items: AppMenuItem[];
+          items: MenuItem[];
           enabled: boolean;
       }
     | {
@@ -28,116 +69,136 @@ export type AppMenuItem =
           id: string;
       };
 
-type AppMenuSection = {
+export type MenuSection = {
     id: string;
     text: string;
-    items: AppMenuItem[];
+    items: MenuItem[];
 };
 
-type AppMenuState = {
-    hasProject: boolean;
-};
-
-export function appMenuSections({ hasProject }: AppMenuState): AppMenuSection[] {
+export function createMenu(): MenuSection[] {
     return [
         {
             id: 'file',
             text: 'File',
             items: [
-                item('new-world', 'New World...', 'CmdOrCtrl+Shift+N'),
-                item('new-window', 'New Window...', 'CmdOrCtrl+Shift+W'),
+                item('new-world'),
+                item('new-window'),
                 separator('file-open-separator'),
-                item('open-world', 'Open World...', 'CmdOrCtrl+O'),
-                submenu('recent-worlds', 'Recent Worlds', [
-                    item('clear-worlds', 'Clear Worlds...'),
-                ]),
+                item('open-world'),
+                submenu('recent-worlds', [item('clear-worlds')]),
                 separator('file-save-separator'),
-                item('save', 'Save', 'CmdOrCtrl+S'),
-                item('save-as', 'Save As...', 'CmdOrCtrl+Shift+S'),
+                item('save'),
+                item('save-as'),
                 separator('file-settings-separator'),
-                item('settings', 'Settings...', 'CmdOrCtrl+,'),
+                item('settings'),
                 separator('file-close-separator'),
-                item('close-world', 'Close World', 'CmdOrCtrl+Alt+W'),
-                item('close-window', 'Close Window', 'CmdOrCtrl+W'),
+                item('close-world'),
+                item('close-window'),
                 separator('file-quit-separator'),
-                item('quit', 'Exit'),
+                item('quit'),
             ],
         },
         {
             id: 'edit',
             text: 'Edit',
             items: [
-                item('undo', 'Undo', 'CmdOrCtrl+Z'),
-                item('redo', 'Redo', 'CmdOrCtrl+Shift+Z'),
+                item('undo'),
+                item('redo'),
                 separator('edit-clipboard-separator'),
-                item('cut', 'Cut', 'CmdOrCtrl+X'),
-                item('copy', 'Copy', 'CmdOrCtrl+C'),
-                item('paste', 'Paste', 'CmdOrCtrl+V'),
+                item('cut'),
+                item('copy'),
+                item('paste'),
                 separator('edit-select-separator'),
-                item('select-all', 'Select All', 'CmdOrCtrl+A'),
+                item('select-all'),
             ],
         },
         {
             id: 'project',
             text: 'Project',
             items: [
-                submenu(
-                    'new-file',
-                    'New File...',
-                    [
-                        item('new-manuscript-entry', 'New Manuscript'),
-                        item('new-wiki-entry', 'New Wiki'),
-                    ],
-                    hasProject,
-                ),
-                item('new-folder', 'New Folder', null, hasProject),
+                submenu('new-file', [item('new-manuscript-entry'), item('new-wiki-entry')]),
+                item('new-folder'),
                 separator('project-settings-separator'),
-                item('project-settings', 'Project Settings...', 'CmdOrCtrl+Shift+,', hasProject),
+                item('project-settings'),
                 separator('project-trash-separator'),
-                item('empty-trash', 'Empty Trash', null, hasProject),
+                item('empty-trash'),
             ],
         },
         {
             id: 'help',
             text: 'Help',
             items: [
-                item('about', 'About Kazmas'),
-                item('updates', 'Check for Updates...'),
+                item('about'),
+                item('updates'),
                 separator('help-devtools-separator'),
-                item('toggle-devtools', 'Toggle Developer Tools'),
+                item('toggle-devtools'),
             ],
         },
     ];
 }
 
-function item(
+export function setMenuItemEnabled(
+    menu: readonly MenuSection[],
     id: MenuCommand,
-    text: string,
-    shortcut: string | null = null,
-    enabled = true,
-): AppMenuItem {
+    enabled: boolean,
+): void {
+    const menuItem = findMenuItemInSections(id, menu);
+
+    if (menuItem && menuItem.type !== 'separator') {
+        menuItem.enabled = enabled;
+    }
+}
+
+function item(id: MenuCommand): MenuItem {
     return {
         type: 'item',
         id,
-        text,
-        shortcut,
-        enabled,
+        text: menuCommandMetadata[id].text,
+        shortcut: menuCommandMetadata[id].shortcut ?? null,
+        enabled: true,
     };
 }
 
-function submenu(id: MenuCommand, text: string, items: AppMenuItem[], enabled = true): AppMenuItem {
+function submenu(id: MenuCommand, items: MenuItem[]): MenuItem {
     return {
         type: 'submenu',
         id,
-        text,
+        text: menuCommandMetadata[id].text,
         items,
-        enabled,
+        enabled: true,
     };
 }
 
-function separator(id: string): AppMenuItem {
-    return {
-        type: 'separator',
-        id,
-    };
+function separator(id: string): MenuItem {
+    return { type: 'separator', id };
+}
+
+function findMenuItemInSections(id: MenuCommand, sections: readonly MenuSection[]) {
+    for (const section of sections) {
+        const item = findMenuItem(id, section.items);
+
+        if (item) {
+            return item;
+        }
+    }
+
+    return null;
+}
+
+function findMenuItem(id: MenuCommand, items: readonly MenuItem[]): MenuItem | null {
+    for (const item of items) {
+        if (item.type !== 'separator' && item.id === id) {
+            return item;
+        }
+
+        if (item.type === 'submenu') {
+            const child = findMenuItem(id, item.items);
+
+            if (child) {
+                return child;
+            }
+        }
+    }
+
+    return null;
 }

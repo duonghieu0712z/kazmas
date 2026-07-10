@@ -1,8 +1,8 @@
 use tauri::{
     AppHandle, Wry,
     menu::{
-        HELP_SUBMENU_ID, Menu, MenuItemBuilder, MenuItemKind, PredefinedMenuItem, Submenu,
-        SubmenuBuilder, WINDOW_SUBMENU_ID,
+        HELP_SUBMENU_ID, IsMenuItem, Menu, MenuBuilder, MenuItemBuilder, MenuItemKind,
+        PredefinedMenuItem, Submenu, SubmenuBuilder, WINDOW_SUBMENU_ID,
     },
 };
 
@@ -10,166 +10,163 @@ use super::MenuCommand;
 use crate::app::{KazmasError, KazmasResult};
 
 pub(crate) fn build_menu(app: &AppHandle) -> KazmasResult<Menu<Wry>> {
-    let app_name = app.package_info().name.as_str();
-    let menu = Menu::new(app)?;
-
-    menu.append(&build_app_menu(app, app_name)?)?;
-    menu.append(&build_file_menu(app)?)?;
-    menu.append(&build_edit_menu(app)?)?;
-    menu.append(&build_project_menu(app)?)?;
-    menu.append(&build_window_menu(app)?)?;
-    menu.append(&build_help_menu(app)?)?;
+    let menu = MenuBuilder::new(app)
+        .items(&[
+            &build_app_menu(app)?,
+            &build_file_menu(app)?,
+            &build_edit_menu(app)?,
+            &build_project_menu(app)?,
+            &build_window_menu(app)?,
+            &build_help_menu(app)?,
+        ])
+        .build()?;
     menu.set_as_app_menu()?;
 
     Ok(menu)
 }
 
-fn build_app_menu(app: &AppHandle, app_name: &str) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, "app", app_name)?;
-
-    append_item(app, &menu, MenuCommand::About)?;
-    append_item(app, &menu, MenuCommand::Updates)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::Settings)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::Services)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::Hide)?;
-    append_predefined(app, &menu, MenuCommand::HideOthers)?;
-    append_predefined(app, &menu, MenuCommand::ShowAll)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::Quit)?;
-
-    Ok(menu)
+fn build_app_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    menu(app, "app", &app.package_info().name, &[
+        &item(app, MenuCommand::About)?,
+        &item(app, MenuCommand::Updates)?,
+        &separator(app)?,
+        &item(app, MenuCommand::Settings)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::Services)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::Hide)?,
+        &predefined(app, MenuCommand::HideOthers)?,
+        &predefined(app, MenuCommand::ShowAll)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::Quit)?,
+    ])
 }
 
 fn build_file_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, "file", "File")?;
-    let recent_worlds = command_submenu(app, MenuCommand::RecentWorlds)?;
+    menu(app, "file", "File", &[
+        &item(app, MenuCommand::NewWorld)?,
+        &item(app, MenuCommand::NewWindow)?,
+        &separator(app)?,
+        &item(app, MenuCommand::OpenWorld)?,
+        &build_recent_worlds_menu(app)?,
+        &separator(app)?,
+        &item(app, MenuCommand::Save)?,
+        &item(app, MenuCommand::SaveAs)?,
+        &separator(app)?,
+        &item(app, MenuCommand::CloseWorld)?,
+        &predefined(app, MenuCommand::CloseWindow)?,
+    ])
+}
 
-    append_item(app, &menu, MenuCommand::NewWorld)?;
-    append_item(app, &menu, MenuCommand::NewWindow)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::OpenWorld)?;
-    append_item(app, &recent_worlds, MenuCommand::ClearWorlds)?;
-    menu.append(&recent_worlds)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::Save)?;
-    append_item(app, &menu, MenuCommand::SaveAs)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::CloseWorld)?;
-    append_predefined(app, &menu, MenuCommand::CloseWindow)?;
-
-    Ok(menu)
+fn build_recent_worlds_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    submenu(app, MenuCommand::RecentWorlds, &[&item(
+        app,
+        MenuCommand::ClearWorlds,
+    )?])
 }
 
 fn build_edit_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, "edit", "Edit")?;
-
-    append_predefined(app, &menu, MenuCommand::Undo)?;
-    append_predefined(app, &menu, MenuCommand::Redo)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::Cut)?;
-    append_predefined(app, &menu, MenuCommand::Copy)?;
-    append_predefined(app, &menu, MenuCommand::Paste)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::SelectAll)?;
-
-    Ok(menu)
+    menu(app, "edit", "Edit", &[
+        &predefined(app, MenuCommand::Undo)?,
+        &predefined(app, MenuCommand::Redo)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::Cut)?,
+        &predefined(app, MenuCommand::Copy)?,
+        &predefined(app, MenuCommand::Paste)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::SelectAll)?,
+    ])
 }
 
 fn build_project_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, "project", "Project")?;
-    let new_file = command_submenu(app, MenuCommand::NewFile)?;
+    menu(app, "project", "Project", &[
+        &build_new_file_menu(app)?,
+        &item(app, MenuCommand::NewFolder)?,
+        &separator(app)?,
+        &item(app, MenuCommand::ProjectSettings)?,
+        &separator(app)?,
+        &item(app, MenuCommand::EmptyTrash)?,
+    ])
+}
 
-    append_item(app, &new_file, MenuCommand::NewManuscriptEntry)?;
-    append_item(app, &new_file, MenuCommand::NewWikiEntry)?;
-    menu.append(&new_file)?;
-    append_item(app, &menu, MenuCommand::NewFolder)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::ProjectSettings)?;
-    append_separator(app, &menu)?;
-    append_item(app, &menu, MenuCommand::EmptyTrash)?;
-
-    Ok(menu)
+fn build_new_file_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+    submenu(app, MenuCommand::NewFile, &[
+        &item(app, MenuCommand::NewManuscriptEntry)?,
+        &item(app, MenuCommand::NewWikiEntry)?,
+    ])
 }
 
 fn build_window_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, WINDOW_SUBMENU_ID, "Window")?;
-
-    append_predefined(app, &menu, MenuCommand::Minimize)?;
-    append_predefined(app, &menu, MenuCommand::Maximize)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::Fullscreen)?;
-    append_separator(app, &menu)?;
-    append_predefined(app, &menu, MenuCommand::BringAllToFront)?;
-
-    Ok(menu)
+    menu(app, WINDOW_SUBMENU_ID, "Window", &[
+        &predefined(app, MenuCommand::Minimize)?,
+        &predefined(app, MenuCommand::Maximize)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::Fullscreen)?,
+        &separator(app)?,
+        &predefined(app, MenuCommand::BringAllToFront)?,
+    ])
 }
 
 fn build_help_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    let menu = submenu_with_id(app, HELP_SUBMENU_ID, "Help")?;
-
-    append_item(app, &menu, MenuCommand::ToggleDevtools)?;
-
-    Ok(menu)
+    menu(app, HELP_SUBMENU_ID, "Help", &[&item(
+        app,
+        MenuCommand::ToggleDevtools,
+    )?])
 }
 
-fn submenu_with_id(app: &AppHandle, id: &str, text: &str) -> KazmasResult<Submenu<Wry>> {
-    Ok(SubmenuBuilder::with_id(app, id, text).build()?)
+fn menu(
+    app: &AppHandle,
+    id: &str,
+    text: &str,
+    items: &[&dyn IsMenuItem<Wry>],
+) -> KazmasResult<Submenu<Wry>> {
+    Ok(SubmenuBuilder::with_id(app, id, text)
+        .items(items)
+        .build()?)
 }
 
-fn command_submenu(app: &AppHandle, command: MenuCommand) -> KazmasResult<Submenu<Wry>> {
+fn submenu(
+    app: &AppHandle,
+    command: MenuCommand,
+    items: &[&dyn IsMenuItem<Wry>],
+) -> KazmasResult<Submenu<Wry>> {
     let text = command.text(&app.package_info().name).unwrap_or_default();
-    Ok(SubmenuBuilder::with_id(app, command.as_ref(), text).build()?)
+    Ok(SubmenuBuilder::with_id(app, command.as_ref(), text)
+        .items(items)
+        .build()?)
 }
 
-fn append_item(app: &AppHandle, menu: &Submenu<Wry>, command: MenuCommand) -> KazmasResult<()> {
+fn item(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKind<Wry>> {
     let text = command.text(&app.package_info().name).unwrap_or_default();
     let mut builder = MenuItemBuilder::with_id(command.as_ref(), text);
     if let Some(shortcut) = command.accelerator().as_deref() {
         builder = builder.accelerator(shortcut);
     }
 
-    menu.append(&MenuItemKind::MenuItem(builder.build(app)?))?;
-    Ok(())
+    Ok(MenuItemKind::MenuItem(builder.build(app)?))
 }
 
-fn append_predefined(
-    app: &AppHandle,
-    menu: &Submenu<Wry>,
-    command: MenuCommand,
-) -> KazmasResult<()> {
-    menu.append(&predefined_item(
-        app,
-        command,
-        command.text(&app.package_info().name).as_deref(),
-    )?)?;
-    Ok(())
-}
-
-fn predefined_item(
-    app: &AppHandle,
-    command: MenuCommand,
-    text: Option<&str>,
-) -> KazmasResult<MenuItemKind<Wry>> {
+fn predefined(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKind<Wry>> {
+    let text = command.text(&app.package_info().name);
     let item = match command {
-        MenuCommand::BringAllToFront => PredefinedMenuItem::bring_all_to_front(app, text)?,
-        MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, text)?,
-        MenuCommand::Copy => PredefinedMenuItem::copy(app, text)?,
-        MenuCommand::Cut => PredefinedMenuItem::cut(app, text)?,
-        MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, text)?,
-        MenuCommand::Hide => PredefinedMenuItem::hide(app, text)?,
-        MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, text)?,
-        MenuCommand::Maximize => PredefinedMenuItem::maximize(app, text)?,
-        MenuCommand::Minimize => PredefinedMenuItem::minimize(app, text)?,
-        MenuCommand::Paste => PredefinedMenuItem::paste(app, text)?,
-        MenuCommand::Quit => PredefinedMenuItem::quit(app, text)?,
-        MenuCommand::Redo => PredefinedMenuItem::redo(app, text)?,
-        MenuCommand::SelectAll => PredefinedMenuItem::select_all(app, text)?,
-        MenuCommand::Services => PredefinedMenuItem::services(app, text)?,
-        MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, text)?,
-        MenuCommand::Undo => PredefinedMenuItem::undo(app, text)?,
+        MenuCommand::BringAllToFront => {
+            PredefinedMenuItem::bring_all_to_front(app, text.as_deref())?
+        }
+        MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, text.as_deref())?,
+        MenuCommand::Copy => PredefinedMenuItem::copy(app, text.as_deref())?,
+        MenuCommand::Cut => PredefinedMenuItem::cut(app, text.as_deref())?,
+        MenuCommand::Fullscreen => PredefinedMenuItem::fullscreen(app, text.as_deref())?,
+        MenuCommand::Hide => PredefinedMenuItem::hide(app, text.as_deref())?,
+        MenuCommand::HideOthers => PredefinedMenuItem::hide_others(app, text.as_deref())?,
+        MenuCommand::Maximize => PredefinedMenuItem::maximize(app, text.as_deref())?,
+        MenuCommand::Minimize => PredefinedMenuItem::minimize(app, text.as_deref())?,
+        MenuCommand::Paste => PredefinedMenuItem::paste(app, text.as_deref())?,
+        MenuCommand::Quit => PredefinedMenuItem::quit(app, text.as_deref())?,
+        MenuCommand::Redo => PredefinedMenuItem::redo(app, text.as_deref())?,
+        MenuCommand::SelectAll => PredefinedMenuItem::select_all(app, text.as_deref())?,
+        MenuCommand::Services => PredefinedMenuItem::services(app, text.as_deref())?,
+        MenuCommand::ShowAll => PredefinedMenuItem::show_all(app, text.as_deref())?,
+        MenuCommand::Undo => PredefinedMenuItem::undo(app, text.as_deref())?,
         _ => {
             return Err(KazmasError::Invalid(format!(
                 "menu command {} is not predefined",
@@ -181,9 +178,8 @@ fn predefined_item(
     Ok(MenuItemKind::Predefined(item))
 }
 
-fn append_separator(app: &AppHandle, menu: &Submenu<Wry>) -> KazmasResult<()> {
-    menu.append(&MenuItemKind::Predefined(PredefinedMenuItem::separator(
+fn separator(app: &AppHandle) -> KazmasResult<MenuItemKind<Wry>> {
+    Ok(MenuItemKind::Predefined(PredefinedMenuItem::separator(
         app,
-    )?))?;
-    Ok(())
+    )?))
 }

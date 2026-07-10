@@ -30,7 +30,6 @@ impl MenuManager {
         });
 
         let menu = build_menu(app)?;
-
         *self.menu.lock().await = Some(menu);
         Ok(())
     }

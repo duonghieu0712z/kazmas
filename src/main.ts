@@ -1,7 +1,7 @@
 import { createPinia } from 'pinia';
 
 import App from '@/App.vue';
-import { listenNativeMenuCommands } from '@/menus/menuCommands';
+import { listenNativeMenuCommands } from '@/menus';
 import { useWorldStore } from '@/stores/world';
 
 import '@/styles/globals.css';

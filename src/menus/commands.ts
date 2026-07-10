@@ -6,24 +6,32 @@ import { commands, events } from '@/generated/bindings';
 import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
-let listening = false;
 
-const menuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
+const backendMenuCommands = new Set<MenuCommand>(['new-window', 'save', 'toggle-devtools']);
+
+const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
     about: openAboutDialog,
     'close-world': closeWorld,
     'new-world': newWorld,
     'open-world': openWorld,
 };
 
-export async function runMenuCommand(command: MenuCommand) {
-    const handler = menuHandlers[command];
+export async function executeMenuCommand(command: MenuCommand) {
+    const handler = frontendMenuHandlers[command];
     if (handler) {
         await handler();
         return;
     }
 
-    await commands.executeMenuCommand(command);
+    if (backendMenuCommands.has(command)) {
+        await commands.executeMenuCommand(command);
+        return;
+    }
+
+    console.warn(`Menu command ${command} is not handled`);
 }
+
+let listening = false;
 
 export async function listenNativeMenuCommands() {
     if (listening || !isMac()) {
@@ -31,7 +39,7 @@ export async function listenNativeMenuCommands() {
     }
 
     await events.menuCommand.listen(async ({ payload }) => {
-        await runMenuCommand(payload);
+        await executeMenuCommand(payload);
     });
 
     listening = true;
