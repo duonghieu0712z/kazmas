@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use tauri::{
     AppHandle, Wry,
     menu::{
@@ -9,15 +11,18 @@ use tauri::{
 use super::MenuCommand;
 use crate::app::{KazmasError, KazmasResult};
 
-pub(crate) fn build_menu(app: &AppHandle) -> KazmasResult<Menu<Wry>> {
+pub(crate) fn build_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Menu<Wry>> {
     let menu = MenuBuilder::new(app)
         .items(&[
-            &build_app_menu(app)?,
-            &build_file_menu(app)?,
+            &build_app_menu(app, items)?,
+            &build_file_menu(app, items)?,
             &build_edit_menu(app)?,
-            &build_project_menu(app)?,
+            &build_project_menu(app, items)?,
             &build_window_menu(app)?,
-            &build_help_menu(app)?,
+            &build_help_menu(app, items)?,
         ])
         .build()?;
     menu.set_as_app_menu()?;
@@ -25,12 +30,15 @@ pub(crate) fn build_menu(app: &AppHandle) -> KazmasResult<Menu<Wry>> {
     Ok(menu)
 }
 
-fn build_app_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+fn build_app_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
     menu(app, "app", &app.package_info().name, &[
-        &item(app, MenuCommand::About)?,
-        &item(app, MenuCommand::Updates)?,
+        &item(app, items, MenuCommand::About)?,
+        &item(app, items, MenuCommand::Updates)?,
         &separator(app)?,
-        &item(app, MenuCommand::Settings)?,
+        &item(app, items, MenuCommand::Settings)?,
         &separator(app)?,
         &predefined(app, MenuCommand::Services)?,
         &separator(app)?,
@@ -42,27 +50,35 @@ fn build_app_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
     ])
 }
 
-fn build_file_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+fn build_file_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
     menu(app, "file", "File", &[
-        &item(app, MenuCommand::NewWorld)?,
-        &item(app, MenuCommand::NewWindow)?,
+        &item(app, items, MenuCommand::NewWorld)?,
+        &item(app, items, MenuCommand::NewWindow)?,
         &separator(app)?,
-        &item(app, MenuCommand::OpenWorld)?,
-        &build_recent_worlds_menu(app)?,
+        &item(app, items, MenuCommand::OpenWorld)?,
+        &build_recent_worlds_menu(app, items)?,
         &separator(app)?,
-        &item(app, MenuCommand::Save)?,
-        &item(app, MenuCommand::SaveAs)?,
+        &item(app, items, MenuCommand::Save)?,
+        &item(app, items, MenuCommand::SaveAs)?,
         &separator(app)?,
-        &item(app, MenuCommand::CloseWorld)?,
+        &item(app, items, MenuCommand::CloseWorld)?,
         &predefined(app, MenuCommand::CloseWindow)?,
     ])
 }
 
-fn build_recent_worlds_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    submenu(app, MenuCommand::RecentWorlds, &[&item(
+fn build_recent_worlds_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
+    submenu(
         app,
-        MenuCommand::ClearWorlds,
-    )?])
+        MenuCommand::RecentWorlds,
+        &[&item(app, items, MenuCommand::ClearWorlds)?],
+        items,
+    )
 }
 
 fn build_edit_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
@@ -78,22 +94,33 @@ fn build_edit_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
     ])
 }
 
-fn build_project_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+fn build_project_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
     menu(app, "project", "Project", &[
-        &build_new_file_menu(app)?,
-        &item(app, MenuCommand::NewFolder)?,
+        &build_new_file_menu(app, items)?,
+        &item(app, items, MenuCommand::NewFolder)?,
         &separator(app)?,
-        &item(app, MenuCommand::ProjectSettings)?,
+        &item(app, items, MenuCommand::ProjectSettings)?,
         &separator(app)?,
-        &item(app, MenuCommand::EmptyTrash)?,
+        &item(app, items, MenuCommand::EmptyTrash)?,
     ])
 }
 
-fn build_new_file_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
-    submenu(app, MenuCommand::NewFile, &[
-        &item(app, MenuCommand::NewManuscriptEntry)?,
-        &item(app, MenuCommand::NewWikiEntry)?,
-    ])
+fn build_new_file_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
+    submenu(
+        app,
+        MenuCommand::NewFile,
+        &[
+            &item(app, items, MenuCommand::NewManuscriptEntry)?,
+            &item(app, items, MenuCommand::NewWikiEntry)?,
+        ],
+        items,
+    )
 }
 
 fn build_window_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
@@ -107,9 +134,13 @@ fn build_window_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
     ])
 }
 
-fn build_help_menu(app: &AppHandle) -> KazmasResult<Submenu<Wry>> {
+fn build_help_menu(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+) -> KazmasResult<Submenu<Wry>> {
     menu(app, HELP_SUBMENU_ID, "Help", &[&item(
         app,
+        items,
         MenuCommand::ToggleDevtools,
     )?])
 }
@@ -128,22 +159,33 @@ fn menu(
 fn submenu(
     app: &AppHandle,
     command: MenuCommand,
-    items: &[&dyn IsMenuItem<Wry>],
+    menu_items: &[&dyn IsMenuItem<Wry>],
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
 ) -> KazmasResult<Submenu<Wry>> {
     let text = command.text(&app.package_info().name).unwrap_or_default();
-    Ok(SubmenuBuilder::with_id(app, command.as_ref(), text)
-        .items(items)
-        .build()?)
+    let submenu = SubmenuBuilder::with_id(app, command.as_ref(), text)
+        .items(menu_items)
+        .build()?;
+    items.insert(command, MenuItemKind::Submenu(submenu.clone()));
+
+    Ok(submenu)
 }
 
-fn item(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKind<Wry>> {
+fn item(
+    app: &AppHandle,
+    items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
+    command: MenuCommand,
+) -> KazmasResult<MenuItemKind<Wry>> {
     let text = command.text(&app.package_info().name).unwrap_or_default();
     let mut builder = MenuItemBuilder::with_id(command.as_ref(), text);
     if let Some(shortcut) = command.accelerator().as_deref() {
         builder = builder.accelerator(shortcut);
     }
 
-    Ok(MenuItemKind::MenuItem(builder.build(app)?))
+    let item = MenuItemKind::MenuItem(builder.build(app)?);
+    items.insert(command, item.clone());
+
+    Ok(item)
 }
 
 fn predefined(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKind<Wry>> {

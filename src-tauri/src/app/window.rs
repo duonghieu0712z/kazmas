@@ -166,6 +166,7 @@ async fn handle_webview_window_event(
                     #[cfg(target_os = "macos")]
                     {
                         let has_project = registry.get_project_id(&window_id).await.is_some();
+                        log::debug!("has project: {has_project}");
                         state
                             .menu_manager()
                             .set_project_commands_enabled(has_project)
@@ -189,7 +190,7 @@ async fn handle_webview_window_event(
                 project_manager.close_project(&project_id).await?;
             }
         }
-        _ => (),
+        _ => {}
     }
     Ok(())
 }

@@ -75,7 +75,9 @@ export type MenuSection = {
     items: MenuItem[];
 };
 
-export function createMenu(): MenuSection[] {
+export type MenuItemIndex = Map<MenuCommand, Exclude<MenuItem, { type: 'separator' }>>;
+
+export function createMenu() {
     return [
         {
             id: 'file',
@@ -137,68 +139,51 @@ export function createMenu(): MenuSection[] {
     ];
 }
 
-export function setMenuItemEnabled(
-    menu: readonly MenuSection[],
-    id: MenuCommand,
-    enabled: boolean,
-): void {
-    const menuItem = findMenuItemInSections(id, menu);
-
-    if (menuItem && menuItem.type !== 'separator') {
-        menuItem.enabled = enabled;
-    }
-}
-
-function item(id: MenuCommand): MenuItem {
+function item(id: MenuCommand) {
     return {
         type: 'item',
         id,
         text: menuCommandMetadata[id].text,
         shortcut: menuCommandMetadata[id].shortcut ?? null,
         enabled: true,
-    };
+    } satisfies MenuItem;
 }
 
-function submenu(id: MenuCommand, items: MenuItem[]): MenuItem {
+function submenu(id: MenuCommand, items: MenuItem[]) {
     return {
         type: 'submenu',
         id,
         text: menuCommandMetadata[id].text,
         items,
         enabled: true,
-    };
+    } satisfies MenuItem;
 }
 
-function separator(id: string): MenuItem {
-    return { type: 'separator', id };
+function separator(id: string) {
+    return { type: 'separator', id } satisfies MenuItem;
 }
 
-function findMenuItemInSections(id: MenuCommand, sections: readonly MenuSection[]) {
+export function createMenuIndex(menu: readonly MenuSection[]) {
+    return indexMenuItems(menu);
+}
+
+function indexMenuItems(sections: readonly MenuSection[]) {
+    const items: MenuItemIndex = new Map();
     for (const section of sections) {
-        const item = findMenuItem(id, section.items);
-
-        if (item) {
-            return item;
-        }
+        indexItems(section.items, items);
     }
-
-    return null;
+    return items;
 }
 
-function findMenuItem(id: MenuCommand, items: readonly MenuItem[]): MenuItem | null {
-    for (const item of items) {
-        if (item.type !== 'separator' && item.id === id) {
-            return item;
+function indexItems(menuItems: readonly MenuItem[], index: MenuItemIndex) {
+    for (const item of menuItems) {
+        if (item.type === 'separator') {
+            continue;
         }
 
+        index.set(item.id, item);
         if (item.type === 'submenu') {
-            const child = findMenuItem(id, item.items);
-
-            if (child) {
-                return child;
-            }
+            indexItems(item.items, index);
         }
     }
-
-    return null;
 }

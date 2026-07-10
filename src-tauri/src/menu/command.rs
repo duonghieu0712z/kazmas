@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use strum::{AsRefStr, EnumString};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type, EnumString, AsRefStr)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type, EnumString, AsRefStr,
+)]
 #[serde(rename_all = "kebab-case")]
 #[strum(serialize_all = "kebab-case", prefix = "menu:")]
 pub(crate) enum MenuCommand {

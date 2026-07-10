@@ -1,8 +1,6 @@
-use tauri::{
-    AppHandle, Wry,
-    async_runtime::spawn,
-    menu::{Menu, MenuItemKind},
-};
+use std::collections::HashMap;
+
+use tauri::{AppHandle, Wry, async_runtime::spawn, menu::MenuItemKind};
 use tokio::sync::Mutex;
 
 use super::get_state;
@@ -13,7 +11,7 @@ use crate::{
 
 #[derive(Default)]
 pub(crate) struct MenuManager {
-    menu: Mutex<Option<Menu<Wry>>>,
+    items: Mutex<HashMap<MenuCommand, MenuItemKind<Wry>>>,
 }
 
 impl MenuManager {
@@ -29,13 +27,15 @@ impl MenuManager {
             });
         });
 
-        let menu = build_menu(app)?;
-        *self.menu.lock().await = Some(menu);
+        let mut items = self.items.lock().await;
+        build_menu(app, &mut items)?;
+
         Ok(())
     }
 
     pub(crate) async fn set_project_commands_enabled(&self, enabled: bool) -> KazmasResult<()> {
         for command in [
+            MenuCommand::CloseWorld,
             MenuCommand::NewFile,
             MenuCommand::NewFolder,
             MenuCommand::ProjectSettings,
@@ -52,38 +52,21 @@ impl MenuManager {
         command: MenuCommand,
         enabled: bool,
     ) -> KazmasResult<()> {
-        let Some(menu) = self.menu.lock().await.clone() else {
-            return Ok(());
-        };
-
-        for item in menu.items()? {
-            set_native_item_enabled(&item, command, enabled)?;
+        if let Some(item) = self.items.lock().await.get(&command) {
+            set_native_item_enabled(item, enabled)?;
         }
 
         Ok(())
     }
 }
 
-fn set_native_item_enabled(
-    item: &MenuItemKind<Wry>,
-    command: MenuCommand,
-    enabled: bool,
-) -> KazmasResult<()> {
-    if item.id().as_ref() == command.as_ref() {
-        match item {
-            MenuItemKind::MenuItem(item) => item.set_enabled(enabled)?,
-            MenuItemKind::Submenu(item) => item.set_enabled(enabled)?,
-            MenuItemKind::Check(item) => item.set_enabled(enabled)?,
-            MenuItemKind::Icon(item) => item.set_enabled(enabled)?,
-            MenuItemKind::Predefined(_) => {}
-        }
+fn set_native_item_enabled(item: &MenuItemKind<Wry>, enabled: bool) -> KazmasResult<()> {
+    match item {
+        MenuItemKind::MenuItem(item) => item.set_enabled(enabled)?,
+        MenuItemKind::Submenu(item) => item.set_enabled(enabled)?,
+        MenuItemKind::Check(item) => item.set_enabled(enabled)?,
+        MenuItemKind::Icon(item) => item.set_enabled(enabled)?,
+        MenuItemKind::Predefined(_) => {}
     }
-
-    if let MenuItemKind::Submenu(submenu) = item {
-        for item in submenu.items()? {
-            set_native_item_enabled(&item, command, enabled)?;
-        }
-    }
-
     Ok(())
 }
