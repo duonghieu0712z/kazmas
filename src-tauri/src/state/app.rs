@@ -2,13 +2,16 @@ use std::sync::Arc;
 
 use tauri::{Manager, Runtime, State};
 
-use super::{menu::MenuManager, project::ProjectManager, registry::WindowRegistry};
+#[cfg(target_os = "macos")]
+use super::menu::MenuManager;
+use super::{project::ProjectManager, registry::WindowRegistry};
 
 #[derive(Default)]
 pub(crate) struct AppState {
     registry: Arc<WindowRegistry>,
-    menu_manager: Arc<MenuManager>,
     project_manager: Arc<ProjectManager>,
+    #[cfg(target_os = "macos")]
+    menu_manager: Arc<MenuManager>,
 }
 
 impl AppState {
@@ -16,12 +19,13 @@ impl AppState {
         &self.registry
     }
 
-    pub(crate) fn menu_manager(&self) -> &Arc<MenuManager> {
-        &self.menu_manager
-    }
-
     pub(crate) fn project_manager(&self) -> &Arc<ProjectManager> {
         &self.project_manager
+    }
+
+    #[cfg(target_os = "macos")]
+    pub(crate) fn menu_manager(&self) -> &Arc<MenuManager> {
+        &self.menu_manager
     }
 }
 

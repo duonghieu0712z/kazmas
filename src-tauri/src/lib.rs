@@ -63,9 +63,12 @@ pub fn run() {
             let handle = app.handle();
             specta_builder.mount_events(handle);
 
-            let state = state::get_state(handle);
-            let menu_manager = state.menu_manager();
-            tauri::async_runtime::block_on(menu_manager.init(handle))?;
+            #[cfg(target_os = "macos")]
+            {
+                let state = state::get_state(handle);
+                let menu_manager = state.menu_manager();
+                tauri::async_runtime::block_on(menu_manager.init(handle))?;
+            }
 
             #[cfg(desktop)]
             tauri::async_runtime::block_on(app::open_initial_windows(handle))?;

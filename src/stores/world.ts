@@ -1,5 +1,6 @@
 import type { WorldManifestDto } from '@/generated/bindings';
 
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { defineStore } from 'pinia';
 
 import { commands, events } from '@/generated/bindings';
@@ -42,7 +43,8 @@ export const useWorldStore = defineStore('world', () => {
             return;
         }
 
-        await events.worldChanged.listen(({ payload }) => {
+        const window = getCurrentWebviewWindow();
+        await events.worldChanged(window).listen(({ payload }) => {
             dirty.value = payload;
         });
         await loadWorld();

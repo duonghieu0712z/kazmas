@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import type { MenuCommand, MenuItem } from '@/generated/bindings';
+import type { MenuCommand } from '@/generated/bindings';
+import type { MenuItem } from '@/menus';
 
 defineProps<{ item: MenuItem }>();
 
 const emit = defineEmits<{ select: [command: MenuCommand] }>();
-
-function displayShortcut(shortcut: string) {
-    return shortcut.replace('CmdOrCtrl', 'Ctrl');
-}
 </script>
 
 <template>
@@ -20,7 +17,7 @@ function displayShortcut(shortcut: string) {
     >
         {{ item.text }}
         <MenubarShortcut v-if="item.shortcut">
-            {{ displayShortcut(item.shortcut) }}
+            {{ item.shortcut }}
         </MenubarShortcut>
     </MenubarItem>
 
@@ -32,7 +29,7 @@ function displayShortcut(shortcut: string) {
     >
         {{ item.text }}
         <MenubarShortcut v-if="item.shortcut">
-            {{ displayShortcut(item.shortcut) }}
+            {{ item.shortcut }}
         </MenubarShortcut>
     </MenubarCheckboxItem>
 
