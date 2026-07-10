@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 #[cfg(target_os = "macos")]
 use tauri::menu::MenuEvent;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, EventTarget, Manager};
 use tauri_specta::Event;
 use uuid::Uuid;
 
@@ -67,10 +67,9 @@ async fn save_world(app: &AppHandle, window_id: Option<Uuid>) -> KazmasResult<()
         let project_manager = state.project_manager();
         project_manager.save_project(&project_id).await?;
 
-        if let Some(dirty) = project_manager.project_dirty(&project_id).await
-            && let Some(window) = app.get_webview_window(&window_label(&window_id))
-        {
-            WorldChangedEvent(dirty).emit(&window)?;
+        if let Some(dirty) = project_manager.project_dirty(&project_id).await {
+            WorldChangedEvent(dirty)
+                .emit_to(app, EventTarget::webview_window(window_label(&window_id)))?;
         }
     }
 
@@ -99,10 +98,9 @@ fn emit_menu_event(
     window_id: Option<Uuid>,
     command: MenuCommand,
 ) -> KazmasResult<()> {
-    if let Some(window_id) = window_id
-        && let Some(window) = app.get_webview_window(&window_label(&window_id))
-    {
-        MenuCommandEvent(command).emit(&window)?;
+    if let Some(window_id) = window_id {
+        MenuCommandEvent(command)
+            .emit_to(app, EventTarget::webview_window(window_label(&window_id)))?;
     }
     Ok(())
 }

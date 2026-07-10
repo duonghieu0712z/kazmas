@@ -1,5 +1,7 @@
 import type { MenuCommand } from '@/generated/bindings';
 
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+
 import { closeWorld, newWorld, openWorld } from '@/actions/world';
 import { openAboutDialog } from '@/dialogs';
 import { commands, events } from '@/generated/bindings';
@@ -38,7 +40,8 @@ export async function listenNativeMenuCommands() {
         return;
     }
 
-    await events.menuCommand.listen(async ({ payload }) => {
+    const window = getCurrentWebviewWindow();
+    await events.menuCommand(window).listen(async ({ payload }) => {
         await executeMenuCommand(payload);
     });
 
