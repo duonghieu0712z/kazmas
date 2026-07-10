@@ -27,14 +27,21 @@ impl MenuManager {
             });
         });
 
-        let mut items = self.items.lock().await;
-        build_menu(app, &mut items)?;
+        {
+            let mut items = self.items.lock().await;
+            build_menu(app, &mut items)?;
+        }
+
+        self.set_project_commands_enabled(false).await?;
+        self.set_recent_world_commands_enabled(false).await?;
 
         Ok(())
     }
 
     pub(crate) async fn set_project_commands_enabled(&self, enabled: bool) -> KazmasResult<()> {
         for command in [
+            MenuCommand::Save,
+            MenuCommand::SaveAs,
             MenuCommand::CloseWorld,
             MenuCommand::NewFile,
             MenuCommand::NewFolder,
@@ -45,6 +52,14 @@ impl MenuManager {
         }
 
         Ok(())
+    }
+
+    pub(crate) async fn set_recent_world_commands_enabled(
+        &self,
+        enabled: bool,
+    ) -> KazmasResult<()> {
+        self.set_native_command_enabled(MenuCommand::ClearWorlds, enabled)
+            .await
     }
 
     async fn set_native_command_enabled(

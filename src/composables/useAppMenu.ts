@@ -17,11 +17,13 @@ function createAppMenu() {
 
     watchEffect(() => {
         const hasProject = world.hasWorld;
+        const hasRecentWorlds = false;
         const hasTrash = false;
         const canCreateNode = world.hasWorld;
 
         setMenuItemEnabled(menuItems, 'save', hasProject);
         setMenuItemEnabled(menuItems, 'save-as', hasProject);
+        setMenuItemEnabled(menuItems, 'clear-worlds', hasRecentWorlds);
         setMenuItemEnabled(menuItems, 'close-world', hasProject);
         setMenuItemEnabled(menuItems, 'new-file', canCreateNode);
         setMenuItemEnabled(menuItems, 'new-folder', canCreateNode);
