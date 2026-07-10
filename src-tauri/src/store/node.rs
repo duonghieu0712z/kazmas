@@ -55,7 +55,7 @@ SET modified_at = ?, deleted_at = NULL
 WHERE id = ? AND deleted_at IS NOT NULL
 "#;
 
-pub(crate) async fn get_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<Node> {
+pub(crate) async fn get_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<Node> {
     let result = sqlx::query_as::<_, Node>(SELECT_NODE)
         .bind(id)
         .fetch_one(conn)
@@ -100,7 +100,7 @@ pub(crate) async fn update_node(conn: &mut SqliteConnection, node: &Node) -> Kaz
 
 pub(crate) async fn update_node_modified_at(
     conn: &mut SqliteConnection,
-    id: &Uuid,
+    id: Uuid,
 ) -> KazmasResult<bool> {
     let result = sqlx::query(UPDATE_NODE_MODIFIED_AT)
         .bind(Utc::now().timestamp())
@@ -110,7 +110,7 @@ pub(crate) async fn update_node_modified_at(
     Ok(result.rows_affected() == 1)
 }
 
-pub(crate) async fn delete_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
+pub(crate) async fn delete_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<bool> {
     let now = Utc::now().timestamp();
     let result = sqlx::query(DELETE_NODE)
         .bind(now)
@@ -121,12 +121,12 @@ pub(crate) async fn delete_node(conn: &mut SqliteConnection, id: &Uuid) -> Kazma
     Ok(result.rows_affected() == 1)
 }
 
-pub(crate) async fn purge_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
+pub(crate) async fn purge_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<bool> {
     let result = sqlx::query(PURGE_NODE).bind(id).execute(conn).await?;
     Ok(result.rows_affected() == 1)
 }
 
-pub(crate) async fn restore_node(conn: &mut SqliteConnection, id: &Uuid) -> KazmasResult<bool> {
+pub(crate) async fn restore_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<bool> {
     let now = Utc::now().timestamp();
     let result = sqlx::query(RESTORE_NODE)
         .bind(now)

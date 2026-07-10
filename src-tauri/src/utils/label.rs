@@ -4,7 +4,7 @@ use crate::app::KazmasResult;
 
 const LABEL_PREFIX: &str = "kazmas-window:";
 
-pub(crate) fn window_label(id: &Uuid) -> String {
+pub(crate) fn window_label(id: Uuid) -> String {
     format!("{LABEL_PREFIX}{id}")
 }
 

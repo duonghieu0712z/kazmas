@@ -55,7 +55,7 @@ impl WorldProject {
 
         let manifest = WorldManifest::new(name);
 
-        let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
+        let workspace_path = create_workspace_path(manifest.id, &temp_dir).await?;
         write_manifest(&manifest, &workspace_path).await?;
         create_assets_dir(&manifest, &workspace_path).await?;
 
@@ -104,7 +104,7 @@ impl WorldProject {
 
         let mut manifest = read_manifest(&package_path)?;
 
-        let workspace_path = create_workspace_path(&manifest.id, &temp_dir).await?;
+        let workspace_path = create_workspace_path(manifest.id, &temp_dir).await?;
         unpack_world(&package_path, &workspace_path)?;
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
@@ -136,21 +136,26 @@ impl WorldProject {
         Ok(())
     }
 
+    pub(crate) async fn save_world_as(&mut self, path: impl AsRef<Path>) -> KazmasResult<()> {
+        self.package = path.as_ref().into();
+        self.save_world().await
+    }
+
     pub(crate) async fn close_world(self) -> KazmasResult<()> {
         database::close_database(self.conn).await?;
         fs::remove_dir_all(&self.workspace).await?;
         Ok(())
     }
 
-    pub(crate) async fn get_node(&mut self, id: &Uuid) -> KazmasResult<Node> {
+    pub(crate) async fn get_node(&mut self, id: Uuid) -> KazmasResult<Node> {
         store::get_node(&mut self.conn, id).await
     }
 
-    pub(crate) async fn get_metadata(&mut self, node_id: &Uuid) -> KazmasResult<NodeMetadata> {
+    pub(crate) async fn get_metadata(&mut self, node_id: Uuid) -> KazmasResult<NodeMetadata> {
         store::get_metadata(&mut self.conn, node_id).await
     }
 
-    pub(crate) async fn get_document(&mut self, node_id: &Uuid) -> KazmasResult<Document> {
+    pub(crate) async fn get_document(&mut self, node_id: Uuid) -> KazmasResult<Document> {
         store::get_document(&mut self.conn, node_id).await
     }
 
@@ -235,7 +240,7 @@ impl WorldProject {
             return Ok(false);
         }
 
-        let node_updated = store::update_node_modified_at(&mut tx, &metadata.node_id).await?;
+        let node_updated = store::update_node_modified_at(&mut tx, metadata.node_id).await?;
         tx.commit().await?;
         if node_updated {
             self.dirty = true;
@@ -251,7 +256,7 @@ impl WorldProject {
             return Ok(false);
         }
 
-        let node_updated = store::update_node_modified_at(&mut tx, &document.node_id).await?;
+        let node_updated = store::update_node_modified_at(&mut tx, document.node_id).await?;
         tx.commit().await?;
         if node_updated {
             self.dirty = true;
@@ -259,7 +264,7 @@ impl WorldProject {
         Ok(node_updated)
     }
 
-    pub(crate) async fn delete_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+    pub(crate) async fn delete_node(&mut self, id: Uuid) -> KazmasResult<bool> {
         let deleted = store::delete_node(&mut self.conn, id).await?;
         if deleted {
             self.dirty = true;
@@ -267,7 +272,7 @@ impl WorldProject {
         Ok(deleted)
     }
 
-    pub(crate) async fn restore_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+    pub(crate) async fn restore_node(&mut self, id: Uuid) -> KazmasResult<bool> {
         let restored = store::restore_node(&mut self.conn, id).await?;
         if restored {
             self.dirty = true;
@@ -275,7 +280,7 @@ impl WorldProject {
         Ok(restored)
     }
 
-    pub(crate) async fn purge_node(&mut self, id: &Uuid) -> KazmasResult<bool> {
+    pub(crate) async fn purge_node(&mut self, id: Uuid) -> KazmasResult<bool> {
         let purged = store::purge_node(&mut self.conn, id).await?;
         if purged {
             self.dirty = true;
@@ -288,7 +293,7 @@ fn create_package_path(name: &str, path: impl AsRef<Path>) -> PathBuf {
     path.as_ref().join(format!("{name}.{EXTENSION}"))
 }
 
-async fn create_workspace_path(id: &Uuid, path: impl AsRef<Path>) -> KazmasResult<PathBuf> {
+async fn create_workspace_path(id: Uuid, path: impl AsRef<Path>) -> KazmasResult<PathBuf> {
     let path = path
         .as_ref()
         .join(id.simple().to_string())

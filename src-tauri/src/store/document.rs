@@ -22,7 +22,7 @@ WHERE node_id = ?
 
 pub(crate) async fn get_document(
     conn: &mut SqliteConnection,
-    node_id: &Uuid,
+    node_id: Uuid,
 ) -> KazmasResult<Document> {
     let result = sqlx::query_as::<_, Document>(SELECT_DOCUMENT)
         .bind(node_id)

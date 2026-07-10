@@ -11,7 +11,7 @@ use super::{
 };
 use crate::{
     state::get_state,
-    utils::{app_temp_dir, window_label},
+    utils::{app_temp_dir, current_window},
     world::{EXTENSION, WorldProject},
 };
 
@@ -66,12 +66,10 @@ async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
     let state = get_state(app);
     let registry = state.registry();
 
-    if let Some(window_id) = registry.focused_window().await {
-        let label = window_label(&window_id);
-        if let Some(window) = app.get_webview_window(&label) {
-            focus_window(&window)?;
-            return Ok(());
-        }
+    let window_id = registry.focused_window().await;
+    if let Some(window) = current_window(app, window_id) {
+        focus_window(&window)?;
+        return Ok(());
     }
 
     if let Some(window) = app.webview_windows().into_values().next() {
@@ -81,7 +79,7 @@ async fn focus_existing_window(app: &AppHandle) -> KazmasResult<()> {
     Ok(())
 }
 
-async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
+async fn open_world_path(app: &AppHandle, file: impl AsRef<Path>) -> KazmasResult<()> {
     let state = get_state(app);
     let project_manager = state.project_manager();
 
@@ -93,9 +91,7 @@ async fn open_world_path(app: &AppHandle, file: PathBuf) -> KazmasResult<()> {
     let project = WorldProject::open_world(&file, &temp_dir).await?;
     let project_id = project.id();
     project_manager
-        .open_project_or_close(project, async {
-            spawn_window(app, Some(&project_id)).await
-        })
+        .open_project_or_close(project, async { spawn_window(app, Some(project_id)).await })
         .await?;
 
     Ok(())
@@ -117,7 +113,8 @@ fn launch_world_paths(args: Vec<String>, cwd: impl AsRef<Path>) -> Vec<PathBuf> 
         .collect()
 }
 
-fn is_world_path(path: &Path) -> bool {
-    path.extension()
+fn is_world_path(path: impl AsRef<Path>) -> bool {
+    path.as_ref()
+        .extension()
         .is_some_and(|ext| ext.eq_ignore_ascii_case(EXTENSION))
 }

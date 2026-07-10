@@ -60,7 +60,7 @@ pub(super) async fn get_node(
     };
 
     let project_manager = state.project_manager();
-    let node = project_manager.get_node(&project_id, &node_id).await?;
+    let node = project_manager.get_node(project_id, node_id).await?;
     Ok(node.map(Into::into))
 }
 
@@ -76,7 +76,7 @@ pub(super) async fn get_metadata(
     };
 
     let project_manager = state.project_manager();
-    let metadata = project_manager.get_metadata(&project_id, &node_id).await?;
+    let metadata = project_manager.get_metadata(project_id, node_id).await?;
     let metadata = metadata
         .map(|metadata| serde_json::to_string(&metadata.data))
         .transpose()
@@ -96,7 +96,7 @@ pub(super) async fn get_document(
     };
 
     let project_manager = state.project_manager();
-    let document = project_manager.get_document(&project_id, &node_id).await?;
+    let document = project_manager.get_document(project_id, node_id).await?;
     let document = document
         .map(|document| serde_json::to_string(&document.content))
         .transpose()
@@ -118,10 +118,10 @@ pub(super) async fn create_folder(
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_folder(&project_id, name, parent_id)
+        .create_folder(project_id, name, parent_id)
         .await?;
     if id.is_some() {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(id)
 }
@@ -140,10 +140,10 @@ pub(super) async fn create_manuscript_entry(
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_manuscript_entry(&project_id, name, parent_id)
+        .create_manuscript_entry(project_id, name, parent_id)
         .await?;
     if id.is_some() {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(id)
 }
@@ -162,10 +162,10 @@ pub(super) async fn create_wiki_entry(
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_wiki_entry(&project_id, name, parent_id)
+        .create_wiki_entry(project_id, name, parent_id)
         .await?;
     if id.is_some() {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(id)
 }
@@ -182,7 +182,7 @@ pub(super) async fn update_node(
     };
 
     let project_manager = state.project_manager();
-    let Some(mut existing) = project_manager.get_node(&project_id, &node.id).await? else {
+    let Some(mut existing) = project_manager.get_node(project_id, node.id).await? else {
         return Ok(None);
     };
 
@@ -190,9 +190,9 @@ pub(super) async fn update_node(
     existing.name = node.name;
     existing.modified_at = Utc::now();
 
-    let updated = project_manager.update_node(&project_id, &existing).await?;
+    let updated = project_manager.update_node(project_id, &existing).await?;
     if updated == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(updated)
 }
@@ -212,10 +212,10 @@ pub(super) async fn update_metadata(
     let project_manager = state.project_manager();
     let data = serde_json::from_str(data).map_err(KazmasError::from)?;
     let updated = project_manager
-        .update_metadata(&project_id, &NodeMetadata::new(node_id, data))
+        .update_metadata(project_id, &NodeMetadata::new(node_id, data))
         .await?;
     if updated == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(updated)
 }
@@ -235,10 +235,10 @@ pub(super) async fn update_document(
     let project_manager = state.project_manager();
     let content = serde_json::from_str(content).map_err(KazmasError::from)?;
     let updated = project_manager
-        .update_document(&project_id, &Document::new(node_id, content))
+        .update_document(project_id, &Document::new(node_id, content))
         .await?;
     if updated == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(updated)
 }
@@ -255,9 +255,9 @@ pub(super) async fn delete_node(
     };
 
     let project_manager = state.project_manager();
-    let deleted = project_manager.delete_node(&project_id, &node_id).await?;
+    let deleted = project_manager.delete_node(project_id, node_id).await?;
     if deleted == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(deleted)
 }
@@ -274,9 +274,9 @@ pub(super) async fn restore_node(
     };
 
     let project_manager = state.project_manager();
-    let restored = project_manager.restore_node(&project_id, &node_id).await?;
+    let restored = project_manager.restore_node(project_id, node_id).await?;
     if restored == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(restored)
 }
@@ -293,9 +293,9 @@ pub(super) async fn purge_node(
     };
 
     let project_manager = state.project_manager();
-    let purged = project_manager.purge_node(&project_id, &node_id).await?;
+    let purged = project_manager.purge_node(project_id, node_id).await?;
     if purged == Some(true) {
-        emit_world_changed(&window, project_manager.project_dirty(&project_id).await)?;
+        emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;
     }
     Ok(purged)
 }
@@ -309,7 +309,7 @@ async fn current_project_id(
     };
 
     let registry = state.registry();
-    Ok(registry.get_project_id(&window_id).await)
+    Ok(registry.get_project_id(window_id).await)
 }
 
 fn emit_world_changed(window: &WebviewWindow, dirty: Option<bool>) -> KazmasResult<()> {

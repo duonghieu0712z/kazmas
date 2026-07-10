@@ -9,14 +9,36 @@ import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
 
-const backendMenuCommands = new Set<MenuCommand>(['new-window', 'save', 'toggle-devtools']);
+const backendMenuCommands = new Set<MenuCommand>([
+    'close-window',
+    'new-window',
+    'quit',
+    'save',
+    'save-as',
+    'toggle-devtools',
+]);
 
 const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
     about: openAboutDialog,
     'close-world': closeWorld,
+    'new-folder': createFolder,
+    'new-manuscript-entry': createManuscriptEntry,
     'new-world': newWorld,
+    'new-wiki-entry': createWikiEntry,
     'open-world': openWorld,
 };
+
+async function createFolder() {
+    await commands.createFolder(null, null);
+}
+
+async function createManuscriptEntry() {
+    await commands.createManuscriptEntry(null, null);
+}
+
+async function createWikiEntry() {
+    await commands.createWikiEntry(null, null);
+}
 
 export async function executeMenuCommand(command: MenuCommand) {
     const handler = frontendMenuHandlers[command];
