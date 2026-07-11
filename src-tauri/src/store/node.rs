@@ -44,7 +44,6 @@ descendants AS (
 )
 SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM descendants
-ORDER BY created_at, name
 "#;
 
 const INSERT_NODE: &str = r#"

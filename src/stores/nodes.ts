@@ -53,12 +53,11 @@ export const useNodeStore = defineStore('nodes', () => {
 
 function buildNodeTree(nodes: NodeDto[]) {
     const nodeMap = new Map<string, NodeTreeDto>();
-    const roots: NodeTreeDto[] = [];
-
     for (const node of nodes) {
         nodeMap.set(node.id, { ...node, children: [] });
     }
 
+    const roots: NodeTreeDto[] = [];
     for (const node of nodeMap.values()) {
         const parent = node.parentId ? nodeMap.get(node.parentId) : null;
         if (parent) {
