@@ -137,8 +137,14 @@ impl WorldProject {
     }
 
     pub(crate) async fn save_world_as(&mut self, path: impl AsRef<Path>) -> KazmasResult<()> {
+        let package = self.package.clone();
         self.package = path.as_ref().into();
-        self.save_world().await
+        if let Err(error) = self.save_world().await {
+            self.package = package;
+            return Err(error);
+        }
+
+        Ok(())
     }
 
     pub(crate) async fn close_world(self) -> KazmasResult<()> {
