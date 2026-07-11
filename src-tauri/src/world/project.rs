@@ -157,6 +157,13 @@ impl WorldProject {
         store::get_node(&mut self.conn, id).await
     }
 
+    pub(crate) async fn get_node_descendants_by_kind(
+        &mut self,
+        kind: NodeKind,
+    ) -> KazmasResult<Vec<Node>> {
+        store::get_node_descendants_by_kind(&mut self.conn, kind).await
+    }
+
     pub(crate) async fn get_metadata(&mut self, node_id: Uuid) -> KazmasResult<NodeMetadata> {
         store::get_metadata(&mut self.conn, node_id).await
     }

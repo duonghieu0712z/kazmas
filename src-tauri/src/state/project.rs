@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     app::{KazmasError, KazmasResult},
-    model::{Document, Node, NodeMetadata},
+    model::{Document, Node, NodeKind, NodeMetadata},
     world::{WorldManifest, WorldProject},
 };
 
@@ -95,6 +95,28 @@ impl ProjectManager {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(&id) {
             return project.get_node(node_id).await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn get_manuscripts(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project
+                .get_node_descendants_by_kind(NodeKind::Manuscript)
+                .await
+                .map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn get_wikis(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project
+                .get_node_descendants_by_kind(NodeKind::Wiki)
+                .await
+                .map(Some);
         }
         Ok(None)
     }

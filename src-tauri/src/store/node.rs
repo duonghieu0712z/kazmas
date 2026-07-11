@@ -21,6 +21,32 @@ ORDER BY created_at
 LIMIT 1
 "#;
 
+const SELECT_NODE_DESCENDANTS_BY_KIND: &str = r#"
+WITH RECURSIVE root AS (
+    SELECT id
+    FROM nodes
+    WHERE kind = ? AND deleted_at IS NULL
+    ORDER BY created_at
+    LIMIT 1
+),
+descendants AS (
+    SELECT nodes.id, nodes.parent_id, nodes.kind, nodes.name, nodes.created_at, nodes.modified_at, nodes.deleted_at
+    FROM nodes
+    INNER JOIN root ON nodes.parent_id = root.id
+    WHERE nodes.deleted_at IS NULL
+
+    UNION ALL
+
+    SELECT nodes.id, nodes.parent_id, nodes.kind, nodes.name, nodes.created_at, nodes.modified_at, nodes.deleted_at
+    FROM nodes
+    INNER JOIN descendants ON nodes.parent_id = descendants.id
+    WHERE nodes.deleted_at IS NULL
+)
+SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
+FROM descendants
+ORDER BY created_at, name
+"#;
+
 const INSERT_NODE: &str = r#"
 INSERT INTO nodes (id, parent_id, kind, name, created_at, modified_at)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -70,6 +96,17 @@ pub(crate) async fn get_node_by_kind(
     let result = sqlx::query_as::<_, Node>(SELECT_NODE_BY_KIND)
         .bind(kind)
         .fetch_one(conn)
+        .await?;
+    Ok(result)
+}
+
+pub(crate) async fn get_node_descendants_by_kind(
+    conn: &mut SqliteConnection,
+    kind: NodeKind,
+) -> KazmasResult<Vec<Node>> {
+    let result = sqlx::query_as::<_, Node>(SELECT_NODE_DESCENDANTS_BY_KIND)
+        .bind(kind)
+        .fetch_all(conn)
         .await?;
     Ok(result)
 }

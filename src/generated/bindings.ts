@@ -37,6 +37,8 @@ export const commands = {
 	modifiedAt: string,
 	deletedAt: string | null,
 } | null, CommandError>(__TAURI_INVOKE("get_node", { nodeId })),
+	getManuscripts: () => typedError<NodeDto[] | null, CommandError>(__TAURI_INVOKE("get_manuscripts")),
+	getWikis: () => typedError<NodeDto[] | null, CommandError>(__TAURI_INVOKE("get_wikis")),
 	getMetadata: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_metadata", { nodeId })),
 	getDocument: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_document", { nodeId })),
 	createFolder: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_folder", { name, parentId })),
@@ -81,7 +83,7 @@ export type NodeDto = {
 	deletedAt: string | null,
 };
 
-export type NodeKind = "world" | "manuscript" | "wiki" | "folder" | "manuscriptEntry" | "wikiEntry";
+export type NodeKind = "world" | "manuscript" | "wiki" | "folder" | "manuscript_entry" | "wiki_entry";
 
 export type UpdateNodeDto = {
 	id: string,

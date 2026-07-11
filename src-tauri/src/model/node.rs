@@ -7,7 +7,7 @@ use uuid::Uuid;
 const DEFAULT_NAME: &str = "Untitled";
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, Type, SqlxType)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[sqlx(rename_all = "snake_case")]
 pub(crate) enum NodeKind {
     World,
