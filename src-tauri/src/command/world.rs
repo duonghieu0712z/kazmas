@@ -47,12 +47,12 @@ pub(super) async fn get_world(
     };
 
     let registry = state.registry();
-    let Some(project_id) = registry.get_project_id(&window_id).await else {
+    let Some(project_id) = registry.get_project_id(window_id).await else {
         return Ok(None);
     };
 
     let project_manager = state.project_manager();
-    let manifest = project_manager.world_manifest(&project_id).await?;
+    let manifest = project_manager.world_manifest(project_id).await?;
     Ok(manifest.map(Into::into))
 }
 
@@ -71,7 +71,7 @@ pub(super) async fn create_world(
     let project = WorldProject::create_world(name, path, temp_dir).await?;
     let manifest = project.manifest();
 
-    open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
+    open_project_in_window(&app, state, window_id, project, new_window).await?;
     Ok((!new_window).then(|| manifest.into()))
 }
 
@@ -93,7 +93,7 @@ pub(super) async fn open_world(
     let project = WorldProject::open_world(file, temp_dir).await?;
     let manifest = project.manifest();
 
-    open_project_in_window(&app, state, window_id.as_ref(), project, new_window).await?;
+    open_project_in_window(&app, state, window_id, project, new_window).await?;
     Ok((!new_window).then(|| manifest.into()))
 }
 
@@ -105,9 +105,9 @@ pub(super) async fn close_world(
 ) -> CommandResult<()> {
     let registry = state.registry();
     if let Some(window_id) = parse_window_label(window.label())?
-        && let Some(project_id) = registry.close_project(&window_id).await
+        && let Some(project_id) = registry.close_project(window_id).await
     {
-        state.project_manager().close_project(&project_id).await?;
+        state.project_manager().close_project(project_id).await?;
         #[cfg(target_os = "macos")]
         state
             .menu_manager()

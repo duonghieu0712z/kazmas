@@ -70,17 +70,23 @@ pub(crate) enum MenuCommandOwner {
 impl MenuCommand {
     pub(crate) fn owner(self) -> MenuCommandOwner {
         match self {
-            Self::NewWindow | Self::Save | Self::ToggleDevtools => MenuCommandOwner::Backend,
-            Self::About | Self::CloseWorld | Self::NewWorld | Self::OpenWorld => {
-                MenuCommandOwner::Frontend
+            #[cfg(not(target_os = "macos"))]
+            Self::CloseWindow | Self::Quit => MenuCommandOwner::Backend,
+            Self::NewWindow | Self::Save | Self::SaveAs | Self::ToggleDevtools => {
+                MenuCommandOwner::Backend
             }
-            Self::CloseWindow
-            | Self::Copy
-            | Self::Cut
-            | Self::Paste
-            | Self::Redo
-            | Self::SelectAll
-            | Self::Undo => MenuCommandOwner::Native,
+            Self::About
+            | Self::CloseWorld
+            | Self::NewFolder
+            | Self::NewManuscriptEntry
+            | Self::NewWikiEntry
+            | Self::NewWorld
+            | Self::OpenWorld => MenuCommandOwner::Frontend,
+            #[cfg(target_os = "macos")]
+            Self::CloseWindow | Self::Quit => MenuCommandOwner::Native,
+            Self::Copy | Self::Cut | Self::Paste | Self::Redo | Self::SelectAll | Self::Undo => {
+                MenuCommandOwner::Native
+            }
             _ => MenuCommandOwner::Unimplemented,
         }
     }

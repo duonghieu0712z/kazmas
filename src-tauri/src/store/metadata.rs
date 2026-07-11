@@ -22,7 +22,7 @@ WHERE node_id = ?
 
 pub(crate) async fn get_metadata(
     conn: &mut SqliteConnection,
-    node_id: &Uuid,
+    node_id: Uuid,
 ) -> KazmasResult<NodeMetadata> {
     let result = sqlx::query_as::<_, NodeMetadata>(SELECT_METADATA)
         .bind(node_id)
