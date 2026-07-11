@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 #[cfg(target_os = "macos")]
 use std::str::FromStr;
 
@@ -148,10 +148,9 @@ fn save_world_path(
     Ok(path)
 }
 
-fn normalize_world_path(mut path: PathBuf) -> PathBuf {
-    if path.extension().is_none() {
-        path.set_extension(EXTENSION);
-    }
+fn normalize_world_path(path: impl AsRef<Path>) -> PathBuf {
+    let mut path = path.as_ref().to_path_buf();
+    path.set_extension(EXTENSION);
     path
 }
 
