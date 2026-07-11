@@ -97,5 +97,7 @@ declare module 'vue' {
     TooltipContent: typeof import('./../components/ui/tooltip/TooltipContent.vue')['default']
     TooltipProvider: typeof import('./../components/ui/tooltip/TooltipProvider.vue')['default']
     TooltipTrigger: typeof import('./../components/ui/tooltip/TooltipTrigger.vue')['default']
+    TreeItem: typeof import('./../components/ui/tree/TreeItem.vue')['default']
+    TreeRoot: typeof import('./../components/ui/tree/TreeRoot.vue')['default']
   }
 }
