@@ -57,6 +57,8 @@ declare module 'vue' {
     ResizableHandle: typeof import('./../components/ui/resizable/ResizableHandle.vue')['default']
     ResizablePanel: typeof import('./../components/ui/resizable/ResizablePanel.vue')['default']
     ResizablePanelGroup: typeof import('./../components/ui/resizable/ResizablePanelGroup.vue')['default']
+    ScrollArea: typeof import('./../components/ui/scroll-area/ScrollArea.vue')['default']
+    ScrollBar: typeof import('./../components/ui/scroll-area/ScrollBar.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']
     Sheet: typeof import('./../components/ui/sheet/Sheet.vue')['default']
     SheetClose: typeof import('./../components/ui/sheet/SheetClose.vue')['default']

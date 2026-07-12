@@ -160,30 +160,3 @@
         @apply appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none;
     }
 }
-
-@utility scrollbar {
-    --scrollbar-thumb: transparent;
-
-    &::-webkit-scrollbar {
-        width: calc(var(--spacing) * 1.5);
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        border: 1px solid transparent;
-        border-radius: calc(infinity * 1px);
-        background-clip: content-box;
-        background-color: var(--scrollbar-thumb);
-    }
-
-    &:hover {
-        --scrollbar-thumb: var(--color-input);
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        background-color: var(--color-ring);
-    }
-}
