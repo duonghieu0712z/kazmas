@@ -46,4 +46,3 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         </template>
     </SplitterResizeHandle>
 </template>
-f
