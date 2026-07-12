@@ -54,6 +54,11 @@ declare module 'vue' {
     MenubarSubContent: typeof import('./../components/ui/menubar/MenubarSubContent.vue')['default']
     MenubarSubTrigger: typeof import('./../components/ui/menubar/MenubarSubTrigger.vue')['default']
     MenubarTrigger: typeof import('./../components/ui/menubar/MenubarTrigger.vue')['default']
+    ResizableHandle: typeof import('./../components/ui/resizable/ResizableHandle.vue')['default']
+    ResizablePanel: typeof import('./../components/ui/resizable/ResizablePanel.vue')['default']
+    ResizablePanelGroup: typeof import('./../components/ui/resizable/ResizablePanelGroup.vue')['default']
+    ScrollArea: typeof import('./../components/ui/scroll-area/ScrollArea.vue')['default']
+    ScrollBar: typeof import('./../components/ui/scroll-area/ScrollBar.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']
     Sheet: typeof import('./../components/ui/sheet/Sheet.vue')['default']
     SheetClose: typeof import('./../components/ui/sheet/SheetClose.vue')['default']
@@ -94,5 +99,7 @@ declare module 'vue' {
     TooltipContent: typeof import('./../components/ui/tooltip/TooltipContent.vue')['default']
     TooltipProvider: typeof import('./../components/ui/tooltip/TooltipProvider.vue')['default']
     TooltipTrigger: typeof import('./../components/ui/tooltip/TooltipTrigger.vue')['default']
+    TreeItem: typeof import('./../components/ui/tree/TreeItem.vue')['default']
+    TreeRoot: typeof import('./../components/ui/tree/TreeRoot.vue')['default']
   }
 }

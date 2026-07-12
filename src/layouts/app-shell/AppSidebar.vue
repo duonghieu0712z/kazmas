@@ -1,5 +1,13 @@
 <script setup lang="ts">
+import type { ActivityBarItemName } from './AppActivityBar.vue';
+
+import { NodeTreeView } from '@/features/node-tree';
+import { useNodeStore } from '@/stores/nodes';
+
 import AppActivityBar from './AppActivityBar.vue';
+
+const activeActivity = ref<ActivityBarItemName | null>(null);
+const nodes = useNodeStore();
 </script>
 
 <template>
@@ -10,10 +18,11 @@ import AppActivityBar from './AppActivityBar.vue';
         ]"
         collapsible="icon"
     >
-        <AppActivityBar />
+        <AppActivityBar v-model="activeActivity" />
 
-        <Sidebar class="hidden flex-1 items-center justify-center md:flex" collapsible="none">
-            Sidebar
+        <Sidebar class="hidden min-w-0 flex-1 overflow-hidden md:flex" collapsible="none">
+            <NodeTreeView v-if="activeActivity === 'Manuscript'" :tree="nodes.manuscripts" />
+            <NodeTreeView v-else-if="activeActivity === 'Wiki'" :tree="nodes.wikis" />
         </Sidebar>
     </Sidebar>
 </template>

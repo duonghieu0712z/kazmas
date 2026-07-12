@@ -5,7 +5,17 @@ import { ImagesIcon, LibraryIcon, ScrollTextIcon, SettingsIcon, Trash2Icon } fro
 
 import { useSidebar } from '@/components/ui/sidebar';
 
-type ItemType = { name: string; icon: LucideIcon };
+export type ActivityBarItemName = 'Manuscript' | 'Wiki' | 'Assets' | 'Trash' | 'Settings';
+
+type ItemType = { name: ActivityBarItemName; icon: LucideIcon };
+
+const props = defineProps<{
+    modelValue: ActivityBarItemName | null;
+}>();
+
+const emit = defineEmits<{
+    'update:modelValue': [value: ActivityBarItemName | null];
+}>();
 
 const ITEMS = [
     {
@@ -24,38 +34,37 @@ const ITEMS = [
         name: 'Trash',
         icon: Trash2Icon,
     },
-];
+] satisfies ItemType[];
 
 const FOOTERS = [
     {
         name: 'Settings',
         icon: SettingsIcon,
     },
-];
+] satisfies ItemType[];
 
-const activeItem = ref<ItemType | null>(null);
 const { open, setOpen } = useSidebar();
 
 function selectItem(item: ItemType) {
-    if (open.value && activeItem.value?.name === item.name) {
-        activeItem.value = null;
+    if (open.value && props.modelValue === item.name) {
+        emit('update:modelValue', null);
         setOpen(false);
         return;
     }
 
-    activeItem.value = item;
+    emit('update:modelValue', item.name);
     setOpen(true);
 }
 
 onMounted(() => {
-    if (open.value) {
-        activeItem.value = ITEMS[0]!;
+    if (open.value && !props.modelValue) {
+        emit('update:modelValue', ITEMS[0]!.name);
     }
 });
 
 watch(open, (val) => {
     if (!val) {
-        activeItem.value = null;
+        emit('update:modelValue', null);
     }
 });
 </script>
@@ -78,7 +87,7 @@ watch(open, (val) => {
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
                             'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
                         ]"
-                        :is-active="activeItem?.name === item.name"
+                        :is-active="modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
                     >

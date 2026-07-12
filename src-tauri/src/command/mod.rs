@@ -13,6 +13,8 @@ pub(crate) fn commands() -> Commands<tauri::Wry> {
         world::open_world,
         world::close_world,
         node::get_node,
+        node::get_manuscripts,
+        node::get_wikis,
         node::get_metadata,
         node::get_document,
         node::create_folder,

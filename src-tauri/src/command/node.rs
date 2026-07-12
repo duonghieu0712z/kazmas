@@ -66,6 +66,36 @@ pub(super) async fn get_node(
 
 #[tauri::command]
 #[specta::specta]
+pub(super) async fn get_manuscripts(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<Vec<NodeDto>>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+
+    let project_manager = state.project_manager();
+    let nodes = project_manager.get_manuscripts(project_id).await?;
+    Ok(nodes.map(|nodes| nodes.into_iter().map(Into::into).collect()))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn get_wikis(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<Vec<NodeDto>>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+
+    let project_manager = state.project_manager();
+    let nodes = project_manager.get_wikis(project_id).await?;
+    Ok(nodes.map(|nodes| nodes.into_iter().map(Into::into).collect()))
+}
+
+#[tauri::command]
+#[specta::specta]
 pub(super) async fn get_metadata(
     state: State<'_, AppState>,
     window: WebviewWindow,

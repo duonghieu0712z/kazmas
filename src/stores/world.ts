@@ -4,6 +4,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { defineStore } from 'pinia';
 
 import { commands, events } from '@/generated/bindings';
+import { useNodeStore } from '@/stores/nodes';
 
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
@@ -13,6 +14,19 @@ export const useWorldStore = defineStore('world', () => {
     const hasWorld = computed(() => manifest.value !== null);
     const isDirty = computed(() => dirty.value);
     const worldName = computed(() => manifest.value?.name ?? null);
+
+    const nodes = useNodeStore();
+
+    watch(hasWorld, async (value) => {
+        if (value) {
+            await nodes.reloadNodes();
+            console.debug('Manuscripts', nodes.manuscripts);
+            console.debug('Wikis', nodes.wikis);
+            return;
+        }
+
+        nodes.clearNodes();
+    });
 
     const setManifest = (value: WorldManifestDto) => {
         console.debug('World manifest set', value);
