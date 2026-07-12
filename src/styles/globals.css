@@ -162,6 +162,8 @@
 }
 
 @utility scrollbar {
+    --scrollbar-thumb: transparent;
+
     &::-webkit-scrollbar {
         width: calc(var(--spacing) * 1.5);
     }
@@ -172,9 +174,13 @@
 
     &::-webkit-scrollbar-thumb {
         border: 1px solid transparent;
-        border-radius: calc(infinity* 1px);
+        border-radius: calc(infinity * 1px);
         background-clip: content-box;
-        background-color: var(--color-input);
+        background-color: var(--scrollbar-thumb);
+    }
+
+    &:hover {
+        --scrollbar-thumb: var(--color-input);
     }
 
     &::-webkit-scrollbar-thumb:hover {
