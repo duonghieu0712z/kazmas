@@ -30,6 +30,9 @@
         "@tauri-apps/api": "^2.11.1",
         "@tauri-apps/plugin-dialog": "^2.7.1",
         "@tauri-apps/plugin-os": "^2.3.2",
+        "@tiptap/pm": "^3.27.3",
+        "@tiptap/starter-kit": "^3.27.3",
+        "@tiptap/vue-3": "^3.27.3",
         "@vueuse/core": "^14.3.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -41,6 +44,7 @@
     "devDependencies": {
         "@commitlint/cli": "^21.2.0",
         "@commitlint/config-conventional": "^21.2.0",
+        "@tailwindcss/typography": "^0.5.20",
         "@tailwindcss/vite": "^4.3.2",
         "@tauri-apps/cli": "^2.11.4",
         "@tsconfig/node24": "^24.0.4",

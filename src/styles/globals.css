@@ -3,6 +3,8 @@
 
 @import '@/styles/fonts.css';
 
+@plugin "@tailwindcss/typography";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
