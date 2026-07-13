@@ -3,10 +3,12 @@ import type { ComputedRef } from 'vue';
 
 import { createContext } from 'reka-ui';
 
-export const [useTree, provideTreeContext] = createContext<{
+export type TreeContext = {
     chevron: ComputedRef<boolean>;
     indentGuide: ComputedRef<boolean>;
-}>('Tree');
+};
+
+export const [injectTreeContext, provideTreeContext] = createContext<TreeContext>('Tree');
 </script>
 
 <script

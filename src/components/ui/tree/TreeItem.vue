@@ -8,7 +8,7 @@ import { injectTreeRootContext, TreeItem, useForwardPropsEmits } from 'reka-ui';
 
 import { cn } from '@/lib/utils';
 
-import { useTree } from './TreeRoot.vue';
+import { injectTreeContext } from './TreeRoot.vue';
 
 const TREE_ITEM_BASE_INDENT = 8;
 const TREE_ITEM_LEVEL_INDENT = 12;
@@ -32,7 +32,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 const rootContext = injectTreeRootContext();
 const hasChildren = computed(() => !!rootContext.getChildren(props.value)?.length);
 
-const treeContext = useTree();
+const treeContext = injectTreeContext();
 const chevron = computed(() => treeContext.chevron.value);
 const indentGuide = computed(() => treeContext.indentGuide.value);
 </script>
