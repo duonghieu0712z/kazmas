@@ -31,6 +31,8 @@ declare module 'vue' {
     DialogScrollContent: typeof import('./../components/ui/dialog/DialogScrollContent.vue')['default']
     DialogTitle: typeof import('./../components/ui/dialog/DialogTitle.vue')['default']
     DialogTrigger: typeof import('./../components/ui/dialog/DialogTrigger.vue')['default']
+    EditorContent: typeof import('./../components/tiptap/editor/EditorContent.vue')['default']
+    EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
     Input: typeof import('./../components/ui/input/Input.vue')['default']
     InputGroup: typeof import('./../components/ui/input-group/InputGroup.vue')['default']
     InputGroupAddon: typeof import('./../components/ui/input-group/InputGroupAddon.vue')['default']
