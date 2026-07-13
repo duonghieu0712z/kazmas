@@ -14,7 +14,6 @@ const props = defineProps<{
 }>();
 
 const context = useTiptapEditor();
-console.log('content', context.editor.value);
 const editor = computed(() => props.editor ?? context.editor.value);
 </script>
 
