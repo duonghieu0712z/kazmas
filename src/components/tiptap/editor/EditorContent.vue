@@ -18,5 +18,5 @@ const editor = computed(() => props.editor ?? context.editor.value);
 </script>
 
 <template>
-    <EditorContent :class="cn('size-full', props.class)" :editor="editor" />
+    <EditorContent :class="cn('min-h-full w-full', props.class)" :editor="editor" />
 </template>

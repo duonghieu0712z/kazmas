@@ -14,7 +14,7 @@ useColorMode({ initialValue: 'auto' });
 
 <template>
     <SidebarProvider
-        class="flex flex-col"
+        class="flex h-full min-h-0 flex-col overflow-hidden"
         :style="{
             '--title-bar-height': TITLE_BAR_HEIGHT,
             '--status-bar-height': STATUS_BAR_HEIGHT,
@@ -22,7 +22,7 @@ useColorMode({ initialValue: 'auto' });
     >
         <AppTitleBar />
 
-        <div class="flex flex-1">
+        <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
             <AppSidebar />
             <AppContent />
         </div>

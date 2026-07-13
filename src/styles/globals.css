@@ -9,7 +9,7 @@
 
 @theme {
     --font-ui: 'Geist', var(--font-sans);
-    --font-editor: 'Lora', var(--font-serif);
+    --font-document: 'Lora', var(--font-serif);
     --font-title: 'Allura', cursive;
 }
 
