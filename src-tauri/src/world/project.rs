@@ -229,7 +229,11 @@ impl WorldProject {
 
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
-        store::create_document(&mut tx, &Document::new(node.id, serde_json::json!({}))).await?;
+        store::create_document(
+            &mut tx,
+            &Document::new(node.id, serde_json::json!({ "type": "doc" })),
+        )
+        .await?;
 
         tx.commit().await?;
         self.dirty = true;
