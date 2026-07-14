@@ -9,6 +9,7 @@ import { useNodeStore } from '@/stores/nodes';
 
 const nodes = useNodeStore();
 const document = shallowRef<{ nodeId: string; content: Content }>();
+const emptyDocument: Content = { type: 'doc' };
 
 let pendingSave: { nodeId: string; content: string } | undefined;
 async function saveDocument() {
@@ -55,10 +56,10 @@ watch(
         }
 
         const result = await commands.getDocument(nodeId);
-        if (nodes.selectedNodeId === nodeId && result.status === 'ok' && result.data) {
+        if (nodes.selectedNodeId === nodeId && result.status === 'ok') {
             document.value = {
                 nodeId,
-                content: JSON.parse(result.data),
+                content: result.data ? JSON.parse(result.data) : emptyDocument,
             };
         }
     },
