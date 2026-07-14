@@ -82,6 +82,9 @@ jobs:
       - name: Check types
         run: pnpm type-check
 
+      - name: Build frontend
+        run: pnpm build-only
+
   tauri-quality:
     name: Tauri quality (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
