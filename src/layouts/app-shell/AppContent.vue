@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { Editor } from '@/features/editor';
 import { NodeBreadcrumb } from '@/features/node-breadcrumb';
+import { useNodeStore } from '@/stores/nodes';
+
+const nodes = useNodeStore();
 </script>
 
 <template>
@@ -9,7 +12,7 @@ import { NodeBreadcrumb } from '@/features/node-breadcrumb';
             <NodeBreadcrumb />
         </header>
         <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
-            <Editor />
+            <Editor v-if="nodes.openedNodeId" />
         </main>
     </SidebarInset>
 </template>
