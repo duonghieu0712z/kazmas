@@ -19,13 +19,8 @@ function getKey(node: NodeTreeDto) {
 function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
     const node = event.detail.value;
     if (node) {
-        nodes.selectedNodeId = node.id;
-    }
-}
-
-function openNode(node: NodeTreeDto) {
-    if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
-        nodes.openedNodeId = node.id;
+        nodes.selectNode(node);
+        nodes.openNode(node);
     }
 }
 </script>
@@ -46,7 +41,6 @@ function openNode(node: NodeTreeDto) {
                     v-bind="item.bind"
                     :key="item._id"
                     v-slot="{ isExpanded }"
-                    @dblclick="openNode(item.value)"
                     @select="selectNode"
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">

@@ -40,6 +40,16 @@ export const useNodeStore = defineStore('nodes', () => {
         openedNodeId.value = null;
     };
 
+    function selectNode(node: NodeDto) {
+        selectedNodeId.value = node.id;
+    }
+
+    function openNode(node: NodeDto) {
+        if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
+            openedNodeId.value = node.id;
+        }
+    }
+
     const loadManuscripts = async () => {
         const result = await commands.getManuscripts();
         if (result.status === 'ok') {
@@ -65,6 +75,8 @@ export const useNodeStore = defineStore('nodes', () => {
         openedNodeId,
         openedNodePath,
         clearNodes,
+        selectNode,
+        openNode,
         loadManuscripts,
         loadWikis,
         reloadNodes,
