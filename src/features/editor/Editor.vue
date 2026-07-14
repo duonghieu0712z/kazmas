@@ -29,7 +29,7 @@ const options = computed<Partial<EditorOptions>>(() => ({
     editable: true,
     editorProps: {
         attributes: {
-            class: 'prose dark:prose-invert text-foreground font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-none',
+            class: 'prose dark:prose-invert text-foreground font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
             spellCheck: 'false',
         },
     },
