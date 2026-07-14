@@ -47,7 +47,7 @@ const options = computed<Partial<EditorOptions>>(() => ({
 }));
 
 watch(
-    () => nodes.selectedNodeId,
+    () => nodes.openedNodeId,
     async (nodeId) => {
         await saveDocument();
         document.value = undefined;
@@ -56,7 +56,7 @@ watch(
         }
 
         const result = await commands.getDocument(nodeId);
-        if (nodes.selectedNodeId === nodeId && result.status === 'ok') {
+        if (nodes.openedNodeId === nodeId && result.status === 'ok') {
             document.value = {
                 nodeId,
                 content: result.data ? JSON.parse(result.data) : emptyDocument,

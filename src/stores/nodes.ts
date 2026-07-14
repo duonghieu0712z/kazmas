@@ -12,6 +12,7 @@ export const useNodeStore = defineStore('nodes', () => {
     const manuscriptNodes = shallowRef<NodeDto[]>([]);
     const wikiNodes = shallowRef<NodeDto[]>([]);
     const selectedNodeId = shallowRef<string | null>(null);
+    const openedNodeId = shallowRef<string | null>(null);
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
@@ -20,6 +21,7 @@ export const useNodeStore = defineStore('nodes', () => {
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
+        openedNodeId.value = null;
     };
 
     const loadManuscripts = async () => {
@@ -44,6 +46,7 @@ export const useNodeStore = defineStore('nodes', () => {
         manuscripts,
         wikis,
         selectedNodeId,
+        openedNodeId,
         clearNodes,
         loadManuscripts,
         loadWikis,
