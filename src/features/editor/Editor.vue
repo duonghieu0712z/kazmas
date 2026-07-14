@@ -42,7 +42,7 @@ const options = computed<Partial<EditorOptions>>(() => ({
             await debouncedSaveDocument();
         }
     },
-    onUnmount: saveDocument,
+    onDestroy: saveDocument,
 }));
 
 watch(
