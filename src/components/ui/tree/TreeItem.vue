@@ -36,7 +36,15 @@ const treeContext = injectTreeContext();
 const { chevron, expandOnChevronOnly, indentGuide } = treeContext;
 
 function toggleItem(event: TreeItemToggleEvent<T>) {
-    if (chevron.value && expandOnChevronOnly.value && event.detail.originalEvent.type === 'click') {
+    const originalEvent = event.detail?.originalEvent;
+    const target = originalEvent?.target;
+
+    if (
+        chevron.value &&
+        expandOnChevronOnly.value &&
+        originalEvent?.type === 'click' &&
+        (!(target instanceof Element) || !target.closest('.tree-chevron-icon'))
+    ) {
         event.preventDefault();
     }
 }
@@ -81,8 +89,7 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
             v-if="chevron"
             :class="
                 cn(
-                    'mr-1 size-3.5 shrink-0 transition-transform',
-                    hasChildren && expandOnChevronOnly && 'cursor-pointer',
+                    'tree-chevron-icon mr-1 size-3.5 shrink-0 transition-transform',
                     slotProps.isExpanded && 'rotate-90',
                     !hasChildren && 'pointer-events-none opacity-0',
                 )
