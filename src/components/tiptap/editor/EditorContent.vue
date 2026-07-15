@@ -13,8 +13,7 @@ const props = defineProps<{
     class?: HTMLAttributes['class'];
 }>();
 
-const context = useTiptapEditor();
-const editor = computed(() => props.editor ?? context.editor.value);
+const editor = useTiptapEditor(toRef(props, 'editor'));
 </script>
 
 <template>
