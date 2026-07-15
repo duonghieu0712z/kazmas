@@ -5,6 +5,7 @@ import { createContext } from 'reka-ui';
 
 export type TreeContext = {
     chevron: ComputedRef<boolean>;
+    expandOnChevronOnly: ComputedRef<boolean>;
     indentGuide: ComputedRef<boolean>;
 };
 
@@ -33,22 +34,31 @@ const props = withDefaults(
         TreeRootProps<T, U, M> & {
             class?: HTMLAttributes['class'];
             chevron?: boolean;
+            expandOnChevronOnly?: boolean;
             indentGuide?: boolean;
         }
     >(),
     {
         as: 'ul',
         chevron: false,
+        expandOnChevronOnly: false,
         indentGuide: false,
     },
 );
 const emits = defineEmits<TreeRootEmits<U, M>>();
 
-const delegatedProps = reactiveOmit(props, 'class', 'chevron', 'indentGuide');
+const delegatedProps = reactiveOmit(
+    props,
+    'class',
+    'chevron',
+    'expandOnChevronOnly',
+    'indentGuide',
+);
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 provideTreeContext({
     chevron: computed(() => props.chevron),
+    expandOnChevronOnly: computed(() => props.expandOnChevronOnly),
     indentGuide: computed(() => props.indentGuide),
 });
 </script>
