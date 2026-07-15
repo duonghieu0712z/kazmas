@@ -84,7 +84,7 @@ jobs:
           - os: macos-latest
             label: macos-aarch64
             platform: macos
-          - os: macos-15-intel
+          - os: macos-26-intel
             label: macos-x86_64
             platform: macos
           - os: windows-latest
