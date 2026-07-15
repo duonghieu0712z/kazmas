@@ -1,13 +1,28 @@
 <script setup lang="ts">
 import type { NodeTreeDto } from '@/stores/nodes';
+import type { TreeItemSelectEvent } from 'reka-ui';
 
 import { FileIcon, FolderIcon, FolderOpenIcon } from '@lucide/vue';
+
+import { useNodeStore } from '@/stores/nodes';
 
 defineProps<{
     tree: NodeTreeDto[];
 }>();
 
-const getKey = (node: NodeTreeDto) => node.id;
+const nodes = useNodeStore();
+
+function getKey(node: NodeTreeDto) {
+    return node.id;
+}
+
+function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
+    const node = event.detail.value;
+    if (node) {
+        nodes.selectNode(node);
+        nodes.openNode(node);
+    }
+}
 </script>
 
 <template>
@@ -26,6 +41,7 @@ const getKey = (node: NodeTreeDto) => node.id;
                     v-bind="item.bind"
                     :key="item._id"
                     v-slot="{ isExpanded }"
+                    @select="selectNode"
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">
                         <template v-if="item.value.kind === 'folder'">

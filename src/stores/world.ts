@@ -20,8 +20,6 @@ export const useWorldStore = defineStore('world', () => {
     watch(hasWorld, async (value) => {
         if (value) {
             await nodes.reloadNodes();
-            console.debug('Manuscripts', nodes.manuscripts);
-            console.debug('Wikis', nodes.wikis);
             return;
         }
 
@@ -29,7 +27,6 @@ export const useWorldStore = defineStore('world', () => {
     });
 
     const setManifest = (value: WorldManifestDto) => {
-        console.debug('World manifest set', value);
         manifest.value = value;
         dirty.value = false;
     };
