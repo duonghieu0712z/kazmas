@@ -31,6 +31,7 @@ function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
             <TreeRoot
                 v-slot="{ flattenItems }"
                 chevron
+                expand-on-chevron-only
                 :get-key="getKey"
                 indent-guide
                 :items="tree"

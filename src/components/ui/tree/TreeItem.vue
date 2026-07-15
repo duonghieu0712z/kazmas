@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>">
-import type { TreeItemEmits, TreeItemProps } from 'reka-ui';
+import type { TreeItemEmits, TreeItemProps, TreeItemToggleEvent } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 
 import { ChevronRightIcon } from '@lucide/vue';
@@ -33,8 +33,13 @@ const rootContext = injectTreeRootContext();
 const hasChildren = computed(() => !!rootContext.getChildren(props.value)?.length);
 
 const treeContext = injectTreeContext();
-const chevron = computed(() => treeContext.chevron.value);
-const indentGuide = computed(() => treeContext.indentGuide.value);
+const { chevron, expandOnChevronOnly, indentGuide } = treeContext;
+
+function toggleItem(event: TreeItemToggleEvent<T>) {
+    if (chevron.value && expandOnChevronOnly.value && event.detail.originalEvent.type === 'click') {
+        event.preventDefault();
+    }
+}
 </script>
 
 <template>
@@ -44,7 +49,7 @@ const indentGuide = computed(() => treeContext.indentGuide.value);
         :class="
             cn(
                 [
-                    'text-sidebar-accent-foreground relative flex h-6 w-full min-w-0 items-center pe-2 transition-colors outline-none',
+                    'text-sidebar-accent-foreground relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 transition-colors outline-none',
                     'hover:bg-sidebar-accent/60 focus-visible:bg-sidebar-accent/60 data-selected:bg-sidebar-accent',
                     'data-disabled:pointer-events-none data-disabled:opacity-50',
                     // Indent guide
@@ -70,16 +75,19 @@ const indentGuide = computed(() => treeContext.indentGuide.value);
             paddingInlineStart: 'var(--tree-item-padding)',
         }"
         :value="value"
+        @toggle="toggleItem"
     >
         <ChevronRightIcon
             v-if="chevron"
             :class="
                 cn(
                     'mr-1 size-3.5 shrink-0 transition-transform',
+                    hasChildren && expandOnChevronOnly && 'cursor-pointer',
                     slotProps.isExpanded && 'rotate-90',
-                    !hasChildren && 'opacity-0',
+                    !hasChildren && 'pointer-events-none opacity-0',
                 )
             "
+            @click.stop="slotProps.handleToggle"
         />
         <slot v-bind="slotProps" />
     </TreeItem>
