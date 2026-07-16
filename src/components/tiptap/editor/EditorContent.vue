@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/vue-3';
 import type { HTMLAttributes } from 'vue';
 
 import { EditorContent } from '@tiptap/vue-3';
+import { toRef } from 'vue';
 
 import { cn } from '@/lib/utils';
 

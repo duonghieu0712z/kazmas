@@ -1,6 +1,8 @@
 import type { Editor } from '@tiptap/vue-3';
+import type { MaybeRefOrGetter, ShallowRef } from 'vue';
 
 import { createContext } from 'reka-ui';
+import { computed, toValue } from 'vue';
 
 export const [injectTiptapEditorContext, provideTiptapEditorContext] = createContext<{
     editor: ShallowRef<Editor | undefined>;

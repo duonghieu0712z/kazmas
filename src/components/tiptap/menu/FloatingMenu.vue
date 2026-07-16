@@ -4,6 +4,7 @@ import type { Editor } from '@tiptap/vue-3';
 import { FloatingMenu } from '@tiptap/vue-3/menus';
 import { reactiveOmit } from '@vueuse/core';
 import { useForwardProps } from 'reka-ui';
+import { toRef } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
