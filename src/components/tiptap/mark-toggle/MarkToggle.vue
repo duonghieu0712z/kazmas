@@ -3,14 +3,17 @@ import type { MarkToggleProps } from '.';
 
 import { reactiveOmit } from '@vueuse/core';
 
+import { TooltipWrapper } from '@/components/tiptap/tooltip';
+import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/toggle';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { useMark } from './useMark';
 
 const props = withDefaults(defineProps<MarkToggleProps>(), {
     variant: 'default',
     size: 'icon',
+    hideWhenUnavailable: false,
+    showShortcut: false,
 });
 
 const emits = defineEmits<{
@@ -36,36 +39,20 @@ const delegatedProps = reactiveOmit(
 </script>
 
 <template>
-    <template v-if="isVisible">
-        <Tooltip v-if="showTooltip">
-            <TooltipTrigger>
-                <Toggle
-                    v-bind="delegatedProps"
-                    :disabled="!canToggle"
-                    :model-value="isActive"
-                    @click="handleMark"
-                >
-                    <component :is="icon" />
-                    {{ text }}
-                </Toggle>
-            </TooltipTrigger>
+    <TooltipWrapper v-if="isVisible" :shortcut-keys="shortcutKeys" :show-tooltip="showTooltip">
+        <Toggle
+            v-bind="delegatedProps"
+            :disabled="!canToggle"
+            :model-value="isActive"
+            @click="handleMark"
+        >
+            <component :is="icon" />
+            {{ text }}
+            <Badge v-if="showShortcut">{{ shortcutKeys }}</Badge>
+        </Toggle>
 
-            <TooltipContent>
-                {{ label }}
-                <span v-if="showShortcut">{{ shortcutKeys.join(' ') }}</span>
-            </TooltipContent>
-        </Tooltip>
-
-        <template v-else>
-            <Toggle
-                v-bind="delegatedProps"
-                :disabled="!canToggle"
-                :model-value="isActive"
-                @click="handleMark"
-            >
-                <component :is="icon" />
-                {{ text }}
-            </Toggle>
+        <template #tooltip>
+            {{ label }}
         </template>
-    </template>
+    </TooltipWrapper>
 </template>
