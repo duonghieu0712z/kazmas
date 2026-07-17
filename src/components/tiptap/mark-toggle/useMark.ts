@@ -28,7 +28,6 @@ export interface UseMarkConfig {
     editor?: MaybeRefOrGetter<Editor>;
     type: MarkType;
     hideWhenUnavailable?: boolean;
-    onToggled?: () => void;
 }
 
 export const MARK_ICONS = {
@@ -80,11 +79,7 @@ export function toggleMark(type: MarkType, editor?: Editor) {
 }
 
 export function shouldShowButton(type: MarkType, hideWhenUnavailable: boolean, editor?: Editor) {
-    if (!editor?.isEditable) {
-        return false;
-    }
-
-    if (!isMarkInSchema(editor, type)) {
+    if (!editor?.isEditable || !isMarkInSchema(editor, type)) {
         return false;
     }
 
@@ -99,13 +94,15 @@ export function getFormattedMarkName(type: MarkType) {
     return type.replace(/^./, (char) => char.toUpperCase());
 }
 
-export function useMark(config: UseMarkConfig) {
+export function useMark(
+    config: UseMarkConfig & {
+        onToggled?: () => void;
+    },
+) {
     const editor = useTiptapEditor(config.editor);
 
     const canToggle = computed(() => canToggleMark(config.type, editor.value));
-
     const isActive = computed(() => isMarkActive(config.type, editor.value));
-
     const isVisible = computed(() =>
         shouldShowButton(config.type, config.hideWhenUnavailable ?? false, editor.value),
     );

@@ -6,5 +6,6 @@ export * from './useMark';
 
 export interface MarkToggleProps extends ToggleProps, UseMarkConfig {
     text?: string;
+    showTooltip?: boolean;
     showShortcut?: boolean;
 }
