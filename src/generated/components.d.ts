@@ -53,7 +53,6 @@ declare module 'vue' {
     Kbd: typeof import('./../components/ui/kbd/Kbd.vue')['default']
     KbdGroup: typeof import('./../components/ui/kbd/KbdGroup.vue')['default']
     Label: typeof import('./../components/ui/label/Label.vue')['default']
-    MarkButton: typeof import('./../components/tiptap/mark-toggle/MarkButton.vue')['default']
     MarkToggle: typeof import('./../components/tiptap/mark-toggle/MarkToggle.vue')['default']
     Menubar: typeof import('./../components/ui/menubar/Menubar.vue')['default']
     MenubarCheckboxItem: typeof import('./../components/ui/menubar/MenubarCheckboxItem.vue')['default']
