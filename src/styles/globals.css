@@ -158,7 +158,8 @@
         @apply cursor-pointer;
     }
 
-    input {
-        @apply appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none;
+    input,
+    input::-webkit-inner-spin-button {
+        @apply appearance-none;
     }
 }
