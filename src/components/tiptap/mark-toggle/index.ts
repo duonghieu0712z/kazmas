@@ -4,7 +4,8 @@ import type { ToggleProps } from '@/components/ui/toggle';
 export { default as MarkToggle } from './MarkToggle.vue';
 export * from './useMark';
 
-export interface MarkToggleProps extends ToggleProps, UseMarkConfig {
+export interface MarkToggleProps
+    extends Omit<ToggleProps, 'size'>, Omit<UseMarkConfig, 'onToggled'> {
     text?: string;
     showTooltip?: boolean;
     showShortcut?: boolean;

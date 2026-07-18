@@ -4,14 +4,12 @@ import type { MarkToggleProps } from '.';
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
-import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/toggle';
 
 import { useMark } from './useMark';
 
 const props = withDefaults(defineProps<MarkToggleProps>(), {
     variant: 'default',
-    size: 'icon',
     hideWhenUnavailable: false,
     showShortcut: false,
 });
@@ -39,16 +37,21 @@ const delegatedProps = reactiveOmit(
 </script>
 
 <template>
-    <TooltipWrapper v-if="isVisible" :shortcut-keys="shortcutKeys" :show-tooltip="showTooltip">
+    <TooltipWrapper
+        v-if="isVisible"
+        :shortcut-keys="shortcutKeys"
+        :show-shortcut="showShortcut"
+        :show-tooltip="showTooltip"
+    >
         <Toggle
             v-bind="delegatedProps"
             :disabled="!canToggle"
             :model-value="isActive"
+            :size="text ? 'default' : 'icon'"
             @click="handleMark"
         >
             <component :is="icon" />
             {{ text }}
-            <Badge v-if="showShortcut">{{ shortcutKeys }}</Badge>
         </Toggle>
 
         <template #tooltip>

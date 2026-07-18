@@ -28,6 +28,7 @@ export interface UseMarkConfig {
     editor?: MaybeRefOrGetter<Editor>;
     type: MarkType;
     hideWhenUnavailable?: boolean;
+    onToggled?: () => void;
 }
 
 export const MARK_ICONS = {
@@ -94,11 +95,7 @@ export function getFormattedMarkName(type: MarkType) {
     return type.replace(/^./, (char) => char.toUpperCase());
 }
 
-export function useMark(
-    config: UseMarkConfig & {
-        onToggled?: () => void;
-    },
-) {
+export function useMark(config: UseMarkConfig) {
     const editor = useTiptapEditor(config.editor);
 
     const canToggle = computed(() => canToggleMark(config.type, editor.value));
