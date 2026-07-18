@@ -3,8 +3,6 @@ import type { Content, EditorOptions } from '@tiptap/vue-3';
 
 import StarterKit from '@tiptap/starter-kit';
 
-import { MarkToggle } from '@/components/tiptap/mark-toggle';
-
 const content: Content = {
     type: 'doc',
     content: [
