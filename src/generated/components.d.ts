@@ -114,5 +114,6 @@ declare module 'vue' {
     TooltipWrapper: typeof import('./../components/tiptap/tooltip/TooltipWrapper.vue')['default']
     TreeItem: typeof import('./../components/ui/tree/TreeItem.vue')['default']
     TreeRoot: typeof import('./../components/ui/tree/TreeRoot.vue')['default']
+    UndoRedoButton: typeof import('./../components/tiptap/undo-redo-button/UndoRedoButton.vue')['default']
   }
 }

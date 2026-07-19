@@ -58,7 +58,9 @@ const marks = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
         :options="options"
     >
         <div class="flex h-9 shrink-0 items-center gap-1 border-b px-2">
-            <MarkToggle v-for="mark in marks" :key="mark" show-shortcut show-tooltip :type="mark" />
+            <UndoRedoButton action="undo" show-tooltip />
+            <UndoRedoButton action="redo" show-tooltip />
+            <MarkToggle v-for="mark in marks" :key="mark" show-tooltip :type="mark" />
         </div>
 
         <ScrollArea

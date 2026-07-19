@@ -52,11 +52,11 @@ export const MARK_SHORTCUT_KEYS = {
 } satisfies Record<MarkType, string>;
 
 export function canToggleMark(type: MarkType, editor?: Editor) {
-    if (!editor?.isEditable) {
-        return false;
-    }
-
-    if (!isMarkInSchema(editor, type) || isNodeTypeSelected(editor, ['image'])) {
+    if (
+        !editor?.isEditable ||
+        !isMarkInSchema(editor, type) ||
+        isNodeTypeSelected(editor, ['image'])
+    ) {
         return false;
     }
 
@@ -79,7 +79,7 @@ export function toggleMark(type: MarkType, editor?: Editor) {
     return editor.chain().focus().toggleMark(type).run();
 }
 
-export function shouldShowButton(type: MarkType, hideWhenUnavailable: boolean, editor?: Editor) {
+export function showShowMarkToggle(type: MarkType, hideWhenUnavailable: boolean, editor?: Editor) {
     if (!editor?.isEditable || !isMarkInSchema(editor, type)) {
         return false;
     }
@@ -101,7 +101,7 @@ export function useMark(config: UseMarkConfig) {
     const canToggle = computed(() => canToggleMark(config.type, editor.value));
     const isActive = computed(() => isMarkActive(config.type, editor.value));
     const isVisible = computed(() =>
-        shouldShowButton(config.type, config.hideWhenUnavailable ?? false, editor.value),
+        showShowMarkToggle(config.type, config.hideWhenUnavailable ?? false, editor.value),
     );
 
     const handleMark = () => {
