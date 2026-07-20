@@ -11,6 +11,7 @@ import { useMark } from './useMark';
 const props = withDefaults(defineProps<MarkToggleProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
+    showLabel: false,
     showShortcut: false,
 });
 
@@ -53,7 +54,7 @@ const delegatedProps = reactiveOmit(
             @click="handleMark"
         >
             <component :is="icon" />
-            {{ showLabel && label }}
+            <span v-if="showLabel">{{ label }}</span>
         </Toggle>
 
         <template #tooltip>

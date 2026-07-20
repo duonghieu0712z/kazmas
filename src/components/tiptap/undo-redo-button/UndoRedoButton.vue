@@ -11,6 +11,7 @@ import { useUndoRedo } from './useUndoRedo';
 const props = withDefaults(defineProps<UndoRedoButtonProps>(), {
     variant: 'ghost',
     hideWhenUnavailable: false,
+    showLabel: false,
     showShortcut: false,
 });
 
@@ -52,7 +53,7 @@ const delegatedProps = reactiveOmit(
             @click="handleAction"
         >
             <component :is="icon" />
-            {{ showLabel && label }}
+            <span v-if="showLabel">{{ label }}</span>
         </Button>
 
         <template #tooltip>
