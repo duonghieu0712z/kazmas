@@ -10,5 +10,5 @@ export const [injectTiptapEditorContext, provideTiptapEditorContext] = createCon
 
 export function useTiptapEditor(editor?: MaybeRefOrGetter<Editor | undefined>) {
     const context = injectTiptapEditorContext(null);
-    return computed(() => toValue(editor) ?? context?.editor.value);
+    return computed(() => toValue(editor) ?? context?.editor.value ?? null);
 }

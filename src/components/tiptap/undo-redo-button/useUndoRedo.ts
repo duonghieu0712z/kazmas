@@ -12,6 +12,7 @@ export type UndoRedoAction = 'undo' | 'redo';
 export interface UseUndoRedoConfig {
     editor?: MaybeRefOrGetter<Editor>;
     action: UndoRedoAction;
+    label?: string;
     hideWhenUnavailable?: boolean;
     onExecuted?: () => void;
 }
@@ -26,7 +27,7 @@ export const UNDO_REDO_SHORTCUT_KEYS = {
     redo: 'mod+shift+z',
 } satisfies Record<UndoRedoAction, string>;
 
-export function canExecuteUndoRedo(action: UndoRedoAction, editor?: Editor) {
+export function canExecuteUndoRedo(editor: Editor | null, action: UndoRedoAction) {
     if (!editor?.isEditable || isNodeTypeSelected(editor, ['image'])) {
         return false;
     }
@@ -34,8 +35,8 @@ export function canExecuteUndoRedo(action: UndoRedoAction, editor?: Editor) {
     return editor.can()[action]();
 }
 
-export function executeUndoRedo(action: UndoRedoAction, editor?: Editor) {
-    if (!editor?.isEditable || !canExecuteUndoRedo(action, editor)) {
+export function executeUndoRedo(editor: Editor | null, action: UndoRedoAction) {
+    if (!editor?.isEditable || !canExecuteUndoRedo(editor, action)) {
         return false;
     }
 
@@ -43,16 +44,16 @@ export function executeUndoRedo(action: UndoRedoAction, editor?: Editor) {
 }
 
 export function shouldShowUndoRedoButton(
+    editor: Editor | null,
     action: UndoRedoAction,
     hideWhenUnavailable: boolean,
-    editor?: Editor,
 ) {
     if (!editor?.isEditable) {
         return false;
     }
 
     if (hideWhenUnavailable && !editor.isActive('code')) {
-        return canExecuteUndoRedo(action, editor);
+        return canExecuteUndoRedo(editor, action);
     }
 
     return true;
@@ -65,13 +66,13 @@ export function getFormattedUndoRedoName(action: UndoRedoAction) {
 export function useUndoRedo(config: UseUndoRedoConfig) {
     const editor = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canExecuteUndoRedo(config.action, editor.value));
+    const canToggle = computed(() => canExecuteUndoRedo(editor.value, config.action));
     const isVisible = computed(() =>
-        shouldShowUndoRedoButton(config.action, config.hideWhenUnavailable ?? false, editor.value),
+        shouldShowUndoRedoButton(editor.value, config.action, config.hideWhenUnavailable ?? false),
     );
 
     const handleAction = () => {
-        const success = executeUndoRedo(config.action, editor.value);
+        const success = executeUndoRedo(editor.value, config.action);
         if (success) {
             config.onExecuted?.();
         }
@@ -81,7 +82,7 @@ export function useUndoRedo(config: UseUndoRedoConfig) {
     return {
         isVisible,
         canToggle,
-        label: getFormattedUndoRedoName(config.action),
+        label: config.label ?? getFormattedUndoRedoName(config.action),
         icon: UNDO_REDO_ICONS[config.action],
         shortcutKeys: parseShortcutKeys(UNDO_REDO_SHORTCUT_KEYS[config.action]),
         handleAction,

@@ -21,6 +21,7 @@ const emits = defineEmits<{
 const { isVisible, canToggle, label, icon, shortcutKeys, handleAction } = useUndoRedo({
     editor: props.editor,
     action: props.action,
+    label: props.label,
     hideWhenUnavailable: props.hideWhenUnavailable,
     onExecuted: () => emits('update:executed'),
 });
@@ -30,7 +31,8 @@ const delegatedProps = reactiveOmit(
     'editor',
     'action',
     'hideWhenUnavailable',
-    'text',
+    'label',
+    'showLabel',
     'showTooltip',
     'showShortcut',
 );
@@ -46,11 +48,11 @@ const delegatedProps = reactiveOmit(
         <Button
             v-bind="delegatedProps"
             :disabled="!canToggle"
-            :size="text ? 'default' : 'icon'"
+            :size="showLabel ? 'default' : 'icon'"
             @click="handleAction"
         >
             <component :is="icon" />
-            {{ text }}
+            {{ showLabel && label }}
         </Button>
 
         <template #tooltip>

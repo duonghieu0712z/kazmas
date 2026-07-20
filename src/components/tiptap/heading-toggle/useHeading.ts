@@ -49,7 +49,7 @@ export const HEADING_SHORTCUT_KEYS = {
     6: 'mod+alt+6',
 } satisfies Record<HeadingLevel, string>;
 
-export function canToggleHeading(level?: HeadingLevel, turnInto = true, editor?: Editor) {
+export function canToggleHeading(editor: Editor | null, level?: HeadingLevel, turnInto = true) {
     if (
         !editor?.isEditable ||
         !isNodeInSchema(editor, 'heading') ||
@@ -76,7 +76,7 @@ export function canToggleHeading(level?: HeadingLevel, turnInto = true, editor?:
     }
 }
 
-export function isHeadingActive(level?: HeadingLevel | HeadingLevel[], editor?: Editor) {
+export function isHeadingActive(editor: Editor | null, level?: HeadingLevel | HeadingLevel[]) {
     if (!editor?.isEditable) {
         return false;
     }
@@ -88,13 +88,16 @@ export function isHeadingActive(level?: HeadingLevel | HeadingLevel[], editor?: 
     return level ? editor.isActive('heading', { level }) : editor.isActive('heading');
 }
 
-export function toggleHeading(level: HeadingLevel | HeadingLevel[], editor?: Editor): boolean {
+export function toggleHeading(
+    editor: Editor | null,
+    level: HeadingLevel | HeadingLevel[],
+): boolean {
     if (!editor?.isEditable) {
         return false;
     }
 
     const levels = Array.isArray(level) ? level : [level];
-    const toggleLevel = levels.find((l) => canToggleHeading(l, true, editor));
+    const toggleLevel = levels.find((l) => canToggleHeading(editor, l));
 
     if (!toggleLevel) {
         return false;

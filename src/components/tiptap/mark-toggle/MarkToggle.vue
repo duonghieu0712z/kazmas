@@ -21,6 +21,7 @@ const emits = defineEmits<{
 const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleMark } = useMark({
     editor: props.editor,
     type: props.type,
+    label: props.label,
     hideWhenUnavailable: props.hideWhenUnavailable,
     onToggled: () => emits('update:toggled'),
 });
@@ -30,7 +31,8 @@ const delegatedProps = reactiveOmit(
     'editor',
     'type',
     'hideWhenUnavailable',
-    'text',
+    'label',
+    'showLabel',
     'showTooltip',
     'showShortcut',
 );
@@ -47,11 +49,11 @@ const delegatedProps = reactiveOmit(
             v-bind="delegatedProps"
             :disabled="!canToggle"
             :model-value="isActive"
-            :size="text ? 'default' : 'icon'"
+            :size="showLabel ? 'default' : 'icon'"
             @click="handleMark"
         >
             <component :is="icon" />
-            {{ text }}
+            {{ showLabel && label }}
         </Toggle>
 
         <template #tooltip>

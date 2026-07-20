@@ -27,6 +27,7 @@ export type MarkType =
 export interface UseMarkConfig {
     editor?: MaybeRefOrGetter<Editor>;
     type: MarkType;
+    label?: string;
     hideWhenUnavailable?: boolean;
     onToggled?: () => void;
 }
@@ -51,7 +52,7 @@ export const MARK_SHORTCUT_KEYS = {
     subscript: 'mod+,',
 } satisfies Record<MarkType, string>;
 
-export function canToggleMark(type: MarkType, editor?: Editor) {
+export function canToggleMark(editor: Editor | null, type: MarkType) {
     if (
         !editor?.isEditable ||
         !isMarkInSchema(editor, type) ||
@@ -63,7 +64,7 @@ export function canToggleMark(type: MarkType, editor?: Editor) {
     return editor.can().toggleMark(type);
 }
 
-export function isMarkActive(type: MarkType, editor?: Editor) {
+export function isMarkActive(editor: Editor | null, type: MarkType) {
     if (!editor?.isEditable) {
         return false;
     }
@@ -71,21 +72,25 @@ export function isMarkActive(type: MarkType, editor?: Editor) {
     return editor.isActive(type);
 }
 
-export function toggleMark(type: MarkType, editor?: Editor) {
-    if (!editor?.isEditable || !canToggleMark(type, editor)) {
+export function toggleMark(editor: Editor | null, type: MarkType) {
+    if (!editor?.isEditable || !canToggleMark(editor, type)) {
         return false;
     }
 
     return editor.chain().focus().toggleMark(type).run();
 }
 
-export function showShowMarkToggle(type: MarkType, hideWhenUnavailable: boolean, editor?: Editor) {
+export function showShowMarkToggle(
+    editor: Editor | null,
+    type: MarkType,
+    hideWhenUnavailable: boolean,
+) {
     if (!editor?.isEditable || !isMarkInSchema(editor, type)) {
         return false;
     }
 
     if (hideWhenUnavailable && !editor.isActive('code')) {
-        return canToggleMark(type, editor);
+        return canToggleMark(editor, type);
     }
 
     return true;
@@ -98,14 +103,14 @@ export function getFormattedMarkName(type: MarkType) {
 export function useMark(config: UseMarkConfig) {
     const editor = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleMark(config.type, editor.value));
-    const isActive = computed(() => isMarkActive(config.type, editor.value));
+    const canToggle = computed(() => canToggleMark(editor.value, config.type));
+    const isActive = computed(() => isMarkActive(editor.value, config.type));
     const isVisible = computed(() =>
-        showShowMarkToggle(config.type, config.hideWhenUnavailable ?? false, editor.value),
+        showShowMarkToggle(editor.value, config.type, config.hideWhenUnavailable ?? false),
     );
 
     const handleMark = () => {
-        const success = toggleMark(config.type, editor.value);
+        const success = toggleMark(editor.value, config.type);
         if (success) {
             config.onToggled?.();
         }
@@ -116,7 +121,7 @@ export function useMark(config: UseMarkConfig) {
         isVisible,
         isActive,
         canToggle,
-        label: getFormattedMarkName(config.type),
+        label: config.label ?? getFormattedMarkName(config.type),
         icon: MARK_ICONS[config.type],
         shortcutKeys: parseShortcutKeys(MARK_SHORTCUT_KEYS[config.type]),
         handleMark,

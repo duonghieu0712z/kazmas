@@ -6,7 +6,7 @@ export * from './useMark';
 
 export interface MarkToggleProps
     extends Omit<ToggleProps, 'size'>, Omit<UseMarkConfig, 'onToggled'> {
-    text?: string;
+    showLabel?: boolean;
     showTooltip?: boolean;
     showShortcut?: boolean;
 }

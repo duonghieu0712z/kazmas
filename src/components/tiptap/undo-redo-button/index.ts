@@ -6,7 +6,7 @@ export * from './useUndoRedo';
 
 export interface UndoRedoButtonProps
     extends Omit<ButtonProps, 'size'>, Omit<UseUndoRedoConfig, 'onExecuted'> {
-    text?: string;
+    showLabel?: boolean;
     showTooltip?: boolean;
     showShortcut?: boolean;
 }
