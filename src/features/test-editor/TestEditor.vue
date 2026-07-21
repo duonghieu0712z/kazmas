@@ -49,6 +49,7 @@ const options: Partial<EditorOptions> = {
 };
 
 const marks = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
+const headingLevels = [1, 2, 3, 4] as const;
 </script>
 
 <template>
@@ -60,6 +61,12 @@ const marks = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
         <div class="flex h-9 shrink-0 items-center gap-1 border-b px-2">
             <UndoRedoButton action="undo" show-tooltip />
             <UndoRedoButton action="redo" show-tooltip />
+            <HeadingToggle
+                v-for="level in headingLevels"
+                :key="level"
+                :level="level"
+                show-tooltip
+            />
             <MarkToggle v-for="mark in marks" :key="mark" show-tooltip :type="mark" />
         </div>
 
