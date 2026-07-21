@@ -5,6 +5,7 @@ import type { HTMLAttributes } from 'vue';
 import { ChevronRightIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
 import { injectTreeRootContext, TreeItem, useForwardPropsEmits } from 'reka-ui';
+import { computed } from 'vue';
 
 import { cn } from '@/lib/utils';
 
