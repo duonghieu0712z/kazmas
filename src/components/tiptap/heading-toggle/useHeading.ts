@@ -12,12 +12,15 @@ import {
 } from '@lucide/vue';
 import { NodeSelection } from '@tiptap/pm/state';
 import { isNodeSelection, isTextSelection } from '@tiptap/vue-3';
+import { computed } from 'vue';
 
+import { useTiptapEditor } from '@/components/tiptap/editor';
 import {
     findNodePosition,
     isNodeInSchema,
     isNodeTypeSelected,
     isValidPosition,
+    parseShortcutKeys,
 } from '@/lib/tiptap';
 
 export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -145,4 +148,51 @@ export function toggleHeading(
     } catch {
         return false;
     }
+}
+
+export function shouldShowHeadingToggle(
+    editor: Editor | null,
+    level: HeadingLevel | HeadingLevel[] | undefined,
+    hideWhenUnavailable: boolean,
+): boolean {
+    if (!editor?.isEditable || !isNodeInSchema(editor, 'heading')) {
+        return false;
+    }
+
+    if (hideWhenUnavailable && !editor.isActive('code')) {
+        if (Array.isArray(level)) {
+            return level.some((l) => canToggleHeading(editor, l));
+        }
+        return canToggleHeading(editor, level);
+    }
+
+    return true;
+}
+
+export function useHeading(config: UseHeadingConfig) {
+    const editor = useTiptapEditor(config.editor);
+
+    const canToggle = computed(() => canToggleHeading(editor.value, config.level));
+    const isActive = computed(() => isHeadingActive(editor.value, config.level));
+    const isVisible = computed(() =>
+        shouldShowHeadingToggle(editor.value, config.level, config.hideWhenUnavailable ?? false),
+    );
+
+    const handleHeading = () => {
+        const success = toggleHeading(editor.value, config.level);
+        if (success) {
+            config.onToggled?.();
+        }
+        return success;
+    };
+
+    return {
+        isVisible,
+        isActive,
+        canToggle,
+        label: `Heading ${config.level}`,
+        icon: HEADING_ICONS[config.level],
+        shortcutKeys: parseShortcutKeys(HEADING_SHORTCUT_KEYS[config.level]),
+        handleHeading,
+    };
 }
