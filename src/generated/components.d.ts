@@ -42,7 +42,7 @@ declare module 'vue' {
     EditorContent: typeof import('./../components/tiptap/editor/EditorContent.vue')['default']
     EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
     FloatingMenu: typeof import('./../components/tiptap/menu/FloatingMenu.vue')['default']
-    HeadingToggle: typeof import('./../components/tiptap/heading-toggle/HeadingToggle.vue')['default']
+    HeadingToggle: typeof import('./../components/tiptap/heading/HeadingToggle.vue')['default']
     Input: typeof import('./../components/ui/input/Input.vue')['default']
     InputGroup: typeof import('./../components/ui/input-group/InputGroup.vue')['default']
     InputGroupAddon: typeof import('./../components/ui/input-group/InputGroupAddon.vue')['default']
@@ -53,7 +53,7 @@ declare module 'vue' {
     Kbd: typeof import('./../components/ui/kbd/Kbd.vue')['default']
     KbdGroup: typeof import('./../components/ui/kbd/KbdGroup.vue')['default']
     Label: typeof import('./../components/ui/label/Label.vue')['default']
-    MarkToggle: typeof import('./../components/tiptap/mark-toggle/MarkToggle.vue')['default']
+    MarkToggle: typeof import('./../components/tiptap/mark/MarkToggle.vue')['default']
     Menubar: typeof import('./../components/ui/menubar/Menubar.vue')['default']
     MenubarCheckboxItem: typeof import('./../components/ui/menubar/MenubarCheckboxItem.vue')['default']
     MenubarContent: typeof import('./../components/ui/menubar/MenubarContent.vue')['default']
@@ -115,6 +115,6 @@ declare module 'vue' {
     TooltipWrapper: typeof import('./../components/tiptap/tooltip/TooltipWrapper.vue')['default']
     TreeItem: typeof import('./../components/ui/tree/TreeItem.vue')['default']
     TreeRoot: typeof import('./../components/ui/tree/TreeRoot.vue')['default']
-    UndoRedoButton: typeof import('./../components/tiptap/undo-redo-button/UndoRedoButton.vue')['default']
+    UndoRedoButton: typeof import('./../components/tiptap/undo-redo/UndoRedoButton.vue')['default']
   }
 }
