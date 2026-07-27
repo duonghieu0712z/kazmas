@@ -58,17 +58,27 @@ const headingLevels = [1, 2, 3, 4] as const;
         class="flex h-full min-w-0 flex-col overflow-hidden"
         :options="options"
     >
-        <div class="flex h-9 shrink-0 items-center gap-1 border-b px-2">
-            <UndoRedoButton action="undo" show-tooltip />
-            <UndoRedoButton action="redo" show-tooltip />
-            <HeadingToggle
-                v-for="level in headingLevels"
-                :key="level"
-                :level="level"
-                show-tooltip
-            />
-            <MarkToggle v-for="mark in marks" :key="mark" show-tooltip :type="mark" />
-        </div>
+        <ButtonGroup
+            class="h-9 w-full shrink-0 items-center border-b px-2 has-[>[data-slot=button-group]]:gap-0.5"
+            spacing="spaced"
+        >
+            <ButtonGroup spacing="spaced">
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
+            </ButtonGroup>
+
+            <ButtonGroupSeparator class="my-1" />
+
+            <ButtonGroup spacing="spaced">
+                <HeadingToggle v-for="level in headingLevels" :key="level" :level="level" />
+            </ButtonGroup>
+
+            <ButtonGroupSeparator class="my-1" />
+
+            <ButtonGroup spacing="spaced">
+                <MarkToggle v-for="mark in marks" :key="mark" :type="mark" />
+            </ButtonGroup>
+        </ButtonGroup>
 
         <ScrollArea
             class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"

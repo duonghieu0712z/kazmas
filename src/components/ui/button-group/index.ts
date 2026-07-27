@@ -1,4 +1,5 @@
 import type { VariantProps } from 'class-variance-authority';
+import type { HTMLAttributes } from 'vue';
 
 import { cva } from 'class-variance-authority';
 
@@ -9,7 +10,8 @@ export { default as ButtonGroupText } from './ButtonGroupText.vue';
 export const buttonGroupVariants = cva(
     [
         'flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10',
-        "has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-sm [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
+        'has-[>[data-slot=button-group]]:gap-2 [&>input]:flex-1',
+        "has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-sm [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit",
     ],
     {
         variants: {
@@ -33,3 +35,9 @@ export const buttonGroupVariants = cva(
 );
 
 export type ButtonGroupVariants = VariantProps<typeof buttonGroupVariants>;
+
+export interface ButtonGroupProps {
+    class?: HTMLAttributes['class'];
+    orientation?: ButtonGroupVariants['orientation'];
+    spacing?: ButtonGroupVariants['spacing'];
+}

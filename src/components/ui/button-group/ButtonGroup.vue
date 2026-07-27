@@ -1,22 +1,14 @@
 <script setup lang="ts">
-import type { ButtonGroupVariants } from '.';
-import type { HTMLAttributes } from 'vue';
+import type { ButtonGroupProps } from '.';
 
 import { cn } from '@/lib/utils';
 
 import { buttonGroupVariants } from '.';
 
-const props = withDefaults(
-    defineProps<{
-        class?: HTMLAttributes['class'];
-        orientation?: ButtonGroupVariants['orientation'];
-        spacing?: ButtonGroupVariants['spacing'];
-    }>(),
-    {
-        orientation: 'horizontal',
-        spacing: 'compact',
-    },
-);
+const props = withDefaults(defineProps<ButtonGroupProps>(), {
+    orientation: 'horizontal',
+    spacing: 'compact',
+});
 </script>
 
 <template>

@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<HeadingToggleProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
     showLabel: false,
+    showTooltip: true,
     showShortcut: false,
 });
 
@@ -51,7 +52,9 @@ const delegatedProps = reactiveOmit(
             :size="showLabel ? 'default' : 'icon'"
             @click="handleHeading"
         >
-            <component :is="icon" />
+            <slot>
+                <component :is="icon" />
+            </slot>
             <span v-if="showLabel">{{ label }}</span>
         </Toggle>
 

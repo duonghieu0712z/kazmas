@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<UndoRedoButtonProps>(), {
     variant: 'ghost',
     hideWhenUnavailable: false,
     showLabel: false,
+    showTooltip: true,
     showShortcut: false,
 });
 
@@ -52,7 +53,9 @@ const delegatedProps = reactiveOmit(
             :size="showLabel ? 'default' : 'icon'"
             @click="handleAction"
         >
-            <component :is="icon" />
+            <slot>
+                <component :is="icon" />
+            </slot>
             <span v-if="showLabel">{{ label }}</span>
         </Button>
 
