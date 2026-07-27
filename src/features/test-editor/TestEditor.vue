@@ -27,7 +27,7 @@ const content: Content = {
                 { type: 'text', text: 'underline', marks: [{ type: 'underline' }] },
                 { type: 'text', text: ', ' },
                 { type: 'text', text: 'strike', marks: [{ type: 'strike' }] },
-                { type: 'text', text: ', and ' },
+                { type: 'text', text: ', ' },
                 { type: 'text', text: 'code', marks: [{ type: 'code' }] },
                 { type: 'text', text: ', ' },
                 { type: 'text', text: 'subscript', marks: [{ type: 'subscript' }] },
