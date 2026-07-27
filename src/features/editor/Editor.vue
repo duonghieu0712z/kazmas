@@ -69,7 +69,7 @@ watch(
     >
         <ScrollArea
             class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"
-            @click="editor?.chain().focus().run()"
+            @click="editor?.chain().focus('end').run()"
         >
             <EditorContent class="min-h-full w-full" />
         </ScrollArea>
