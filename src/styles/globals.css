@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@import '@/styles/fonts.css';
+@import './fonts.css';
 
 @plugin "@tailwindcss/typography";
 
@@ -149,7 +149,7 @@
     }
 
     body {
-        @apply bg-background text-foreground font-ui text-sm;
+        @apply bg-background font-ui text-sm text-foreground;
         @apply cursor-default antialiased select-none;
     }
 

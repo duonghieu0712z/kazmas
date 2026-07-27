@@ -71,7 +71,7 @@ watch(open, (val) => {
 
 <template>
     <Sidebar
-        class="bg-background text-foreground w-(--sidebar-width-icon) items-center border-r"
+        class="w-(--sidebar-width-icon) items-center border-r bg-background text-foreground"
         collapsible="none"
     >
         <SidebarContent>
@@ -85,7 +85,7 @@ watch(open, (val) => {
                         always-show-tooltip
                         :class="[
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
+                            '[&>svg]:stroke-sidebar-ring hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground',
                         ]"
                         :is-active="modelValue === item.name"
                         :tooltip="item.name"
@@ -109,7 +109,7 @@ watch(open, (val) => {
                         always-show-tooltip
                         :class="[
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
+                            '[&>svg]:stroke-sidebar-ring hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground',
                         ]"
                         :tooltip="item.name"
                     >

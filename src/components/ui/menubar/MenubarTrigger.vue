@@ -20,7 +20,7 @@ const forwardedProps = useForwardProps(delegatedProps);
         :class="
             cn(
                 'flex h-6 items-center rounded-sm px-2 text-xs font-medium outline-hidden select-none',
-                'focus:bg-accent focus:text-accent-foreground hover:bg-accent',
+                'hover:bg-accent focus:bg-accent focus:text-accent-foreground',
                 'data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
                 props.class,
             )
