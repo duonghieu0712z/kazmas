@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Content, EditorOptions } from '@tiptap/vue-3';
+import type { Content } from '@tiptap/vue-3';
 
-import StarterKit from '@tiptap/starter-kit';
 import { useDebounceFn } from '@vueuse/core';
 
+import { createEditorOptions } from '@/components/tiptap/editor';
 import { commands } from '@/generated/bindings';
 import { useNodeStore } from '@/stores/nodes';
 
@@ -22,29 +22,22 @@ async function saveDocument() {
 
 const debouncedSaveDocument = useDebounceFn(saveDocument, 700);
 
-const options = computed<Partial<EditorOptions>>(() => ({
-    content: document.value?.content,
-    extensions: [StarterKit],
-    autofocus: 'end',
-    editable: true,
-    editorProps: {
-        attributes: {
-            class: 'prose dark:prose-invert text-foreground font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
-            spellCheck: 'false',
+const options = computed(() =>
+    createEditorOptions({
+        content: document.value?.content,
+        onUpdate: async ({ editor }) => {
+            const nodeId = document.value?.nodeId;
+            if (nodeId) {
+                pendingSave = {
+                    nodeId,
+                    content: JSON.stringify(editor.getJSON()),
+                };
+                await debouncedSaveDocument();
+            }
         },
-    },
-    onUpdate: async ({ editor }) => {
-        const nodeId = document.value?.nodeId;
-        if (nodeId) {
-            pendingSave = {
-                nodeId,
-                content: JSON.stringify(editor.getJSON()),
-            };
-            await debouncedSaveDocument();
-        }
-    },
-    onDestroy: saveDocument,
-}));
+        onDestroy: saveDocument,
+    }),
+);
 
 watch(
     () => nodes.openedNodeId,

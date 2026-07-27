@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import type { Content, EditorOptions } from '@tiptap/vue-3';
+import type { Content } from '@tiptap/vue-3';
 
-import Subscript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
-import StarterKit from '@tiptap/starter-kit';
-
-import { cn } from '@/lib/utils';
+import { createEditorOptions } from '@/components/tiptap/editor';
 
 const content: Content = {
     type: 'doc',
@@ -46,40 +42,12 @@ const content: Content = {
     ],
 };
 
-const options: Partial<EditorOptions> = {
+const options = createEditorOptions({
     content,
-    extensions: [
-        StarterKit.configure({
-            heading: {
-                levels: [1, 2, 3, 4],
-            },
-            code: {
-                HTMLAttributes: {
-                    class: cn(
-                        'rounded-sm border px-[0.2em] py-[0.1em] font-code before:content-none after:content-none',
-                    ),
-                },
-            },
-        }),
-        Subscript,
-        Superscript,
-    ],
-    autofocus: 'end',
-    editable: true,
-    editorProps: {
-        attributes: {
-            class: cn(
-                'prose dark:prose-invert',
-                'min-h-full w-full max-w-none px-4 py-2',
-                'font-document wrap-break-word text-foreground outline-hidden',
-            ),
-            spellCheck: 'false',
-        },
-    },
     onUpdate: ({ editor }) => {
         console.log(editor.getJSON());
     },
-};
+});
 
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;

@@ -7,7 +7,7 @@ import { toRef } from 'vue';
 
 import { cn } from '@/lib/utils';
 
-import { useTiptapEditor } from './utils';
+import { useTiptapEditor } from './context';
 
 const props = defineProps<{
     editor?: Editor;

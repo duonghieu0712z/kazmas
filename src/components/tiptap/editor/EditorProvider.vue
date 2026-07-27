@@ -6,7 +6,7 @@ import { useEditor } from '@tiptap/vue-3';
 
 import { cn } from '@/lib/utils';
 
-import { provideTiptapEditorContext } from './utils';
+import { provideTiptapEditorContext } from './context';
 
 const props = defineProps<{
     class?: HTMLAttributes['class'];
