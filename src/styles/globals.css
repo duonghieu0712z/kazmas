@@ -10,6 +10,7 @@
 @theme {
     --font-ui: 'Geist', var(--font-sans);
     --font-document: 'Lora', var(--font-serif);
+    --font-code: 'JetBrainsMono', var(--font-mono);
     --font-title: 'Allura', cursive;
 }
 
@@ -163,3 +164,11 @@
         @apply appearance-none;
     }
 }
+
+/* @utility prose {
+    code {
+        @apply font-code before:content-none after:content-none;
+        @apply rounded-sm border;
+        @apply px-[0.2em] py-[0.1em];
+    }
+} */

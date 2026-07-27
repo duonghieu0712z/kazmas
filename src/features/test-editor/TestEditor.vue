@@ -3,6 +3,8 @@ import type { Content, EditorOptions } from '@tiptap/vue-3';
 
 import StarterKit from '@tiptap/starter-kit';
 
+import { cn } from '@/lib/utils';
+
 const content: Content = {
     type: 'doc',
     content: [
@@ -32,19 +34,36 @@ const content: Content = {
                 { type: 'text', text: ' marks are available here.' },
             ],
         },
+        {
+            type: 'paragraph',
+        },
     ],
 };
 
 const options: Partial<EditorOptions> = {
     content,
-    extensions: [StarterKit],
+    extensions: [
+        StarterKit.configure({
+            heading: {
+                levels: [1, 2, 3, 4],
+            },
+        }),
+    ],
     autofocus: 'end',
     editable: true,
     editorProps: {
         attributes: {
-            class: 'prose dark:prose-invert text-foreground font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
+            class: cn(
+                'prose dark:prose-invert',
+                'min-h-full w-full max-w-none px-4 py-2',
+                'text-foreground font-document wrap-break-word outline-hidden',
+                'prose-code:font-code prose-code:rounded-sm prose-code:border prose-code:px-[0.2em] prose-code:py-[0.1em] prose-code:before:content-none prose-code:after:content-none',
+            ),
             spellCheck: 'false',
         },
+    },
+    onUpdate: ({ editor }) => {
+        console.log(editor.getJSON());
     },
 };
 
@@ -82,9 +101,9 @@ const headingLevels = [1, 2, 3, 4] as const;
 
         <ScrollArea
             class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"
-            @click="editor?.chain().focus().run()"
+            @click="editor?.chain().focus('end').run()"
         >
-            <EditorContent class="min-h-full w-full" />
+            <EditorContent class="min-h-full w-full" @click.stop.prevent />
         </ScrollArea>
     </EditorProvider>
 </template>
