@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Content, EditorOptions } from '@tiptap/vue-3';
 
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
 import StarterKit from '@tiptap/starter-kit';
 
 import { cn } from '@/lib/utils';
@@ -31,6 +33,10 @@ const content: Content = {
                 { type: 'text', text: 'strike', marks: [{ type: 'strike' }] },
                 { type: 'text', text: ', and ' },
                 { type: 'text', text: 'code', marks: [{ type: 'code' }] },
+                { type: 'text', text: ', ' },
+                { type: 'text', text: 'subscript', marks: [{ type: 'subscript' }] },
+                { type: 'text', text: ', and ' },
+                { type: 'text', text: 'superscript', marks: [{ type: 'superscript' }] },
                 { type: 'text', text: ' marks are available here.' },
             ],
         },
@@ -47,7 +53,16 @@ const options: Partial<EditorOptions> = {
             heading: {
                 levels: [1, 2, 3, 4],
             },
+            code: {
+                HTMLAttributes: {
+                    class: cn(
+                        'font-code rounded-sm border px-[0.2em] py-[0.1em] before:content-none after:content-none',
+                    ),
+                },
+            },
         }),
+        Subscript,
+        Superscript,
     ],
     autofocus: 'end',
     editable: true,
@@ -56,8 +71,7 @@ const options: Partial<EditorOptions> = {
             class: cn(
                 'prose dark:prose-invert',
                 'min-h-full w-full max-w-none px-4 py-2',
-                'text-foreground font-document wrap-break-word outline-hidden',
-                'prose-code:font-code prose-code:rounded-sm prose-code:border prose-code:px-[0.2em] prose-code:py-[0.1em] prose-code:before:content-none prose-code:after:content-none',
+                'font-document text-foreground wrap-break-word outline-hidden',
             ),
             spellCheck: 'false',
         },
@@ -67,7 +81,8 @@ const options: Partial<EditorOptions> = {
     },
 };
 
-const marks = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
+const marks = ['bold', 'italic', 'underline', 'strike'] as const;
+const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 const headingLevels = [1, 2, 3, 4] as const;
 </script>
 
@@ -96,6 +111,12 @@ const headingLevels = [1, 2, 3, 4] as const;
 
             <ButtonGroup spacing="spaced">
                 <MarkToggle v-for="mark in marks" :key="mark" :type="mark" />
+            </ButtonGroup>
+
+            <ButtonGroupSeparator class="my-1" />
+
+            <ButtonGroup spacing="spaced">
+                <MarkToggle v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
             </ButtonGroup>
         </ButtonGroup>
 
