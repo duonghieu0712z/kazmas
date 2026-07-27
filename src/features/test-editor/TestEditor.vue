@@ -56,7 +56,7 @@ const options: Partial<EditorOptions> = {
             code: {
                 HTMLAttributes: {
                     class: cn(
-                        'font-code rounded-sm border px-[0.2em] py-[0.1em] before:content-none after:content-none',
+                        'rounded-sm border px-[0.2em] py-[0.1em] font-code before:content-none after:content-none',
                     ),
                 },
             },
@@ -71,7 +71,7 @@ const options: Partial<EditorOptions> = {
             class: cn(
                 'prose dark:prose-invert',
                 'min-h-full w-full max-w-none px-4 py-2',
-                'font-document text-foreground wrap-break-word outline-hidden',
+                'font-document wrap-break-word text-foreground outline-hidden',
             ),
             spellCheck: 'false',
         },

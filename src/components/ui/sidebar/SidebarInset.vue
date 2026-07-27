@@ -12,7 +12,7 @@ const props = defineProps<{
     <main
         :class="
             cn(
-                'bg-background relative flex w-full flex-1 flex-col',
+                'relative flex w-full flex-1 flex-col bg-background',
                 'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-sm md:peer-data-[variant=inset]:shadow-xs md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
                 props.class,
             )

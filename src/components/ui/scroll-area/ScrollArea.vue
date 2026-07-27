@@ -23,7 +23,7 @@ const delegatedProps = reactiveOmit(props, 'class');
         <ScrollAreaViewport
             :class="[
                 'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
-                'focus-visible:ring-ring/50 focus-visible:ring-[1.5px] focus-visible:outline-1',
+                'focus-visible:ring-[1.5px] focus-visible:ring-ring/50 focus-visible:outline-1',
             ]"
             data-slot="scroll-area-viewport"
         >

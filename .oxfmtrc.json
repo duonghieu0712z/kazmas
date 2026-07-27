@@ -20,6 +20,7 @@
         ]
     },
     "sortTailwindcss": {
+        "stylesheet": "src/styles/globals.css",
         "functions": ["clsx", "cn", "cva", "twMerge"]
     },
     "tabWidth": 4,
