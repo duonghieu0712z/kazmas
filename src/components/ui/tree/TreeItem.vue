@@ -57,7 +57,7 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'text-sidebar-accent-foreground relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 transition-colors outline-none',
+                    'relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 text-sidebar-accent-foreground transition-colors outline-none',
                     'hover:bg-sidebar-accent/60 focus-visible:bg-sidebar-accent/60 data-selected:bg-sidebar-accent',
                     'data-disabled:pointer-events-none data-disabled:opacity-50',
                     // Indent guide

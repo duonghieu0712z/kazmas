@@ -37,7 +37,7 @@ onBeforeUnmount(() => {
     <div class="flex">
         <Button
             aria-label="Minimize window"
-            class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
+            class="rounded-none [&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground"
             size="icon"
             variant="ghost"
             @click.stop.prevent="minimizeWindow"
@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Toggle maximize window"
-            class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
+            class="rounded-none [&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground"
             size="icon"
             variant="ghost"
             @click.prevent="toggleMaximizeWindow"
@@ -57,8 +57,8 @@ onBeforeUnmount(() => {
         <Button
             aria-label="Close window"
             :class="[
-                'hover:bg-destructive/90 dark:hover:bg-destructive/90 rounded-none',
-                '[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground',
+                'rounded-none hover:bg-destructive/90 dark:hover:bg-destructive/90',
+                '[&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground',
             ]"
             size="icon"
             variant="ghost"
