@@ -105,6 +105,13 @@ const textAlignments = ['left', 'center', 'right', 'justify'] as const;
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
+                <BlockquoteButton />
+                <CodeBlockButton />
+            </ButtonGroup>
+
+            <ButtonGroupSeparator class="my-1" />
+
+            <ButtonGroup spacing="spaced">
                 <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
             </ButtonGroup>
 
