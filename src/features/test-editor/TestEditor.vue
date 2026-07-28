@@ -121,7 +121,7 @@ const textAlignments = ['left', 'center', 'right', 'justify'] as const;
         :options="options"
     >
         <ButtonGroup
-            class="h-9 w-full shrink-0 items-center border-b px-2 has-[>[data-slot=button-group]]:gap-0.5"
+            class="h-9 w-full shrink-0 items-center justify-center border-b px-2 has-[>[data-slot=button-group]]:gap-0.5"
             spacing="spaced"
         >
             <ButtonGroup spacing="spaced">
@@ -163,10 +163,13 @@ const textAlignments = ['left', 'center', 'right', 'justify'] as const;
         </ButtonGroup>
 
         <ScrollArea
-            class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"
+            class="min-h-0 min-w-0 flex-1 cursor-text overflow-hidden"
+            horizontal
             @click="editor?.chain().focus('end').run()"
         >
-            <EditorContent class="min-h-full w-full" @click.stop.prevent />
+            <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
+                <EditorContent class="w-3xl shrink-0 self-stretch border" @click.stop.prevent />
+            </div>
         </ScrollArea>
     </EditorProvider>
 </template>
