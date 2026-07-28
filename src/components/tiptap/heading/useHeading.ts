@@ -10,7 +10,6 @@ import {
     Heading6Icon,
     HeadingIcon,
 } from '@lucide/vue';
-import { NodeSelection } from '@tiptap/pm/state';
 import { isNodeSelection, isTextSelection } from '@tiptap/vue-3';
 import { computed } from 'vue';
 
@@ -107,25 +106,7 @@ export function toggleHeading(
     }
 
     try {
-        const view = editor.view;
-        let state = view.state;
-        let tr = state.tr;
-
         const { selection } = editor.view.state;
-
-        if (selection.empty || isTextSelection(selection)) {
-            const pos = findNodePosition(editor, {
-                node: selection.$anchor.node(1),
-            })?.pos;
-            if (!isValidPosition(pos)) {
-                return false;
-            }
-
-            tr = tr.setSelection(NodeSelection.create(state.doc, pos));
-            view.dispatch(tr);
-            state = view.state;
-        }
-
         let chain = editor.chain().focus();
         if (isNodeSelection(selection)) {
             const firstChild = selection.node.firstChild?.firstChild;
@@ -141,10 +122,8 @@ export function toggleHeading(
         const toggle = isActive
             ? chain.setNode('paragraph')
             : chain.setNode('heading', { level: toggleLevel });
-        toggle.run();
-        editor.chain().focus().selectTextblockEnd().run();
 
-        return true;
+        return toggle.run();
     } catch {
         return false;
     }
