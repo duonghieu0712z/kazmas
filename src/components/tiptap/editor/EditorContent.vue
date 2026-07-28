@@ -21,6 +21,6 @@ const editor = useTiptapEditor(toRef(props, 'editor'));
     <EditorContent
         :class="cn('min-h-full w-full', props.class)"
         data-slot="editor-content"
-        :editor="editor"
+        :editor="editor ?? undefined"
     />
 </template>
