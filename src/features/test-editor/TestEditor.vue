@@ -15,13 +15,36 @@ const content: Content = {
     content: [
         {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, textAlign: 'center' },
             content: [{ type: 'text', text: 'Test editor' }],
         },
         {
             type: 'paragraph',
             content: [
                 { type: 'text', text: 'This document is local and is not connected to nodes.' },
+            ],
+        },
+        {
+            type: 'paragraph',
+            attrs: { textAlign: 'right' },
+            content: [{ type: 'text', text: 'This paragraph is right aligned.' }],
+        },
+        {
+            type: 'blockquote',
+            content: [
+                {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: 'Blockquotes are available here.' }],
+                },
+            ],
+        },
+        {
+            type: 'codeBlock',
+            content: [
+                {
+                    type: 'text',
+                    text: "const message = 'Code blocks are available here.';\nconsole.log(message);",
+                },
             ],
         },
         {
