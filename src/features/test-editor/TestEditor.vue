@@ -50,15 +50,26 @@ const options = createEditorOptions({
     content,
     extensions: [
         StarterKit.configure({
-            heading: {
-                levels: [1, 2, 3, 4],
+            blockquote: {
+                HTMLAttributes: {
+                    class: cn('not-italic [&>p]:before:content-none [&>p]:after:content-none'),
+                },
             },
             code: {
                 HTMLAttributes: {
                     class: cn(
-                        'rounded-sm border px-[0.2em] py-[0.1em] font-code before:content-none after:content-none',
+                        'rounded-sm border px-[0.2em] py-[0.1em] font-code',
+                        'before:content-none after:content-none',
                     ),
                 },
+            },
+            codeBlock: {
+                HTMLAttributes: {
+                    class: cn('rounded-sm border font-code'),
+                },
+            },
+            heading: {
+                levels: [1, 2, 3, 4],
             },
             trailingNode: false,
         }),
