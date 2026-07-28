@@ -72,6 +72,7 @@ declare module 'vue' {
     MenubarSubContent: typeof import('./../components/ui/menubar/MenubarSubContent.vue')['default']
     MenubarSubTrigger: typeof import('./../components/ui/menubar/MenubarSubTrigger.vue')['default']
     MenubarTrigger: typeof import('./../components/ui/menubar/MenubarTrigger.vue')['default']
+    ParagraphToggle: typeof import('./../components/tiptap/paragraph/ParagraphToggle.vue')['default']
     ScrollArea: typeof import('./../components/ui/scroll-area/ScrollArea.vue')['default']
     ScrollBar: typeof import('./../components/ui/scroll-area/ScrollBar.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']

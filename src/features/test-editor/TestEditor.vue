@@ -98,6 +98,7 @@ const textAlignments = ['left', 'center', 'right', 'justify'] as const;
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
+                <ParagraphToggle />
                 <HeadingToggle v-for="level in headingLevels" :key="level" :level="level" />
             </ButtonGroup>
 
