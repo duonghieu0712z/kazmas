@@ -7,6 +7,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 
 import { createEditorOptions } from '@/components/tiptap/editor';
+import { TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 const content: Content = {
@@ -42,9 +43,6 @@ const content: Content = {
                 { type: 'text', text: ' marks are available here.' },
             ],
         },
-        {
-            type: 'paragraph',
-        },
     ],
 };
 
@@ -62,12 +60,14 @@ const options = createEditorOptions({
                     ),
                 },
             },
+            trailingNode: false,
         }),
         Subscript,
         Superscript,
         TextAlign.configure({
             types: ['heading', 'paragraph'],
         }),
+        TrailingParagraph,
     ],
     onUpdate: ({ editor }) => {
         console.log(editor.getJSON());
