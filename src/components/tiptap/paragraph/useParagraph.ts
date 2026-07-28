@@ -44,7 +44,7 @@ export function setParagraph(editor: Editor | null) {
     return editor.chain().focus().setParagraph().run();
 }
 
-export function shouldShowParagraphToggle(editor: Editor | null, hideWhenUnavailable: boolean) {
+export function shouldShowParagraphButton(editor: Editor | null, hideWhenUnavailable: boolean) {
     if (!editor?.isEditable || !isNodeInSchema(editor, 'paragraph')) {
         return false;
     }
@@ -62,7 +62,7 @@ export function useParagraph(config: UseParagraphConfig) {
     const canSet = computed(() => canSetParagraph(editor.value));
     const isActive = computed(() => isParagraphActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowParagraphToggle(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowParagraphButton(editor.value, config.hideWhenUnavailable ?? false),
     );
 
     const handleParagraph = () => {

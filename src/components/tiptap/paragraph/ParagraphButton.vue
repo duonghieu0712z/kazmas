@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { TextAlignToggleProps } from '.';
+import type { ParagraphButtonProps } from '.';
 
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useTextAlign } from './useTextAlign';
+import { useParagraph } from './useParagraph';
 
-const props = withDefaults(defineProps<TextAlignToggleProps>(), {
+const props = withDefaults(defineProps<ParagraphButtonProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
     showLabel: false,
@@ -17,20 +17,18 @@ const props = withDefaults(defineProps<TextAlignToggleProps>(), {
 });
 
 const emits = defineEmits<{
-    'update:aligned': [];
+    'update:set': [];
 }>();
 
-const { isVisible, isActive, canAlign, label, icon, shortcutKeys, handleTextAlign } = useTextAlign({
+const { isVisible, isActive, canSet, label, icon, shortcutKeys, handleParagraph } = useParagraph({
     editor: props.editor,
-    align: props.align,
     hideWhenUnavailable: props.hideWhenUnavailable,
-    onAligned: () => emits('update:aligned'),
+    onSet: () => emits('update:set'),
 });
 
 const delegatedProps = reactiveOmit(
     props,
     'editor',
-    'align',
     'hideWhenUnavailable',
     'showLabel',
     'showTooltip',
@@ -47,10 +45,10 @@ const delegatedProps = reactiveOmit(
     >
         <Toggle
             v-bind="delegatedProps"
-            :disabled="!canAlign"
+            :disabled="!canSet"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
-            @click="handleTextAlign"
+            @click="handleParagraph"
         >
             <slot>
                 <component :is="icon" />

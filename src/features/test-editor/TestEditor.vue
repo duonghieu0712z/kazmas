@@ -98,26 +98,26 @@ const textAlignments = ['left', 'center', 'right', 'justify'] as const;
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
-                <ParagraphToggle />
-                <HeadingToggle v-for="level in headingLevels" :key="level" :level="level" />
+                <ParagraphButton />
+                <HeadingButton v-for="level in headingLevels" :key="level" :level="level" />
             </ButtonGroup>
 
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
-                <MarkToggle v-for="mark in marks" :key="mark" :type="mark" />
+                <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
             </ButtonGroup>
 
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
-                <MarkToggle v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
+                <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
             </ButtonGroup>
 
             <ButtonGroupSeparator class="my-1" />
 
             <ButtonGroup spacing="spaced">
-                <TextAlignToggle v-for="align in textAlignments" :key="align" :align="align" />
+                <TextAlignButton v-for="align in textAlignments" :key="align" :align="align" />
             </ButtonGroup>
         </ButtonGroup>
 

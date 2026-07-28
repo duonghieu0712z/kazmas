@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { MarkToggleProps } from '.';
+import type { TextAlignButtonProps } from '.';
 
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useMark } from './useMark';
+import { useTextAlign } from './useTextAlign';
 
-const props = withDefaults(defineProps<MarkToggleProps>(), {
+const props = withDefaults(defineProps<TextAlignButtonProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
     showLabel: false,
@@ -17,23 +17,21 @@ const props = withDefaults(defineProps<MarkToggleProps>(), {
 });
 
 const emits = defineEmits<{
-    'update:toggled': [];
+    'update:aligned': [];
 }>();
 
-const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleMark } = useMark({
+const { isVisible, isActive, canAlign, label, icon, shortcutKeys, handleTextAlign } = useTextAlign({
     editor: props.editor,
-    type: props.type,
-    label: props.label,
+    align: props.align,
     hideWhenUnavailable: props.hideWhenUnavailable,
-    onToggled: () => emits('update:toggled'),
+    onAligned: () => emits('update:aligned'),
 });
 
 const delegatedProps = reactiveOmit(
     props,
     'editor',
-    'type',
+    'align',
     'hideWhenUnavailable',
-    'label',
     'showLabel',
     'showTooltip',
     'showShortcut',
@@ -49,10 +47,10 @@ const delegatedProps = reactiveOmit(
     >
         <Toggle
             v-bind="delegatedProps"
-            :disabled="!canToggle"
+            :disabled="!canAlign"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
-            @click="handleMark"
+            @click="handleTextAlign"
         >
             <slot>
                 <component :is="icon" />

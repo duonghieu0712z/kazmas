@@ -150,7 +150,7 @@ export function toggleHeading(
     }
 }
 
-export function shouldShowHeadingToggle(
+export function shouldShowHeadingButton(
     editor: Editor | null,
     level: HeadingLevel | HeadingLevel[] | undefined,
     hideWhenUnavailable: boolean,
@@ -175,7 +175,7 @@ export function useHeading(config: UseHeadingConfig) {
     const canToggle = computed(() => canToggleHeading(editor.value, config.level));
     const isActive = computed(() => isHeadingActive(editor.value, config.level));
     const isVisible = computed(() =>
-        shouldShowHeadingToggle(editor.value, config.level, config.hideWhenUnavailable ?? false),
+        shouldShowHeadingButton(editor.value, config.level, config.hideWhenUnavailable ?? false),
     );
 
     const handleHeading = () => {

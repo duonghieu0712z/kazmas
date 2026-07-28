@@ -79,7 +79,7 @@ export function setTextAlign(editor: Editor | null, align: TextAlign) {
     return false;
 }
 
-export function shouldShowTextAlignToggle(
+export function shouldShowTextAlignButton(
     editor: Editor | null,
     align: TextAlign,
     hideWhenUnavailable: boolean,
@@ -101,7 +101,7 @@ export function useTextAlign(config: UseTextAlignConfig) {
     const canAlign = computed(() => canSetTextAlign(editor.value, config.align));
     const isActive = computed(() => isTextAlignActive(editor.value, config.align));
     const isVisible = computed(() =>
-        shouldShowTextAlignToggle(editor.value, config.align, config.hideWhenUnavailable ?? false),
+        shouldShowTextAlignButton(editor.value, config.align, config.hideWhenUnavailable ?? false),
     );
 
     const handleTextAlign = () => {

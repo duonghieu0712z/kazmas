@@ -80,7 +80,7 @@ export function toggleMark(editor: Editor | null, type: MarkType) {
     return editor.chain().focus().toggleMark(type).run();
 }
 
-export function showShowMarkToggle(
+export function shouldShowMarkButton(
     editor: Editor | null,
     type: MarkType,
     hideWhenUnavailable: boolean,
@@ -106,7 +106,7 @@ export function useMark(config: UseMarkConfig) {
     const canToggle = computed(() => canToggleMark(editor.value, config.type));
     const isActive = computed(() => isMarkActive(editor.value, config.type));
     const isVisible = computed(() =>
-        showShowMarkToggle(editor.value, config.type, config.hideWhenUnavailable ?? false),
+        shouldShowMarkButton(editor.value, config.type, config.hideWhenUnavailable ?? false),
     );
 
     const handleMark = () => {

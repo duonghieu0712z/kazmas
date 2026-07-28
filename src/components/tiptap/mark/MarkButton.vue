@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { HeadingToggleProps } from '.';
+import type { MarkButtonProps } from '.';
 
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useHeading } from './useHeading';
+import { useMark } from './useMark';
 
-const props = withDefaults(defineProps<HeadingToggleProps>(), {
+const props = withDefaults(defineProps<MarkButtonProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
     showLabel: false,
@@ -20,9 +20,10 @@ const emits = defineEmits<{
     'update:toggled': [];
 }>();
 
-const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleHeading } = useHeading({
+const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleMark } = useMark({
     editor: props.editor,
-    level: props.level,
+    type: props.type,
+    label: props.label,
     hideWhenUnavailable: props.hideWhenUnavailable,
     onToggled: () => emits('update:toggled'),
 });
@@ -30,8 +31,9 @@ const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleHeading
 const delegatedProps = reactiveOmit(
     props,
     'editor',
-    'level',
+    'type',
     'hideWhenUnavailable',
+    'label',
     'showLabel',
     'showTooltip',
     'showShortcut',
@@ -50,7 +52,7 @@ const delegatedProps = reactiveOmit(
             :disabled="!canToggle"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
-            @click="handleHeading"
+            @click="handleMark"
         >
             <slot>
                 <component :is="icon" />

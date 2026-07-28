@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { ParagraphToggleProps } from '.';
+import type { HeadingButtonProps } from '.';
 
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useParagraph } from './useParagraph';
+import { useHeading } from './useHeading';
 
-const props = withDefaults(defineProps<ParagraphToggleProps>(), {
+const props = withDefaults(defineProps<HeadingButtonProps>(), {
     variant: 'default',
     hideWhenUnavailable: false,
     showLabel: false,
@@ -17,18 +17,20 @@ const props = withDefaults(defineProps<ParagraphToggleProps>(), {
 });
 
 const emits = defineEmits<{
-    'update:set': [];
+    'update:toggled': [];
 }>();
 
-const { isVisible, isActive, canSet, label, icon, shortcutKeys, handleParagraph } = useParagraph({
+const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleHeading } = useHeading({
     editor: props.editor,
+    level: props.level,
     hideWhenUnavailable: props.hideWhenUnavailable,
-    onSet: () => emits('update:set'),
+    onToggled: () => emits('update:toggled'),
 });
 
 const delegatedProps = reactiveOmit(
     props,
     'editor',
+    'level',
     'hideWhenUnavailable',
     'showLabel',
     'showTooltip',
@@ -45,10 +47,10 @@ const delegatedProps = reactiveOmit(
     >
         <Toggle
             v-bind="delegatedProps"
-            :disabled="!canSet"
+            :disabled="!canToggle"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
-            @click="handleParagraph"
+            @click="handleHeading"
         >
             <slot>
                 <component :is="icon" />
