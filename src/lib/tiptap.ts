@@ -58,6 +58,25 @@ export function isNodeInSchema(editor: Editor | null, nodeName: string) {
     return editor.schema.spec.nodes.get(nodeName) !== undefined;
 }
 
+export function isExtensionAvailable(editor: Editor | null, extensionNames: string | string[]) {
+    if (!editor) {
+        return false;
+    }
+
+    const names = Array.isArray(extensionNames) ? extensionNames : [extensionNames];
+    const found = names.some((name) =>
+        editor.extensionManager.extensions.some((ext) => ext.name === name),
+    );
+
+    if (!found) {
+        console.warn(
+            `None of the extensions [${names.join(', ')}] were found in the editor schema. Ensure they are included in the editor configuration.`,
+        );
+    }
+
+    return found;
+}
+
 export function isNodeTypeSelected(editor: Editor | null, types: string[] = []) {
     if (!editor?.state.selection) {
         return false;

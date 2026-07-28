@@ -109,6 +109,7 @@ declare module 'vue' {
     SidebarSeparator: typeof import('./../components/ui/sidebar/SidebarSeparator.vue')['default']
     SidebarTrigger: typeof import('./../components/ui/sidebar/SidebarTrigger.vue')['default']
     Skeleton: typeof import('./../components/ui/skeleton/Skeleton.vue')['default']
+    TextAlignToggle: typeof import('./../components/tiptap/text-align/TextAlignToggle.vue')['default']
     Textarea: typeof import('./../components/ui/textarea/Textarea.vue')['default']
     Toggle: typeof import('./../components/ui/toggle/Toggle.vue')['default']
     Tooltip: typeof import('./../components/ui/tooltip/Tooltip.vue')['default']

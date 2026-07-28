@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type { Content } from '@tiptap/vue-3';
 
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import TextAlign from '@tiptap/extension-text-align';
+import StarterKit from '@tiptap/starter-kit';
+
 import { createEditorOptions } from '@/components/tiptap/editor';
+import { cn } from '@/lib/utils';
 
 const content: Content = {
     type: 'doc',
@@ -44,6 +50,25 @@ const content: Content = {
 
 const options = createEditorOptions({
     content,
+    extensions: [
+        StarterKit.configure({
+            heading: {
+                levels: [1, 2, 3, 4],
+            },
+            code: {
+                HTMLAttributes: {
+                    class: cn(
+                        'rounded-sm border px-[0.2em] py-[0.1em] font-code before:content-none after:content-none',
+                    ),
+                },
+            },
+        }),
+        Subscript,
+        Superscript,
+        TextAlign.configure({
+            types: ['heading', 'paragraph'],
+        }),
+    ],
     onUpdate: ({ editor }) => {
         console.log(editor.getJSON());
     },
@@ -52,6 +77,7 @@ const options = createEditorOptions({
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 const headingLevels = [1, 2, 3, 4] as const;
+const textAlignments = ['left', 'center', 'right', 'justify'] as const;
 </script>
 
 <template>
@@ -85,6 +111,12 @@ const headingLevels = [1, 2, 3, 4] as const;
 
             <ButtonGroup spacing="spaced">
                 <MarkToggle v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
+            </ButtonGroup>
+
+            <ButtonGroupSeparator class="my-1" />
+
+            <ButtonGroup spacing="spaced">
+                <TextAlignToggle v-for="align in textAlignments" :key="align" :align="align" />
             </ButtonGroup>
         </ButtonGroup>
 
