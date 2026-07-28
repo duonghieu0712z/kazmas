@@ -25,7 +25,7 @@ export function canSetParagraph(editor: Editor | null) {
         return false;
     }
 
-    return editor.can().setParagraph();
+    return isParagraphActive(editor) || editor.can().setParagraph();
 }
 
 export function isParagraphActive(editor: Editor | null) {
