@@ -11,6 +11,7 @@ function createTrailingParagraphTransaction(state: EditorState): Transaction | n
     if (
         !paragraph ||
         doc.textContent.length === 0 ||
+        !doc.canReplaceWith(doc.childCount, doc.childCount, paragraph) ||
         (lastNode?.type === paragraph && lastNode.content.size === 0)
     ) {
         return null;
