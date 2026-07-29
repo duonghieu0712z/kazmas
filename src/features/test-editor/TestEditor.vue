@@ -10,6 +10,8 @@ import { createEditorOptions } from '@/components/tiptap/editor';
 import { TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
+import TestToolbar from './TestToolbar.vue';
+
 const content: Content = {
     type: 'doc',
     content: [
@@ -107,61 +109,18 @@ const options = createEditorOptions({
         console.log(editor.getJSON());
     },
 });
-
-const marks = ['bold', 'italic', 'underline', 'strike'] as const;
-const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
-const headingLevels = [1, 2, 3, 4] as const;
-const textAlignments = ['left', 'center', 'right', 'justify'] as const;
 </script>
 
 <template>
-    <EditorProvider class="flex h-full min-w-0 flex-col overflow-hidden" :options="options">
-        <ButtonGroup
-            class="h-9 w-full shrink-0 items-center justify-center border-b px-2 has-[>[data-slot=button-group]]:gap-0.5"
-            spacing="spaced"
-        >
-            <ButtonGroup spacing="spaced">
-                <UndoRedoButton action="undo" />
-                <UndoRedoButton action="redo" />
-            </ButtonGroup>
+    <div class="flex h-full min-w-0 flex-col overflow-hidden">
+        <EditorProvider :options="options">
+            <TestToolbar />
 
-            <ButtonGroupSeparator class="my-1" />
-
-            <ButtonGroup spacing="spaced">
-                <ParagraphButton />
-                <HeadingButton v-for="level in headingLevels" :key="level" :level="level" />
-            </ButtonGroup>
-
-            <ButtonGroupSeparator class="my-1" />
-
-            <ButtonGroup spacing="spaced">
-                <BlockquoteButton />
-                <CodeBlockButton />
-            </ButtonGroup>
-
-            <ButtonGroupSeparator class="my-1" />
-
-            <ButtonGroup spacing="spaced">
-                <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
-            </ButtonGroup>
-
-            <ButtonGroupSeparator class="my-1" />
-
-            <ButtonGroup spacing="spaced">
-                <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
-            </ButtonGroup>
-
-            <ButtonGroupSeparator class="my-1" />
-
-            <ButtonGroup spacing="spaced">
-                <TextAlignButton v-for="align in textAlignments" :key="align" :align="align" />
-            </ButtonGroup>
-        </ButtonGroup>
-
-        <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
-            <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
-                <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
-            </div>
-        </ScrollArea>
-    </EditorProvider>
+            <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
+                <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
+                    <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
+                </div>
+            </ScrollArea>
+        </EditorProvider>
+    </div>
 </template>
