@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const defaultEditorClass = cn(
     'prose dark:prose-invert',
-    'min-h-full w-full max-w-none px-4 py-2',
+    'min-h-full w-full max-w-none px-4 pt-2 pb-[50vh]',
     'font-document wrap-break-word text-foreground outline-hidden',
 );
 
