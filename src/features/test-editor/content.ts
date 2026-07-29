@@ -30,6 +30,9 @@ export const testEditorContent: Content = {
         },
         {
             type: 'codeBlock',
+            attrs: {
+                language: 'javascript',
+            },
             content: [
                 {
                     type: 'text',

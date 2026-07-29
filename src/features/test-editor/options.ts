@@ -1,14 +1,18 @@
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
 import UniqueID from '@tiptap/extension-unique-id';
 import StarterKit from '@tiptap/starter-kit';
+import { all, createLowlight } from 'lowlight';
 
 import { createEditorOptions } from '@/components/tiptap/editor';
 import { TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 import { testEditorContent } from './content';
+
+const lowlight = createLowlight(all);
 
 export const testEditorOptions = createEditorOptions({
     content: testEditorContent,
@@ -27,15 +31,19 @@ export const testEditorOptions = createEditorOptions({
                     ),
                 },
             },
-            codeBlock: {
-                HTMLAttributes: {
-                    class: cn('rounded-sm border font-code'),
-                },
-            },
+            codeBlock: false,
             heading: {
                 levels: [1, 2, 3, 4],
             },
             trailingNode: false,
+        }),
+        CodeBlockLowlight.configure({
+            lowlight,
+            defaultLanguage: 'plaintext',
+            HTMLAttributes: {
+                class: cn('rounded-sm border font-code'),
+            },
+            enableTabIndentation: true,
         }),
         Subscript,
         Superscript,
