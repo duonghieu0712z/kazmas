@@ -49,6 +49,7 @@ export const testEditorOptions = createEditorOptions({
         Superscript,
         TextAlign.configure({
             types: ['heading', 'paragraph'],
+            defaultAlignment: 'left',
         }),
         TrailingParagraph,
         UniqueID.configure({

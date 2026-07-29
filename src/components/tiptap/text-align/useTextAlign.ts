@@ -60,10 +60,7 @@ export function isTextAlignActive(editor: Editor | null, align: TextAlign) {
         return false;
     }
 
-    return (
-        editor.isActive({ textAlign: align }) ||
-        (align === 'left' && editor.isActive({ textAlign: null }))
-    );
+    return editor.isActive({ textAlign: align });
 }
 
 export function setTextAlign(editor: Editor | null, align: TextAlign) {
