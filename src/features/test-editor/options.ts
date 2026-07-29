@@ -1,6 +1,7 @@
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
+import UniqueID from '@tiptap/extension-unique-id';
 import StarterKit from '@tiptap/starter-kit';
 
 import { createEditorOptions } from '@/components/tiptap/editor';
@@ -42,6 +43,9 @@ export const testEditorOptions = createEditorOptions({
             types: ['heading', 'paragraph'],
         }),
         TrailingParagraph,
+        UniqueID.configure({
+            types: 'all',
+        }),
     ],
     onUpdate: ({ editor }) => {
         console.log(editor.getJSON());
