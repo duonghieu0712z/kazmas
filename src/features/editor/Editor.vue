@@ -63,15 +63,13 @@ watch(
 <template>
     <EditorProvider
         :key="document?.nodeId"
-        v-slot="{ editor }"
         class="flex h-full min-w-0 flex-col overflow-hidden"
         :options="options"
     >
-        <ScrollArea
-            class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"
-            @click="editor?.chain().focus('end').run()"
-        >
-            <EditorContent class="min-h-full w-full" />
+        <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
+            <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
+                <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
+            </div>
         </ScrollArea>
     </EditorProvider>
 </template>
