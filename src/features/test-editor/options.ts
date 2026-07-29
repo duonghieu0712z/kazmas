@@ -41,7 +41,7 @@ export const testEditorOptions = createEditorOptions({
             lowlight,
             defaultLanguage: 'plaintext',
             HTMLAttributes: {
-                class: cn('rounded-sm border font-code'),
+                class: cn('rounded-sm border bg-muted font-code'),
             },
             enableTabIndentation: true,
         }),
