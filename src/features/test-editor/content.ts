@@ -59,5 +59,76 @@ export const testEditorContent: Content = {
                 { type: 'text', text: ' marks are available here.' },
             ],
         },
+        {
+            type: 'bulletList',
+            content: [
+                {
+                    type: 'listItem',
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'Bullet list item' }],
+                        },
+                    ],
+                },
+                {
+                    type: 'listItem',
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'Another bullet list item' }],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            type: 'orderedList',
+            content: [
+                {
+                    type: 'listItem',
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'First ordered list item' }],
+                        },
+                    ],
+                },
+                {
+                    type: 'listItem',
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'Second ordered list item' }],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            type: 'taskList',
+            content: [
+                {
+                    type: 'taskItem',
+                    attrs: { checked: true },
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'Completed task' }],
+                        },
+                    ],
+                },
+                {
+                    type: 'taskItem',
+                    attrs: { checked: false },
+                    content: [
+                        {
+                            type: 'paragraph',
+                            content: [{ type: 'text', text: 'Pending task' }],
+                        },
+                    ],
+                },
+            ],
+        },
     ],
 };

@@ -6,6 +6,7 @@ const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 const headingLevels = [1, 2, 3, 4] as const;
 const textAlignments = ['left', 'center', 'right', 'justify'] as const;
+const listTypes = ['bulletList', 'orderedList', 'taskList'] as const;
 
 const theme = useColorMode({ initialValue: 'auto' });
 const isDark = computed(() => theme.value === 'dark');
@@ -57,6 +58,12 @@ function toggleTheme() {
 
         <ButtonGroup spacing="spaced">
             <TextAlignButton v-for="align in textAlignments" :key="align" :align="align" />
+        </ButtonGroup>
+
+        <ButtonGroupSeparator class="my-1" />
+
+        <ButtonGroup spacing="spaced">
+            <ListButton v-for="type in listTypes" :key="type" :type="type" />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
