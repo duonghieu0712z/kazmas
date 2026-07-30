@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { PilcrowIcon } from '@lucide/vue';
+import { TypeIcon } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
@@ -78,7 +78,7 @@ export function useParagraph(config: UseParagraphConfig) {
         isActive,
         canSet,
         label: PARAGRAPH_LABEL,
-        icon: PilcrowIcon,
+        icon: TypeIcon,
         shortcutKeys: parseShortcutKeys(PARAGRAPH_SHORTCUT_KEY),
         handleParagraph,
     };
