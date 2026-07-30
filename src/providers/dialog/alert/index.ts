@@ -1,6 +1,6 @@
 import type { AlertDialogPayload, AlertDialogResult } from './alert-dialog';
 
-import { useDialogProvider } from '../useDialogProvider';
+import { useDialogProvider } from '../use-dialog-provider';
 import AlertDialog from './AlertDialog.vue';
 
 export { AlertDialogButtons, AlertDialogKind, AlertDialogResult } from './alert-dialog';

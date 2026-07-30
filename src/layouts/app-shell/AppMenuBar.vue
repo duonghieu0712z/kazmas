@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppMenu } from '@/composables/useAppMenu';
+import { useAppMenu } from '@/composables/use-app-menu';
 import AppMenuItem from '@/layouts/app-shell/AppMenuItem.vue';
 
 const { menu, executeMenuCommand } = useAppMenu();

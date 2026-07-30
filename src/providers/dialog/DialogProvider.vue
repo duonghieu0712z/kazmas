@@ -2,7 +2,7 @@
 import { AlertDialog } from '@/components/ui/alert-dialog';
 import { Dialog } from '@/components/ui/dialog';
 
-import { useDialogProvider } from './useDialogProvider';
+import { useDialogProvider } from './use-dialog-provider';
 
 const { activeDialog, closeDialog, resolveDialog } = useDialogProvider();
 
