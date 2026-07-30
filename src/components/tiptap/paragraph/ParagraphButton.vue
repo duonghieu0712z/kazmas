@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useParagraph } from './useParagraph';
+import { useParagraph } from './use-paragraph';
 
 const props = withDefaults(defineProps<ParagraphButtonProps>(), {
     variant: 'default',

@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useBlockquote } from './useBlockquote';
+import { useBlockquote } from './use-blockquote';
 
 const props = withDefaults(defineProps<BlockquoteButtonProps>(), {
     variant: 'default',

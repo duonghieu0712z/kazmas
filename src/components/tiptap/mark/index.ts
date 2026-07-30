@@ -1,8 +1,8 @@
-import type { UseMarkConfig } from './useMark.ts';
+import type { UseMarkConfig } from './use-mark.ts';
 import type { ToggleProps } from '@/components/ui/toggle';
 
 export { default as MarkButton } from './MarkButton.vue';
-export * from './useMark';
+export * from './use-mark';
 
 export interface MarkButtonProps
     extends Omit<ToggleProps, 'size'>, Omit<UseMarkConfig, 'onToggled'> {

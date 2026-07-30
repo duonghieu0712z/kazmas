@@ -1,8 +1,8 @@
-import type { UseParagraphConfig } from './useParagraph';
+import type { UseParagraphConfig } from './use-paragraph';
 import type { ToggleProps } from '@/components/ui/toggle';
 
 export { default as ParagraphButton } from './ParagraphButton.vue';
-export * from './useParagraph';
+export * from './use-paragraph';
 
 export interface ParagraphButtonProps
     extends Omit<ToggleProps, 'size'>, Omit<UseParagraphConfig, 'onSet'> {

@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useMark } from './useMark';
+import { useMark } from './use-mark';
 
 const props = withDefaults(defineProps<MarkButtonProps>(), {
     variant: 'default',

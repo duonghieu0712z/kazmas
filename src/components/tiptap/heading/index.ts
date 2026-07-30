@@ -1,8 +1,8 @@
-import type { UseHeadingConfig } from './useHeading';
+import type { UseHeadingConfig } from './use-heading';
 import type { ToggleProps } from '@/components/ui/toggle';
 
 export { default as HeadingButton } from './HeadingButton.vue';
-export * from './useHeading';
+export * from './use-heading';
 
 export interface HeadingButtonProps
     extends Omit<ToggleProps, 'size'>, Omit<UseHeadingConfig, 'onToggled'> {

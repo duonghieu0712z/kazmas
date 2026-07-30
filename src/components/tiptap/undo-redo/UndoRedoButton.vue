@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Button } from '@/components/ui/button';
 
-import { useUndoRedo } from './useUndoRedo';
+import { useUndoRedo } from './use-undo-redo';
 
 const props = withDefaults(defineProps<UndoRedoButtonProps>(), {
     variant: 'ghost',

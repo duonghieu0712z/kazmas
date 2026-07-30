@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useTextAlign } from './useTextAlign';
+import { useTextAlign } from './use-text-align';
 
 const props = withDefaults(defineProps<TextAlignButtonProps>(), {
     variant: 'default',

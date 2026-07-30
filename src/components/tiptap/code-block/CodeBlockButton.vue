@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useCodeBlock } from './useCodeBlock';
+import { useCodeBlock } from './use-code-block';
 
 const props = withDefaults(defineProps<CodeBlockButtonProps>(), {
     variant: 'default',

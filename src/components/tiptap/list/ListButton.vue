@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useList } from './useList';
+import { useList } from './use-list';
 
 const props = withDefaults(defineProps<ListButtonProps>(), {
     variant: 'default',

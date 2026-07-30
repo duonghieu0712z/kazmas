@@ -6,7 +6,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
 
-import { useHeading } from './useHeading';
+import { useHeading } from './use-heading';
 
 const props = withDefaults(defineProps<HeadingButtonProps>(), {
     variant: 'default',
