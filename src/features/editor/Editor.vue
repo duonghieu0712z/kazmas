@@ -11,16 +11,16 @@ const nodes = useNodeStore();
 const document = shallowRef<{ nodeId: string; content: Content }>();
 const emptyDocument: Content = { type: 'doc' };
 
-let pendingSave: { nodeId: string; content: string } | undefined;
-async function saveDocument() {
-    const pending = pendingSave;
-    pendingSave = undefined;
-    if (pending) {
-        await commands.updateDocument(pending.nodeId, pending.content);
+const debouncedSaveDocument = useDebounceFn(
+    (nodeId: string, content: string) => commands.updateDocument(nodeId, content),
+    700,
+);
+
+function flushDocumentSave() {
+    if (debouncedSaveDocument.isPending.value) {
+        debouncedSaveDocument.flush();
     }
 }
-
-const debouncedSaveDocument = useDebounceFn(saveDocument, 700);
 
 const options = computed<Partial<EditorOptions>>(() => ({
     content: document.value?.content,
@@ -33,23 +33,19 @@ const options = computed<Partial<EditorOptions>>(() => ({
             spellCheck: 'false',
         },
     },
-    onUpdate: async ({ editor }) => {
+    onUpdate: ({ editor }) => {
         const nodeId = document.value?.nodeId;
         if (nodeId) {
-            pendingSave = {
-                nodeId,
-                content: JSON.stringify(editor.getJSON()),
-            };
-            await debouncedSaveDocument();
+            void debouncedSaveDocument(nodeId, JSON.stringify(editor.getJSON()));
         }
     },
-    onDestroy: saveDocument,
+    onDestroy: flushDocumentSave,
 }));
 
 watch(
     () => nodes.openedNodeId,
     async (nodeId) => {
-        await saveDocument();
+        flushDocumentSave();
         document.value = undefined;
         if (!nodeId) {
             return;
@@ -65,6 +61,8 @@ watch(
     },
     { immediate: true },
 );
+
+onBeforeUnmount(flushDocumentSave);
 </script>
 
 <template>
