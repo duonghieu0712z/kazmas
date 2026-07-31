@@ -1,5 +1,6 @@
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { ListKit } from '@tiptap/extension-list';
+import Placeholder from '@tiptap/extension-placeholder';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
@@ -104,6 +105,15 @@ export const testEditorOptions = createEditorOptions({
                 class: cn('rounded-sm border bg-muted font-code'),
             },
             enableTabIndentation: true,
+        }),
+        Placeholder.configure({
+            placeholder: 'Write something …',
+            emptyEditorClass: cn(
+                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+            ),
+            emptyNodeClass: cn(
+                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+            ),
         }),
         Subscript,
         Superscript,
