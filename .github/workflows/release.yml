@@ -11,6 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Code quality
+    uses: ./.github/workflows/quality-checks.yml
+    permissions:
+      checks: write
+      contents: read
+
   changelog:
     name: Read release changelog
     runs-on: ubuntu-latest
@@ -72,7 +79,9 @@ jobs:
 
   build:
     name: Build release (${{ matrix.label }})
-    needs: changelog
+    needs:
+      - changelog
+      - quality
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -127,4 +136,4 @@ jobs:
           releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: '[name]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'
+          releaseAssetNamePattern: '[mainBinaryName]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'

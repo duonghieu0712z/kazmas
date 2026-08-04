@@ -43,77 +43,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: pnpm commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
 
-  frontend-quality:
-    name: Frontend quality
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 11
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Check formatting
-        run: pnpm format
-
-      - name: Check oxlint
-        run: pnpm lint:check:oxlint --format=github
-
-      - name: Check ESLint
-        uses: reviewdog/action-eslint@v1
-        with:
-          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
-          filter_mode: ${{ github.event_name == 'pull_request' && 'added' || 'nofilter' }}
-          fail_level: error
-          eslint_flags: '. --cache'
-
-      - name: Check types
-        run: pnpm type-check
-
-      - name: Build frontend
-        run: pnpm build-only
-
-  tauri-quality:
-    name: Tauri quality (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - windows-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt, clippy
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - name: Check formatting
-        working-directory: src-tauri
-        run: cargo +nightly fmt -- --check
-
-      - name: Check Clippy
-        working-directory: src-tauri
-        run: cargo +nightly clippy --all-targets --all-features -- -D warnings
+  quality:
+    name: Code quality
+    uses: ./.github/workflows/quality-checks.yml
+    permissions:
+      checks: write
+      contents: read
