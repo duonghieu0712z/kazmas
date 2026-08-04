@@ -22,7 +22,7 @@
         "lint:fix:eslint": "eslint --fix . --cache",
         "format": "oxfmt --check .",
         "format:fix": "oxfmt .",
-        "bump": "node bump-version.js",
+        "bump": "node scripts/bump-version.js",
         "prepare": "husky"
     },
     "dependencies": {
