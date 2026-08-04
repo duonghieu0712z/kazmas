@@ -5,7 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 function parseArgs() {
     const args = process.argv.slice(2).filter((arg) => arg !== '--');
     if (args.length !== 1 || args[0].startsWith('--')) {
-        throw new Error('Usage: node bump-version.js VERSION');
+        throw new Error('Usage: node scripts/bump-version.js VERSION');
     }
 
     return {
