@@ -51,6 +51,13 @@ pnpm format:fix
 pnpm lint:fix
 ```
 
+Rust formatting requires the nightly toolchain because `src-tauri/rustfmt.toml` uses unstable options:
+
+```bash
+cargo +nightly fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo +nightly fmt --manifest-path src-tauri/Cargo.toml
+```
+
 ## Version
 
 Bump the app version:
