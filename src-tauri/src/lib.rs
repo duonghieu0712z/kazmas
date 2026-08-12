@@ -86,5 +86,6 @@ pub fn run() {
         .run(tauri::generate_context!())
     {
         log::error!("error while running Tauri application: {error}");
+        std::process::exit(1);
     }
 }
