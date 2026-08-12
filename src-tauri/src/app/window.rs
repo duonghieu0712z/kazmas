@@ -170,7 +170,7 @@ async fn handle_webview_window_event(
             } else if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
             }
-        }
+        },
         WindowEvent::Destroyed => {
             if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
@@ -183,8 +183,8 @@ async fn handle_webview_window_event(
             if let Some(project_id) = registry.unregister_window(window_id).await {
                 project_manager.close_project(project_id).await?;
             }
-        }
-        _ => {}
+        },
+        _ => {},
     }
     Ok(())
 }

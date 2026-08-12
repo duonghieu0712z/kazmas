@@ -7,21 +7,21 @@ use crate::{
     model::{Node, NodeKind},
 };
 
-const SELECT_NODE: &str = r#"
+const SELECT_NODE: &str = r"
 SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM nodes
 WHERE id = ?
-"#;
+";
 
-const SELECT_NODE_BY_KIND: &str = r#"
+const SELECT_NODE_BY_KIND: &str = r"
 SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM nodes
 WHERE kind = ? AND deleted_at IS NULL
 ORDER BY created_at
 LIMIT 1
-"#;
+";
 
-const SELECT_NODE_DESCENDANTS_BY_KIND: &str = r#"
+const SELECT_NODE_DESCENDANTS_BY_KIND: &str = r"
 WITH RECURSIVE root AS (
     SELECT id
     FROM nodes
@@ -44,41 +44,41 @@ descendants AS (
 )
 SELECT id, parent_id, kind, name, created_at, modified_at, deleted_at
 FROM descendants
-"#;
+";
 
-const INSERT_NODE: &str = r#"
+const INSERT_NODE: &str = r"
 INSERT INTO nodes (id, parent_id, kind, name, created_at, modified_at)
 VALUES (?, ?, ?, ?, ?, ?)
-"#;
+";
 
-const UPDATE_NODE: &str = r#"
+const UPDATE_NODE: &str = r"
 UPDATE nodes
 SET parent_id = ?, name = ?, modified_at = ?
 WHERE id = ?
-"#;
+";
 
-const UPDATE_NODE_MODIFIED_AT: &str = r#"
+const UPDATE_NODE_MODIFIED_AT: &str = r"
 UPDATE nodes
 SET modified_at = ?
 WHERE id = ?
-"#;
+";
 
-const DELETE_NODE: &str = r#"
+const DELETE_NODE: &str = r"
 UPDATE nodes
 SET modified_at = ?, deleted_at = ?
 WHERE id = ? AND deleted_at IS NULL
-"#;
+";
 
-const PURGE_NODE: &str = r#"
+const PURGE_NODE: &str = r"
 DELETE FROM nodes
 WHERE id = ?
-"#;
+";
 
-const RESTORE_NODE: &str = r#"
+const RESTORE_NODE: &str = r"
 UPDATE nodes
 SET modified_at = ?, deleted_at = NULL
 WHERE id = ? AND deleted_at IS NOT NULL
-"#;
+";
 
 pub(crate) async fn get_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<Node> {
     let result = sqlx::query_as::<_, Node>(SELECT_NODE)

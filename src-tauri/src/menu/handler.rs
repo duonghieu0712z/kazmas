@@ -39,10 +39,10 @@ pub(crate) async fn handle_command(
     match command.owner() {
         MenuCommandOwner::Backend => handle_backend_command(app, command, window_id).await?,
         MenuCommandOwner::Frontend => emit_menu_event(app, window_id, command)?,
-        MenuCommandOwner::Native => {}
+        MenuCommandOwner::Native => {},
         MenuCommandOwner::Unimplemented => {
             log::warn!("menu command {} is not implemented", command.as_ref());
-        }
+        },
     }
     Ok(())
 }
@@ -61,7 +61,7 @@ async fn handle_backend_command(
         MenuCommand::Save => save_world(app, window_id).await?,
         MenuCommand::SaveAs => save_world_as(app, window_id).await?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),
-        _ => {}
+        _ => {},
     }
     Ok(())
 }

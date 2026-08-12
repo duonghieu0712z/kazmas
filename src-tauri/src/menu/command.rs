@@ -74,7 +74,7 @@ impl MenuCommand {
             Self::CloseWindow | Self::Quit => MenuCommandOwner::Backend,
             Self::NewWindow | Self::Save | Self::SaveAs | Self::ToggleDevtools => {
                 MenuCommandOwner::Backend
-            }
+            },
             Self::About
             | Self::CloseWorld
             | Self::NewFolder
@@ -86,7 +86,7 @@ impl MenuCommand {
             Self::CloseWindow | Self::Quit => MenuCommandOwner::Native,
             Self::Copy | Self::Cut | Self::Paste | Self::Redo | Self::SelectAll | Self::Undo => {
                 MenuCommandOwner::Native
-            }
+            },
             _ => MenuCommandOwner::Unimplemented,
         }
     }
