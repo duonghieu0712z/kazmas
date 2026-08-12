@@ -11,6 +11,9 @@ mod world;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(debug_assertions)]
+    let devtools_plugin = tauri_plugin_devtools::init::<tauri::Wry>();
+
     let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
         .commands(command::commands())
         .events(event::events())
@@ -40,7 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_prevent_default::debug());
 
     #[cfg(debug_assertions)]
-    let builder = builder.plugin(tauri_plugin_devtools::init());
+    let builder = builder.plugin(devtools_plugin);
 
     #[cfg(not(debug_assertions))]
     let builder = builder.plugin(
