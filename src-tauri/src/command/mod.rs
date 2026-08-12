@@ -5,6 +5,7 @@ mod world;
 
 use tauri_specta::{Commands, collect_commands};
 
+#[allow(clippy::items_after_statements)]
 pub(crate) fn commands() -> Commands<tauri::Wry> {
     collect_commands![
         menu::execute_menu_command,

@@ -20,9 +20,11 @@ pub fn run() {
     {
         use specta_typescript::Typescript;
 
-        specta_builder
-            .export(Typescript::default(), "../src/generated/bindings.ts")
-            .unwrap();
+        if let Err(error) =
+            specta_builder.export(Typescript::default(), "../src/generated/bindings.ts")
+        {
+            log::error!("failed to export TypeScript bindings: {error}");
+        }
     }
 
     let builder = tauri::Builder::default();
@@ -56,7 +58,7 @@ pub fn run() {
             .build(),
     );
 
-    builder
+    if let Err(error) = builder
         .manage(state::AppState::default())
         .invoke_handler(specta_builder.invoke_handler())
         .setup(move |app| {
@@ -79,5 +81,7 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    {
+        log::error!("error while running Tauri application: {error}");
+    }
 }
