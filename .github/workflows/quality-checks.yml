@@ -65,10 +65,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup Rust
+      - name: Setup stable Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Setup nightly rustfmt
         uses: dtolnay/rust-toolchain@nightly
         with:
-          components: rustfmt, clippy
+          components: rustfmt
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -81,4 +86,4 @@ jobs:
 
       - name: Check Clippy
         working-directory: src-tauri
-        run: cargo +nightly clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
