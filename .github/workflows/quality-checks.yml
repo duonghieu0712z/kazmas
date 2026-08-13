@@ -66,24 +66,31 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup stable Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: stable
           components: clippy
+          cache-workspaces: './src-tauri -> target'
+          rustflags: ''
 
       - name: Setup nightly rustfmt
-        uses: dtolnay/rust-toolchain@nightly
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: nightly
           components: rustfmt
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
+          override: false
+          cache: false
+          rustflags: ''
 
       - name: Check formatting
-        working-directory: src-tauri
-        run: cargo +nightly fmt -- --check
+        uses: actions-rust-lang/rustfmt@v1
+        env:
+          RUSTUP_TOOLCHAIN: nightly
+        with:
+          manifest-path: src-tauri/Cargo.toml
 
       - name: Check Clippy
         working-directory: src-tauri
+        env:
+          RUSTUP_TOOLCHAIN: stable
         run: cargo clippy --all-targets --all-features -- -D warnings
