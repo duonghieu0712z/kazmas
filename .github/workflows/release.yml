@@ -61,7 +61,8 @@ jobs:
                   .gsub(/[\[\].]/, '')
                   .gsub(/[^a-z0-9 _-]/, '')
                   .gsub(/\s+/, '-')
-                changelog_url = "#{ENV.fetch('GITHUB_SERVER_URL')}/#{ENV.fetch('GITHUB_REPOSITORY')}/blob/#{ref}/CHANGELOG.md##{anchor}"
+                changelog_ref = event_name == 'workflow_dispatch' ? ENV.fetch('GITHUB_SHA') : "v#{heading_name}"
+                changelog_url = "#{ENV.fetch('GITHUB_SERVER_URL')}/#{ENV.fetch('GITHUB_REPOSITORY')}/blob/#{changelog_ref}/CHANGELOG.md##{anchor}"
                 body = "#{match[:body].strip}\n\n[See full changelog](#{changelog_url})"
               end
             rescue StandardError
