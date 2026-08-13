@@ -33,7 +33,7 @@ impl WorldManifest {
         Self {
             id: Uuid::now_v7(),
             name: name.into(),
-            paths: Default::default(),
+            paths: WorldPaths::default(),
             created_at: now,
             modified_at: now,
             opened_at: now,

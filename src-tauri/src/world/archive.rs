@@ -39,7 +39,7 @@ pub(super) fn pack_world(
         let name = path
             .strip_prefix(&workspace)?
             .to_string_lossy()
-            .replace(r"\", "/");
+            .replace('\\', "/");
 
         if name.is_empty() {
             continue;

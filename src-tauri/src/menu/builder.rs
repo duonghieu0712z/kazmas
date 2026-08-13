@@ -193,7 +193,7 @@ fn predefined(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKin
     let item = match command {
         MenuCommand::BringAllToFront => {
             PredefinedMenuItem::bring_all_to_front(app, text.as_deref())?
-        }
+        },
         MenuCommand::CloseWindow => PredefinedMenuItem::close_window(app, text.as_deref())?,
         MenuCommand::Copy => PredefinedMenuItem::copy(app, text.as_deref())?,
         MenuCommand::Cut => PredefinedMenuItem::cut(app, text.as_deref())?,
@@ -214,7 +214,7 @@ fn predefined(app: &AppHandle, command: MenuCommand) -> KazmasResult<MenuItemKin
                 "menu command {} is not predefined",
                 command.as_ref()
             )));
-        }
+        },
     };
 
     Ok(MenuItemKind::Predefined(item))
