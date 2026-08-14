@@ -42,6 +42,12 @@ const {
 
 const delegatedProps = reactiveOmit(props, 'editor', 'hideWhenUnavailable', 'showTooltip');
 
+watch(isActive, (active) => {
+    if (active) {
+        open.value = true;
+    }
+});
+
 function handleSetRubyTextAndClose() {
     if (handleSetRubyText()) {
         open.value = false;
@@ -51,6 +57,12 @@ function handleSetRubyTextAndClose() {
 function handleRemoveRubyTextAndEmit() {
     if (handleRemoveRubyText()) {
         emits('update:removed');
+    }
+}
+
+function handleOpenAutoFocus(event: Event) {
+    if (isActive.value) {
+        event.preventDefault();
     }
 }
 </script>
@@ -75,14 +87,13 @@ function handleRemoveRubyTextAndEmit() {
             </TooltipWrapper>
         </PopoverTrigger>
 
-        <PopoverContent class="flex w-auto gap-0.5 p-1">
+        <PopoverContent class="flex w-auto gap-0.5 p-1" @open-auto-focus="handleOpenAutoFocus">
             <InputGroup class="w-64">
                 <InputGroupInput
                     v-model="annotation"
                     autocapitalize="off"
                     autocomplete="off"
                     autocorrect="off"
-                    autofocus
                     placeholder="Enter ruby text"
                     @keydown.enter.prevent="handleSetRubyTextAndClose"
                 />

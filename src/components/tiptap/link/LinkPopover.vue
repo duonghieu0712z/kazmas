@@ -44,6 +44,12 @@ const {
 
 const delegatedProps = reactiveOmit(props, 'editor', 'hideWhenUnavailable', 'showTooltip');
 
+watch(isActive, (active) => {
+    if (active) {
+        open.value = true;
+    }
+});
+
 function handleSetLinkAndClose() {
     if (handleSetLink()) {
         open.value = false;
@@ -59,6 +65,12 @@ function handleRemoveLinkAndEmit() {
 async function handleOpenLinkAndEmit() {
     if (await handleOpenLink()) {
         emits('update:opened');
+    }
+}
+
+function handleOpenAutoFocus(event: Event) {
+    if (isActive.value) {
+        event.preventDefault();
     }
 }
 </script>
@@ -83,14 +95,13 @@ async function handleOpenLinkAndEmit() {
             </TooltipWrapper>
         </PopoverTrigger>
 
-        <PopoverContent class="flex w-auto gap-0.5 p-1">
+        <PopoverContent class="flex w-auto gap-0.5 p-1" @open-auto-focus="handleOpenAutoFocus">
             <InputGroup class="w-64">
                 <InputGroupInput
                     v-model="url"
                     autocapitalize="off"
                     autocomplete="off"
                     autocorrect="off"
-                    autofocus
                     placeholder="Paste a link"
                     type="url"
                     @keydown.enter.prevent="handleSetLinkAndClose"

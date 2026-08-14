@@ -40,7 +40,7 @@ export const testEditorOptions = createEditorOptions({
                 levels: [1, 2, 3, 4],
             },
             link: {
-                enableClickSelection: true,
+                enableClickSelection: false,
                 HTMLAttributes: {
                     target: null,
                 },
