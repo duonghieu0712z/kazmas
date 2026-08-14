@@ -111,7 +111,7 @@ export function useLink(config: UseLinkConfig = {}) {
             }
 
             function updateLinkState() {
-                const href = currentEditor.getAttributes('link').href;
+                const href = currentEditor?.getAttributes('link').href;
                 url.value = typeof href === 'string' ? href : '';
             }
 
