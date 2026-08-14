@@ -26,9 +26,10 @@
         "prepare": "husky"
     },
     "dependencies": {
-        "@lucide/vue": "^1.29.0",
+        "@lucide/vue": "^1.31.0",
         "@tauri-apps/api": "^2.11.1",
         "@tauri-apps/plugin-dialog": "^2.7.2",
+        "@tauri-apps/plugin-opener": "^2.5.4",
         "@tauri-apps/plugin-os": "^2.3.2",
         "@tiptap/extension-code-block-lowlight": "^3.29.2",
         "@tiptap/extension-list": "^3.29.2",
@@ -46,7 +47,7 @@
         "highlight.js": "^11.11.1",
         "lowlight": "^3.3.0",
         "pinia": "^4.0.2",
-        "reka-ui": "^2.10.1",
+        "reka-ui": "^2.10.3",
         "tailwind-merge": "^3.6.0",
         "vue": "^3.5.41"
     },

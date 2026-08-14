@@ -40,6 +40,7 @@ function toggleTheme() {
         <ButtonGroup spacing="spaced">
             <BlockquoteButton />
             <CodeBlockButton />
+            <LinkPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />

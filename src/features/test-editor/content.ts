@@ -53,6 +53,12 @@ export const testEditorContent: Content = {
                 { type: 'text', text: ', ' },
                 { type: 'text', text: 'code', marks: [{ type: 'code' }] },
                 { type: 'text', text: ', ' },
+                {
+                    type: 'text',
+                    text: 'link',
+                    marks: [{ type: 'link', attrs: { href: 'https://tiptap.dev' } }],
+                },
+                { type: 'text', text: ', ' },
                 { type: 'text', text: 'subscript', marks: [{ type: 'subscript' }] },
                 { type: 'text', text: ', and ' },
                 { type: 'text', text: 'superscript', marks: [{ type: 'superscript' }] },

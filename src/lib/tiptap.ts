@@ -150,3 +150,68 @@ export function findNodePosition(editor: Editor, props: { node?: Node; pos?: num
 
     return null;
 }
+
+export interface ProtocolOptions {
+    scheme: string;
+    optionalSlashes?: boolean;
+}
+
+export type ProtocolConfig = Array<ProtocolOptions | string>;
+
+const ATTR_WHITESPACE = new RegExp(
+    `[${[
+        '\\u0000-\\u0020',
+        '\\u00A0',
+        '\\u1680',
+        '\\u180E',
+        '\\u2000-\\u2029',
+        '\\u205F',
+        '\\u3000',
+    ].join('')}]`,
+    'g',
+);
+
+export function isAllowedUri(uri?: string, protocols?: ProtocolConfig) {
+    const allowedProtocols = [
+        'http',
+        'https',
+        'ftp',
+        'ftps',
+        'mailto',
+        'tel',
+        'callto',
+        'sms',
+        'cid',
+        'xmpp',
+    ];
+
+    protocols?.forEach((protocol) => {
+        const scheme = typeof protocol === 'string' ? protocol : protocol.scheme;
+        if (scheme) {
+            allowedProtocols.push(scheme);
+        }
+    });
+
+    if (!uri) {
+        return true;
+    }
+
+    const protocolsPattern = allowedProtocols
+        .map((protocol) => protocol.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'))
+        .join('|');
+    const pattern = `^(?:(?:${protocolsPattern}):|[^a-z]|[a-z0-9+.\\-]+(?:[^a-z+.\\-:]|$))`;
+    return new RegExp(pattern, 'i').test(uri.replace(ATTR_WHITESPACE, ''));
+}
+
+export function sanitizeUrl(inputUrl: string, baseUrl: string, protocols?: ProtocolConfig) {
+    try {
+        const url = new URL(inputUrl, baseUrl);
+        if (isAllowedUri(url.href, protocols)) {
+            return url.href;
+        }
+    } catch {
+        return '#';
+    }
+
+    return '#';
+}

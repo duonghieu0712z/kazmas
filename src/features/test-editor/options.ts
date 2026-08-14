@@ -38,6 +38,13 @@ export const testEditorOptions = createEditorOptions({
             heading: {
                 levels: [1, 2, 3, 4],
             },
+            link: {
+                enableClickSelection: true,
+                HTMLAttributes: {
+                    target: null,
+                },
+                openOnClick: false,
+            },
             listItem: false,
             listKeymap: false,
             orderedList: false,
