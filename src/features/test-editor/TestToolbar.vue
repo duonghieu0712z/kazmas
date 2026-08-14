@@ -41,6 +41,7 @@ function toggleTheme() {
             <BlockquoteButton />
             <CodeBlockButton />
             <LinkPopover />
+            <RubyTextPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />

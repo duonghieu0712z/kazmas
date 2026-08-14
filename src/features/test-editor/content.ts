@@ -66,6 +66,17 @@ export const testEditorContent: Content = {
             ],
         },
         {
+            type: 'paragraph',
+            content: [
+                {
+                    type: 'text',
+                    text: '東京',
+                    marks: [{ type: 'rubyText', attrs: { rt: 'とうきょう' } }],
+                },
+                { type: 'text', text: 'は日本の首都です。' },
+            ],
+        },
+        {
             type: 'bulletList',
             content: [
                 {

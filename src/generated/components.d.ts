@@ -81,6 +81,7 @@ declare module 'vue' {
     PopoverAnchor: typeof import('./../components/ui/popover/PopoverAnchor.vue')['default']
     PopoverContent: typeof import('./../components/ui/popover/PopoverContent.vue')['default']
     PopoverTrigger: typeof import('./../components/ui/popover/PopoverTrigger.vue')['default']
+    RubyTextPopover: typeof import('./../components/tiptap/ruby-text/RubyTextPopover.vue')['default']
     ScrollArea: typeof import('./../components/ui/scroll-area/ScrollArea.vue')['default']
     ScrollBar: typeof import('./../components/ui/scroll-area/ScrollBar.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']

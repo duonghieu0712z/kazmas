@@ -1,6 +1,7 @@
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { ListKit } from '@tiptap/extension-list';
 import Placeholder from '@tiptap/extension-placeholder';
+import RubyText from '@tiptap/extension-ruby-text';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
@@ -121,6 +122,9 @@ export const testEditorOptions = createEditorOptions({
             emptyNodeClass: cn(
                 'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
             ),
+        }),
+        RubyText.configure({
+            allowClickToEdit: true,
         }),
         Subscript,
         Superscript,
