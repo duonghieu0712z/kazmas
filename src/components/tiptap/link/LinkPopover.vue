@@ -77,7 +77,7 @@ function handleOpenAutoFocus(event: Event) {
 
 <template>
     <Popover v-if="isVisible" v-model:open="open">
-        <PopoverTrigger>
+        <PopoverTrigger as="div">
             <TooltipWrapper :show-tooltip="showTooltip">
                 <Toggle
                     v-bind="delegatedProps"
@@ -102,7 +102,7 @@ function handleOpenAutoFocus(event: Event) {
                     autocapitalize="off"
                     autocomplete="off"
                     autocorrect="off"
-                    placeholder="Paste a link"
+                    placeholder="Enter a URL"
                     type="url"
                     @keydown.enter.prevent="handleSetLinkAndClose"
                 />

@@ -28,7 +28,7 @@ export function canSetRubyText(editor: Editor | null) {
         return false;
     }
 
-    return editor.can().setRubyText({ rt: '' });
+    return editor.can().setRubyText({ rt: null });
 }
 
 export function isRubyTextActive(editor: Editor | null) {
