@@ -10,7 +10,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
 
 import { createEditorOptions } from '@/components/tiptap/editor';
-import { TrailingParagraph } from '@/extensions/tiptap';
+import { ActiveMark, TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 import { testEditorContent } from './content';
@@ -50,6 +50,12 @@ export const testEditorOptions = createEditorOptions({
             listKeymap: false,
             orderedList: false,
             trailingNode: false,
+        }),
+        ActiveMark.configure({
+            HTMLAttributes: {
+                class: cn('bg-primary/15'),
+            },
+            types: ['link', 'rubyText'],
         }),
         ListKit.configure({
             bulletList: {
