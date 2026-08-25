@@ -13,6 +13,10 @@ import TestToolbar from './TestToolbar.vue';
                     <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
                 </div>
             </ScrollArea>
+
+            <Teleport defer to="#app-status-bar">
+                <CharacterCountIndicator />
+            </Teleport>
         </EditorProvider>
     </div>
 </template>

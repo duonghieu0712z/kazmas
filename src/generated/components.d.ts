@@ -33,6 +33,7 @@ declare module 'vue' {
     ButtonGroup: typeof import('./../components/ui/button-group/ButtonGroup.vue')['default']
     ButtonGroupSeparator: typeof import('./../components/ui/button-group/ButtonGroupSeparator.vue')['default']
     ButtonGroupText: typeof import('./../components/ui/button-group/ButtonGroupText.vue')['default']
+    CharacterCountIndicator: typeof import('./../components/tiptap/character-count/CharacterCountIndicator.vue')['default']
     CodeBlockButton: typeof import('./../components/tiptap/code-block/CodeBlockButton.vue')['default']
     Dialog: typeof import('./../components/ui/dialog/Dialog.vue')['default']
     DialogClose: typeof import('./../components/ui/dialog/DialogClose.vue')['default']

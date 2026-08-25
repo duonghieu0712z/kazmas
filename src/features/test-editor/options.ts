@@ -1,3 +1,4 @@
+import CharacterCount from '@tiptap/extension-character-count';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { ListKit } from '@tiptap/extension-list';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -57,6 +58,7 @@ export const testEditorOptions = createEditorOptions({
             },
             types: ['link', 'rubyText'],
         }),
+        CharacterCount,
         ListKit.configure({
             bulletList: {
                 HTMLAttributes: {
