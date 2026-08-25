@@ -40,6 +40,7 @@ function toggleTheme() {
         <ButtonGroup spacing="spaced">
             <BlockquoteButton />
             <CodeBlockButton />
+            <HorizontalRuleButton />
             <LinkPopover />
             <RubyTextPopover />
         </ButtonGroup>

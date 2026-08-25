@@ -49,6 +49,7 @@ declare module 'vue' {
     EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
     FloatingMenu: typeof import('./../components/tiptap/menu/FloatingMenu.vue')['default']
     HeadingButton: typeof import('./../components/tiptap/heading/HeadingButton.vue')['default']
+    HorizontalRuleButton: typeof import('./../components/tiptap/horizontal-rule/HorizontalRuleButton.vue')['default']
     Input: typeof import('./../components/ui/input/Input.vue')['default']
     InputGroup: typeof import('./../components/ui/input-group/InputGroup.vue')['default']
     InputGroupAddon: typeof import('./../components/ui/input-group/InputGroupAddon.vue')['default']
