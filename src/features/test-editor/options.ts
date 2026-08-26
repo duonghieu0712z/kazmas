@@ -1,5 +1,6 @@
 import CharacterCount from '@tiptap/extension-character-count';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import FindAndReplace from '@tiptap/extension-find-and-replace';
 import { ListKit } from '@tiptap/extension-list';
 import Placeholder from '@tiptap/extension-placeholder';
 import RubyText from '@tiptap/extension-ruby-text';
@@ -122,6 +123,9 @@ export const testEditorOptions = createEditorOptions({
                 class: cn('rounded-sm border bg-muted font-code'),
             },
             enableTabIndentation: true,
+        }),
+        FindAndReplace.configure({
+            injectCSS: false,
         }),
         Placeholder.configure({
             placeholder: 'Write something …',

@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { testEditorOptions } from './options';
 import TestToolbar from './TestToolbar.vue';
+
+const findAndReplaceOpen = ref(false);
 </script>
 
 <template>
-    <div class="flex h-full min-w-0 flex-col overflow-hidden">
+    <div class="relative flex h-full min-w-0 flex-col overflow-hidden">
         <EditorProvider :options="testEditorOptions">
-            <TestToolbar />
+            <TestToolbar
+                :find-and-replace-open="findAndReplaceOpen"
+                @update:find-and-replace-open="findAndReplaceOpen = $event"
+            />
+
+            <FindAndReplacePanel v-model:open="findAndReplaceOpen" />
 
             <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
                 <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">

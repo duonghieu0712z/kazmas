@@ -47,6 +47,8 @@ declare module 'vue' {
     DialogTrigger: typeof import('./../components/ui/dialog/DialogTrigger.vue')['default']
     EditorContent: typeof import('./../components/tiptap/editor/EditorContent.vue')['default']
     EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
+    FindAndReplaceButton: typeof import('./../components/tiptap/find-and-replace/FindAndReplaceButton.vue')['default']
+    FindAndReplacePanel: typeof import('./../components/tiptap/find-and-replace/FindAndReplacePanel.vue')['default']
     FloatingMenu: typeof import('./../components/tiptap/menu/FloatingMenu.vue')['default']
     HeadingButton: typeof import('./../components/tiptap/heading/HeadingButton.vue')['default']
     HorizontalRuleButton: typeof import('./../components/tiptap/horizontal-rule/HorizontalRuleButton.vue')['default']

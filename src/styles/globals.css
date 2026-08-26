@@ -164,3 +164,13 @@
         @apply appearance-none;
     }
 }
+
+@layer components {
+    .find-and-replace-result {
+        @apply bg-warning/25;
+    }
+
+    .find-and-replace-result-current {
+        @apply bg-warning/55 outline-1 outline-warning;
+    }
+}

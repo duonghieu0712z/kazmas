@@ -2,6 +2,19 @@
 import { MoonIcon, SunIcon } from '@lucide/vue';
 import { useColorMode } from '@vueuse/core';
 
+withDefaults(
+    defineProps<{
+        findAndReplaceOpen?: boolean;
+    }>(),
+    {
+        findAndReplaceOpen: false,
+    },
+);
+
+const emits = defineEmits<{
+    'update:findAndReplaceOpen': [open: boolean];
+}>();
+
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 const headingLevels = [1, 2, 3, 4] as const;
@@ -16,16 +29,24 @@ const themeLabel = computed(() => `Switch to ${isDark.value ? 'light' : 'dark'} 
 function toggleTheme() {
     theme.value = isDark.value ? 'light' : 'dark';
 }
+
+function updateFindAndReplaceOpen(open: boolean) {
+    emits('update:findAndReplaceOpen', open);
+}
 </script>
 
 <template>
     <ButtonGroup
-        class="h-9 w-full shrink-0 items-center justify-center border-b px-2 has-[>[data-slot=button-group]]:gap-0.5"
+        class="h-auto min-h-9 w-full shrink-0 flex-wrap content-center items-center justify-center border-b px-2 has-[>[data-slot=button-group]]:shrink-0 has-[>[data-slot=button-group]]:gap-0.5"
         spacing="spaced"
     >
         <ButtonGroup spacing="spaced">
             <UndoRedoButton action="undo" />
             <UndoRedoButton action="redo" />
+            <FindAndReplaceButton
+                :open="findAndReplaceOpen"
+                @update:open="updateFindAndReplaceOpen"
+            />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
