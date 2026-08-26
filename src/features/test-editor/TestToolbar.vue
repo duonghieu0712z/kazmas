@@ -76,6 +76,7 @@ function updateFindAndReplaceOpen(open: boolean) {
 
         <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
+            <ResetAllFormattingButton />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
