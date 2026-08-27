@@ -94,6 +94,7 @@ function updateFindAndReplaceOpen(open: boolean) {
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
+            <InvisibleCharactersButton />
             <TooltipWrapper>
                 <Button
                     :aria-label="themeLabel"

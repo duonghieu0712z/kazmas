@@ -34,6 +34,7 @@
         "@tiptap/extension-character-count": "^3.30.3",
         "@tiptap/extension-code-block-lowlight": "^3.30.3",
         "@tiptap/extension-find-and-replace": "^3.30.3",
+        "@tiptap/extension-invisible-characters": "^3.30.3",
         "@tiptap/extension-list": "^3.30.3",
         "@tiptap/extension-placeholder": "^3.30.3",
         "@tiptap/extension-ruby-text": "^3.30.3",

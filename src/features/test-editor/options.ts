@@ -1,6 +1,7 @@
 import CharacterCount from '@tiptap/extension-character-count';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import FindAndReplace from '@tiptap/extension-find-and-replace';
+import InvisibleCharacters from '@tiptap/extension-invisible-characters';
 import { ListKit } from '@tiptap/extension-list';
 import Placeholder from '@tiptap/extension-placeholder';
 import RubyText from '@tiptap/extension-ruby-text';
@@ -126,6 +127,9 @@ export const testEditorOptions = createEditorOptions({
         }),
         FindAndReplace.configure({
             injectCSS: false,
+        }),
+        InvisibleCharacters.configure({
+            visible: false,
         }),
         Placeholder.configure({
             placeholder: 'Write something …',

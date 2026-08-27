@@ -59,6 +59,7 @@ declare module 'vue' {
     InputGroupInput: typeof import('./../components/ui/input-group/InputGroupInput.vue')['default']
     InputGroupText: typeof import('./../components/ui/input-group/InputGroupText.vue')['default']
     InputGroupTextarea: typeof import('./../components/ui/input-group/InputGroupTextarea.vue')['default']
+    InvisibleCharactersButton: typeof import('./../components/tiptap/invisible-characters/InvisibleCharactersButton.vue')['default']
     Kbd: typeof import('./../components/ui/kbd/Kbd.vue')['default']
     KbdGroup: typeof import('./../components/ui/kbd/KbdGroup.vue')['default']
     Label: typeof import('./../components/ui/label/Label.vue')['default']
