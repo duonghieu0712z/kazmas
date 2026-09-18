@@ -47,7 +47,16 @@ WHERE name = ?
 ";
 
 type ColumnDefinition = (String, String, i64, Option<String>, i64);
-type ForeignKeyDefinition = (i64, i64, String, String, String, String, String, String);
+type ForeignKeyDefinition = (
+    i64,
+    i64,
+    String,
+    String,
+    Option<String>,
+    String,
+    String,
+    String,
+);
 type IndexColumnDefinition = (i64, i64, String);
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -177,7 +186,7 @@ fn foreign_key(table: &str, from: &str, to: &str) -> ForeignKeyDefinition {
         0,
         table.to_owned(),
         from.to_owned(),
-        to.to_owned(),
+        Some(to.to_owned()),
         "NO ACTION".to_owned(),
         "CASCADE".to_owned(),
         "NONE".to_owned(),
