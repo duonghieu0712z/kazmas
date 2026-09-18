@@ -61,7 +61,7 @@ impl WorldProject {
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = database::open_database(world_db).await?;
-        database::initialize_schema(&mut conn).await?;
+        database::prepare_database(&mut conn).await?;
         seed_world_nodes(&mut conn, &manifest).await?;
 
         database::checkpoint_wal(&mut conn).await?;
@@ -109,7 +109,7 @@ impl WorldProject {
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = database::open_database(world_db).await?;
-        database::validate_database(&mut conn).await?;
+        database::prepare_database(&mut conn).await?;
 
         database::checkpoint_wal(&mut conn).await?;
         manifest.open();

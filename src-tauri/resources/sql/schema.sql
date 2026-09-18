@@ -1,6 +1,3 @@
-PRAGMA application_id = 1264209235;
-PRAGMA user_version = 0;
-
 CREATE TABLE IF NOT EXISTS nodes (
     id BLOB PRIMARY KEY CHECK (length(id) = 16),
     parent_id BLOB CHECK (parent_id IS NULL OR length(parent_id) = 16) REFERENCES nodes(id) ON DELETE CASCADE,
