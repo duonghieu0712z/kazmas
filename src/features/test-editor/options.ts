@@ -1,5 +1,4 @@
 import CharacterCount from '@tiptap/extension-character-count';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import FindAndReplace from '@tiptap/extension-find-and-replace';
 import InvisibleCharacters from '@tiptap/extension-invisible-characters';
 import { ListKit } from '@tiptap/extension-list';
@@ -13,7 +12,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
 
 import { createEditorOptions } from '@/components/tiptap/editor';
-import { ActiveMark, TrailingParagraph } from '@/extensions/tiptap';
+import { ActiveMark, CodeBlockLowlight, TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 import { testEditorContent } from './content';
