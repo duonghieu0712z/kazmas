@@ -4,7 +4,7 @@ use super::validation::{SchemaKind, inspect_schema};
 use crate::app::{KazmasError, KazmasResult};
 
 const APPLICATION_ID: i64 = 0x4B5A_4D53; // KZMS
-const USER_VERSION: i64 = 0;
+const USER_VERSION: i64 = 1;
 
 const PRAGMA_APPLICATION_ID: &str = "PRAGMA application_id;";
 const PRAGMA_USER_VERSION: &str = "PRAGMA user_version;";
@@ -34,8 +34,8 @@ pub(crate) async fn prepare_database(conn: &mut SqliteConnection) -> KazmasResul
 
     let schema_kind = inspect_schema(conn).await?;
     match (application_id, user_version, schema_kind) {
-        (0, USER_VERSION, SchemaKind::Empty) => initialize_current_schema(conn).await,
-        (0, USER_VERSION, SchemaKind::Current) => claim_legacy_schema(conn).await,
+        (0, 0, SchemaKind::Empty) => initialize_schema(conn).await,
+        (0 | APPLICATION_ID, 0, SchemaKind::Current) => upgrade_schema_metadata(conn).await,
         (APPLICATION_ID, USER_VERSION, SchemaKind::Current) => Ok(()),
         (_, _, SchemaKind::Empty) => Err(KazmasError::Invalid(
             "database schema is empty but metadata is set".to_owned(),
@@ -46,7 +46,7 @@ pub(crate) async fn prepare_database(conn: &mut SqliteConnection) -> KazmasResul
     }
 }
 
-async fn initialize_current_schema(conn: &mut SqliteConnection) -> KazmasResult<()> {
+async fn initialize_schema(conn: &mut SqliteConnection) -> KazmasResult<()> {
     let mut tx = conn.begin_with(BEGIN_IMMEDIATE).await?;
     sqlx::raw_sql(SCHEMA_SQL).execute(&mut *tx).await?;
     write_metadata(&mut tx).await?;
@@ -54,7 +54,7 @@ async fn initialize_current_schema(conn: &mut SqliteConnection) -> KazmasResult<
     Ok(())
 }
 
-async fn claim_legacy_schema(conn: &mut SqliteConnection) -> KazmasResult<()> {
+async fn upgrade_schema_metadata(conn: &mut SqliteConnection) -> KazmasResult<()> {
     let mut tx = conn.begin_with(BEGIN_IMMEDIATE).await?;
     write_metadata(&mut tx).await?;
     tx.commit().await?;
