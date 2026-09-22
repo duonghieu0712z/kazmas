@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HeadingDropdownProps, HeadingLevel } from '.';
+import type { ListDropdownProps, ListType } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 
-import { useHeadings } from './use-headings';
+import { useLists } from './use-lists';
 
-const props = withDefaults(defineProps<HeadingDropdownProps>(), {
+const props = withDefaults(defineProps<ListDropdownProps>(), {
     variant: 'ghost',
-    levels: () => [1, 2, 3, 4],
+    types: () => ['bulletList', 'orderedList', 'taskList'],
     hideWhenUnavailable: false,
     showLabel: false,
     showTooltip: true,
@@ -26,42 +26,41 @@ const props = withDefaults(defineProps<HeadingDropdownProps>(), {
 });
 
 const emits = defineEmits<{
-    'update:changed': [level: HeadingLevel];
+    'update:toggled': [type: ListType];
 }>();
 
 const open = ref(false);
 const {
-    activeLevel,
-    canSet,
+    activeType,
+    canToggle,
     isVisible,
     label,
     icon,
-    levels,
+    types,
     getLabel,
     getIcon,
     getShortcutKeys,
-    canSetLevel,
-    handleLevel,
-} = useHeadings({
+    canToggleType,
+    handleList,
+} = useLists({
     editor: props.editor,
-    levels: props.levels,
+    types: props.types,
     hideWhenUnavailable: props.hideWhenUnavailable,
-    onChanged: (level) => emits('update:changed', level),
+    onToggled: (type) => emits('update:toggled', type),
 });
 
 const delegatedProps = reactiveOmit(
     props,
     'editor',
-    'levels',
+    'types',
     'hideWhenUnavailable',
     'showLabel',
     'showTooltip',
     'showShortcut',
 );
-const menuLevels = computed<HeadingLevel[]>(() => [0, ...levels.value]);
 
-function changeLevel(level: HeadingLevel) {
-    if (handleLevel(level)) {
+function toggleType(type: ListType) {
+    if (handleList(type)) {
         open.value = false;
     }
 }
@@ -79,7 +78,7 @@ function handleCloseAutoFocus(event: Event) {
                     v-bind="delegatedProps"
                     :aria-label="label"
                     class="gap-0.5"
-                    :disabled="!canSet"
+                    :disabled="!canToggle"
                     size="default"
                     type="button"
                 >
@@ -96,20 +95,20 @@ function handleCloseAutoFocus(event: Event) {
 
         <DropdownMenuContent align="start" @close-auto-focus="handleCloseAutoFocus">
             <DropdownMenuItem
-                v-for="level in menuLevels"
-                :key="level"
+                v-for="type in types"
+                :key="type"
                 :class="
-                    activeLevel === level
+                    activeType === type
                         ? 'bg-primary/10 text-primary focus:bg-primary/15 focus:text-primary'
                         : undefined
                 "
-                :disabled="!canSetLevel(level)"
-                @select="changeLevel(level)"
+                :disabled="!canToggleType(type)"
+                @select="toggleType(type)"
             >
-                <component :is="getIcon(level)" />
-                <span>{{ getLabel(level) }}</span>
+                <component :is="getIcon(type)" />
+                <span>{{ getLabel(type) }}</span>
                 <KbdGroup v-if="showShortcut" class="ml-auto">
-                    <Kbd v-for="key in getShortcutKeys(level)" :key="key">{{ key }}</Kbd>
+                    <Kbd v-for="key in getShortcutKeys(type)" :key="key">{{ key }}</Kbd>
                 </KbdGroup>
             </DropdownMenuItem>
         </DropdownMenuContent>

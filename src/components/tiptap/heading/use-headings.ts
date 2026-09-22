@@ -23,35 +23,35 @@ import {
     toggleHeading,
 } from './use-heading';
 
-export type HeadingDropdownLevel = Exclude<HeadingLevel, 0>;
+export type HeadingOptionLevel = Exclude<HeadingLevel, 0>;
 
-export interface UseHeadingDropdownConfig {
+export interface UseHeadingsConfig {
     editor?: MaybeRefOrGetter<Editor>;
-    levels?: HeadingDropdownLevel[];
+    levels?: HeadingOptionLevel[];
     hideWhenUnavailable?: boolean;
     onChanged?: (level: HeadingLevel) => void;
 }
 
-export const DEFAULT_HEADING_DROPDOWN_LEVELS: HeadingDropdownLevel[] = [1, 2, 3, 4, 5, 6];
+export const DEFAULT_HEADING_LEVELS: HeadingOptionLevel[] = [1, 2, 3, 4, 5, 6];
 
 export function getActiveHeadingLevel(
     editor: Editor | null,
-    levels: HeadingDropdownLevel[] = DEFAULT_HEADING_DROPDOWN_LEVELS,
+    levels: HeadingOptionLevel[] = DEFAULT_HEADING_LEVELS,
 ) {
     return levels.find((level) => isHeadingActive(editor, level));
 }
 
-export function canSetHeadingDropdownLevel(editor: Editor | null, level: HeadingLevel) {
+export function canSetHeadingLevel(editor: Editor | null, level: HeadingLevel) {
     return level === 0 ? canSetParagraph(editor) : canToggleHeading(editor, level);
 }
 
-export function setHeadingDropdownLevel(editor: Editor | null, level: HeadingLevel) {
+export function setHeadingLevel(editor: Editor | null, level: HeadingLevel) {
     return level === 0 ? setParagraph(editor) : toggleHeading(editor, level);
 }
 
-export function shouldShowHeadingDropdown(
+export function shouldShowHeadings(
     editor: Editor | null,
-    levels: HeadingDropdownLevel[],
+    levels: HeadingOptionLevel[],
     hideWhenUnavailable: boolean,
 ) {
     if (
@@ -68,9 +68,9 @@ export function shouldShowHeadingDropdown(
     );
 }
 
-export function useHeadingDropdown(config: UseHeadingDropdownConfig) {
+export function useHeadings(config: UseHeadingsConfig) {
     const editor = useTiptapEditor(config.editor);
-    const levels = computed(() => config.levels ?? DEFAULT_HEADING_DROPDOWN_LEVELS);
+    const levels = computed(() => config.levels ?? DEFAULT_HEADING_LEVELS);
     const activeLevel = computed<HeadingLevel | undefined>(() => {
         if (isParagraphActive(editor.value)) {
             return 0;
@@ -84,7 +84,7 @@ export function useHeadingDropdown(config: UseHeadingDropdownConfig) {
             levels.value.some((level) => canToggleHeading(editor.value, level)),
     );
     const isVisible = computed(() =>
-        shouldShowHeadingDropdown(editor.value, levels.value, config.hideWhenUnavailable ?? false),
+        shouldShowHeadings(editor.value, levels.value, config.hideWhenUnavailable ?? false),
     );
     const label = computed(() =>
         activeLevel.value === 0
@@ -105,9 +105,9 @@ export function useHeadingDropdown(config: UseHeadingDropdownConfig) {
     const getIcon = (level: HeadingLevel) => (level === 0 ? TypeIcon : HEADING_ICONS[level]);
     const getShortcutKeys = (level: HeadingLevel) =>
         parseShortcutKeys(level === 0 ? PARAGRAPH_SHORTCUT_KEY : HEADING_SHORTCUT_KEYS[level]);
-    const canSetLevel = (level: HeadingLevel) => canSetHeadingDropdownLevel(editor.value, level);
+    const canSetLevel = (level: HeadingLevel) => canSetHeadingLevel(editor.value, level);
     const handleLevel = (level: HeadingLevel) => {
-        const success = setHeadingDropdownLevel(editor.value, level);
+        const success = setHeadingLevel(editor.value, level);
         if (success) {
             config.onChanged?.(level);
         }
