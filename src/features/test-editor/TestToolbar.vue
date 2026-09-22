@@ -17,7 +17,6 @@ const emits = defineEmits<{
 
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
-const headingLevels = [1, 2, 3, 4] as const;
 const textAlignments = ['left', 'center', 'right', 'justify'] as const;
 const listTypes = ['bulletList', 'orderedList', 'taskList'] as const;
 
@@ -37,7 +36,7 @@ function updateFindAndReplaceOpen(open: boolean) {
 
 <template>
     <ButtonGroup
-        class="h-auto min-h-9 w-full shrink-0 flex-wrap content-center items-center justify-center border-b px-2 has-[>[data-slot=button-group]]:shrink-0 has-[>[data-slot=button-group]]:gap-0.5"
+        class="h-auto min-h-9 w-full shrink-0 flex-wrap content-center items-center justify-center border-b px-2 py-1 has-[>[data-slot=button-group]]:shrink-0 has-[>[data-slot=button-group]]:gap-0.5"
         spacing="spaced"
     >
         <ButtonGroup spacing="spaced">
@@ -52,8 +51,7 @@ function updateFindAndReplaceOpen(open: boolean) {
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
-            <ParagraphButton />
-            <HeadingButton v-for="level in headingLevels" :key="level" :level="level" />
+            <HeadingDropdown />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
