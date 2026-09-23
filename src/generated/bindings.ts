@@ -61,6 +61,8 @@ export const events = {
 /* Constants */
 export const EXTENSION = "kazmas" as const;
 
+export const TITLE_BAR_HEIGHT = 32.0 as const;
+
 /* Types */
 export type CommandError = {
 	code: CommandErrorCode,

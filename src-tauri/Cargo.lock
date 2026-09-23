@@ -2347,6 +2347,7 @@ version = "0.0.1"
 dependencies = [
  "chrono",
  "log",
+ "macos-window-controls",
  "serde",
  "serde_json",
  "specta",
@@ -2500,6 +2501,14 @@ name = "log"
 version = "0.4.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
+
+[[package]]
+name = "macos-window-controls"
+version = "0.1.0"
+dependencies = [
+ "objc2-app-kit",
+ "tauri",
+]
 
 [[package]]
 name = "malloc_buf"
@@ -4402,9 +4411,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tauri"
-version = "2.11.5"
+version = "2.11.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "667b20e2726d572dea2de7370da16e188eb06008faf9a92fab7cdc46791190b5"
+checksum = "6fa5bacdb9bbad5954af3d1bd6cf6ae9192cab1b2e270f4a07f904610b9e85f4"
 dependencies = [
  "anyhow",
  "bytes",
