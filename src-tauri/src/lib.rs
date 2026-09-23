@@ -17,7 +17,8 @@ pub fn run() {
     let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
         .commands(command::commands())
         .events(event::events())
-        .constant("EXTENSION", world::EXTENSION);
+        .constant("EXTENSION", world::EXTENSION)
+        .constant("TITLE_BAR_HEIGHT", app::TITLE_BAR_HEIGHT);
 
     #[cfg(all(debug_assertions, not(mobile)))]
     {

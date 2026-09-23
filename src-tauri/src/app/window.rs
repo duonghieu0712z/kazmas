@@ -20,6 +20,10 @@ const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
 
+pub(crate) const TITLE_BAR_HEIGHT: f64 = 32.0;
+#[cfg(target_os = "macos")]
+const TRAFFIC_LIGHT_BUTTON_HEIGHT: f64 = 14.0;
+
 pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
     let label = window_label(window_id);
@@ -32,7 +36,10 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
     #[cfg(target_os = "macos")]
     let builder = builder
         .title_bar_style(TitleBarStyle::Overlay)
-        .traffic_light_position(LogicalPosition::new(12, 14))
+        .traffic_light_position(LogicalPosition::new(
+            12.0,
+            TITLE_BAR_HEIGHT - TRAFFIC_LIGHT_BUTTON_HEIGHT,
+        ))
         .hidden_title(true);
 
     #[cfg(not(target_os = "macos"))]
