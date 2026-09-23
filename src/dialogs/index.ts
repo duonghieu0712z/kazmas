@@ -9,6 +9,17 @@ import {
 import AboutDialog from './AboutDialog.vue';
 import NewWorldDialog from './NewWorldDialog.vue';
 
+type NewWorldDialogResult = {
+    name: string;
+    path: string;
+};
+
+type NewWorldDialogComponent = new () => {
+    $props: {
+        'onResolve:dialog'?: (result: NewWorldDialogResult) => void;
+    };
+};
+
 export async function openAboutDialog() {
     const { openDialog } = useDialogProvider();
 
@@ -20,8 +31,8 @@ export async function openAboutDialog() {
 export function openNewWorldDialog() {
     const { openDialog } = useDialogProvider();
 
-    return openDialog({
-        component: NewWorldDialog,
+    return openDialog<NewWorldDialogComponent>({
+        component: NewWorldDialog as unknown as NewWorldDialogComponent,
     });
 }
 

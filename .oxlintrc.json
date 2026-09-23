@@ -20,5 +20,9 @@
         ],
         "typescript/no-empty-object-type": "off",
         "typescript/no-explicit-any": "off"
+    },
+    "options": {
+        "typeAware": true,
+        "typeCheck": true
     }
 }
