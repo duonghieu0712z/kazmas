@@ -5,7 +5,6 @@ import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
-import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,11 +12,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import { Toggle } from '@/components/ui/toggle';
 
 import { useLists } from './use-lists';
 
 const props = withDefaults(defineProps<ListDropdownProps>(), {
-    variant: 'ghost',
+    variant: 'default',
     types: () => ['bulletList', 'orderedList', 'taskList'],
     hideWhenUnavailable: false,
     showLabel: false,
@@ -74,20 +74,20 @@ function handleCloseAutoFocus(event: Event) {
     <DropdownMenu v-if="isVisible" v-model:open="open">
         <DropdownMenuTrigger as="div">
             <TooltipWrapper :show-tooltip="showTooltip">
-                <Button
+                <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
                     class="gap-0.5"
                     :disabled="!canToggle"
+                    :model-value="Boolean(activeType) || open"
                     size="default"
-                    type="button"
                 >
                     <slot>
                         <component :is="icon" />
                         <span v-if="showLabel">{{ label }}</span>
                         <ChevronDownIcon class="size-3 text-muted-foreground" />
                     </slot>
-                </Button>
+                </Toggle>
 
                 <template #tooltip>{{ label }}</template>
             </TooltipWrapper>

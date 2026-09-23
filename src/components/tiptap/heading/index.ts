@@ -1,6 +1,5 @@
 import type { HeadingLevel, UseHeadingConfig } from './use-heading';
 import type { UseHeadingsConfig } from './use-headings';
-import type { ButtonProps } from '@/components/ui/button';
 import type { ToggleProps } from '@/components/ui/toggle';
 
 export { default as HeadingButton } from './HeadingButton.vue';
@@ -16,7 +15,7 @@ export interface HeadingButtonProps
 }
 
 export interface HeadingDropdownProps
-    extends Omit<ButtonProps, 'size'>, Omit<UseHeadingsConfig, 'onChanged'> {
+    extends Omit<ToggleProps, 'modelValue' | 'size'>, Omit<UseHeadingsConfig, 'onChanged'> {
     levels?: Exclude<HeadingLevel, 0>[];
     showLabel?: boolean;
     showTooltip?: boolean;

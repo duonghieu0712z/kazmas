@@ -1,6 +1,5 @@
 import type { UseListConfig } from './use-list';
 import type { UseListsConfig } from './use-lists';
-import type { ButtonProps } from '@/components/ui/button';
 import type { ButtonGroupProps } from '@/components/ui/button-group';
 import type { ToggleProps } from '@/components/ui/toggle';
 
@@ -19,7 +18,7 @@ export interface ListButtonProps
 }
 
 export interface ListDropdownProps
-    extends Omit<ButtonProps, 'size'>, Omit<UseListsConfig, 'onToggled'> {
+    extends Omit<ToggleProps, 'modelValue' | 'size'>, Omit<UseListsConfig, 'onToggled'> {
     showLabel?: boolean;
     showTooltip?: boolean;
     showShortcut?: boolean;
