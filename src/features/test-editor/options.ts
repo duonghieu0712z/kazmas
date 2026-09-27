@@ -32,7 +32,7 @@ export const testEditorOptions = createEditorOptions({
             code: {
                 HTMLAttributes: {
                     class: cn(
-                        'rounded-sm border px-[0.2em] py-[0.1em] font-code',
+                        'rounded-sm border bg-background px-[0.2em] py-[0.1em] font-code',
                         'before:content-none after:content-none',
                     ),
                 },
@@ -120,7 +120,7 @@ export const testEditorOptions = createEditorOptions({
             lowlight,
             defaultLanguage: 'plaintext',
             HTMLAttributes: {
-                class: cn('rounded-sm border bg-muted font-code'),
+                class: cn('rounded-sm border bg-background font-code'),
             },
             enableTabIndentation: true,
         }),

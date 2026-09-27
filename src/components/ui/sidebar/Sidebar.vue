@@ -27,7 +27,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
         v-if="collapsible === 'none'"
         :class="
             cn(
-                'flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
+                'flex h-full w-(--sidebar-width) flex-col bg-background text-foreground',
                 props.class,
             )
         "
@@ -39,7 +39,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
     <Sheet v-else-if="isMobile" :open="openMobile" v-bind="$attrs" @update:open="setOpenMobile">
         <SheetContent
-            class="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            class="w-(--sidebar-width) bg-background p-0 text-foreground [&>button]:hidden"
             data-mobile="true"
             data-sidebar="sidebar"
             data-slot="sidebar"
@@ -58,7 +58,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
     <div
         v-else
-        class="group peer hidden text-sidebar-foreground md:block"
+        class="group peer hidden text-foreground md:block"
         :data-collapsible="state === 'collapsed' ? collapsible : ''"
         :data-side="side"
         data-slot="sidebar"
@@ -98,8 +98,8 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
         >
             <div
                 :class="[
-                    'flex h-full w-full flex-col bg-sidebar',
-                    'group-data-[variant=floating]:rounded-sm group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-xs',
+                    'flex h-full w-full flex-col bg-background',
+                    'group-data-[variant=floating]:rounded-sm group-data-[variant=floating]:border group-data-[variant=floating]:border-border group-data-[variant=floating]:shadow-xs',
                 ]"
                 data-sidebar="sidebar"
             >
