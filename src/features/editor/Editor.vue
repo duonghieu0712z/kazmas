@@ -29,7 +29,7 @@ const options = computed<Partial<EditorOptions>>(() => ({
     editable: true,
     editorProps: {
         attributes: {
-            class: 'prose dark:prose-invert bg-editor text-editor-foreground font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
+            class: 'prose prose-editor font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
             spellCheck: 'false',
         },
     },
@@ -73,7 +73,7 @@ onBeforeUnmount(flushDocumentSave);
         :options="options"
     >
         <ScrollArea
-            class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border"
+            class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border bg-editor"
             @click="editor?.chain().focus().run()"
         >
             <EditorContent class="min-h-full w-full" />

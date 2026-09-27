@@ -111,3 +111,27 @@
         @apply appearance-none;
     }
 }
+
+@utility prose-editor {
+    background-color: var(--color-editor);
+    color: var(--color-editor-foreground);
+
+    --tw-prose-body: var(--color-editor-foreground);
+    --tw-prose-headings: var(--color-editor-foreground);
+    --tw-prose-lead: var(--color-editor-foreground);
+    --tw-prose-links: var(--color-editor-foreground);
+    --tw-prose-bold: var(--color-editor-foreground);
+    --tw-prose-counters: var(--color-editor-foreground);
+    --tw-prose-bullets: var(--color-editor-foreground);
+    --tw-prose-hr: var(--color-editor-foreground);
+    --tw-prose-quotes: var(--color-editor-foreground);
+    --tw-prose-quote-borders: var(--color-editor-foreground);
+    --tw-prose-captions: var(--color-editor-foreground);
+    --tw-prose-kbd: var(--color-editor-foreground);
+    --tw-prose-kbd-shadows: var(--color-editor-foreground);
+    --tw-prose-code: var(--color-editor-foreground);
+    --tw-prose-pre-code: var(--color-editor-foreground);
+    --tw-prose-pre-bg: var(--color-editor);
+    --tw-prose-th-borders: var(--color-editor-foreground);
+    --tw-prose-td-borders: var(--color-editor-foreground);
+}

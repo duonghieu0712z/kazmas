@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
         <Button
             aria-label="Close window"
             :class="[
-                'rounded-none hover:bg-destructive/90',
+                'rounded-none hover:bg-destructive',
                 '[&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground',
             ]"
             size="icon"
