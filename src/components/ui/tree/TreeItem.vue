@@ -57,13 +57,13 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 text-sidebar-accent-foreground transition-colors outline-none',
-                    'hover:bg-sidebar-accent/60 focus-visible:bg-sidebar-accent/60 data-selected:bg-sidebar-accent',
+                    'relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 text-accent-foreground transition-colors outline-none',
+                    'hover:bg-accent/60 focus-visible:bg-accent/60 data-selected:bg-accent',
                     'data-disabled:pointer-events-none data-disabled:opacity-50',
                     // Indent guide
                     indentGuide && [
                         `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
-                        'before:bg-[repeating-linear-gradient(to_right,var(--sidebar-border)_0,var(--sidebar-border)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
+                        'before:bg-[repeating-linear-gradient(to_right,var(--border)_0,var(--border)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
                     ],
                 ],
                 props.class,
