@@ -56,7 +56,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
             <DialogClose
                 :class="[
-                    'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary',
+                    'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-interactive data-[state=open]:text-interactive-foreground',
                     'focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden',
                 ]"
             >

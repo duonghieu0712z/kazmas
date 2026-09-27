@@ -38,19 +38,19 @@ export { useSidebar } from './utils';
 export const sidebarMenuButtonVariants = cva(
     [
         'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
-        'hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground',
+        'hover:bg-interactive hover:text-interactive-foreground active:bg-interactive active:text-interactive-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
-        'data-[active=true]:bg-accent data-[active=true]:font-medium data-[active=true]:text-accent-foreground',
-        'data-[state=open]:hover:bg-accent data-[state=open]:hover:text-accent-foreground',
+        'data-[active=true]:bg-interactive data-[active=true]:font-medium data-[active=true]:text-interactive-foreground',
+        'data-[state=open]:hover:bg-interactive data-[state=open]:hover:text-interactive-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',
         `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
     ],
     {
         variants: {
             variant: {
-                default: 'hover:bg-accent hover:text-accent-foreground',
+                default: 'hover:bg-interactive hover:text-interactive-foreground',
                 outline:
-                    'bg-background shadow-[0_0_0_1px_var(--border)] hover:bg-accent hover:text-accent-foreground hover:shadow-[0_0_0_1px_var(--accent)]',
+                    'bg-background shadow-[0_0_0_1px_var(--border)] hover:bg-interactive hover:text-interactive-foreground hover:shadow-[0_0_0_1px_var(--interactive)]',
             },
             size: {
                 default: 'h-8',

@@ -52,7 +52,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                 :class="[
                     'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none',
                     'focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden',
-                    'data-[state=open]:bg-accent data-[state=open]:text-muted-foreground',
+                    'data-[state=open]:bg-interactive data-[state=open]:text-interactive-foreground',
                     `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
                 ]"
                 data-slot="dialog-close"

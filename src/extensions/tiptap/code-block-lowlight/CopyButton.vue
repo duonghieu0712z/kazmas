@@ -30,7 +30,7 @@ onBeforeUnmount(() => {
     <TooltipWrapper>
         <Button
             :aria-label="copied ? 'Copied' : 'Copy code'"
-            class="size-7 bg-transparent text-muted-foreground shadow-none hover:text-foreground"
+            class="size-7 bg-transparent text-muted-foreground shadow-none hover:text-interactive-foreground"
             size="icon"
             type="button"
             variant="ghost"

@@ -74,7 +74,7 @@ function handleCloseAutoFocus(event: Event) {
         <PopoverTrigger as="div">
             <Button
                 aria-label="Code block language"
-                class="h-7 bg-transparent px-2 text-xs text-muted-foreground shadow-none hover:text-foreground"
+                class="h-7 bg-transparent px-2 text-xs text-muted-foreground shadow-none hover:text-interactive-foreground"
                 :disabled="disabled"
                 size="default"
                 type="button"
