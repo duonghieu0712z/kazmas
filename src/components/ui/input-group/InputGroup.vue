@@ -12,7 +12,7 @@ const props = defineProps<{
     <div
         :class="
             cn(
-                'group/input-group relative flex h-8 w-full min-w-0 items-center rounded-sm border border-input shadow-xs transition-[color,box-shadow] outline-none has-[>textarea]:h-auto dark:bg-input/30',
+                'group/input-group relative flex h-8 w-full min-w-0 items-center rounded-sm border border-input shadow-xs transition-[color,box-shadow] outline-none has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
                 'has-[>[data-align=inline-start]]:*:data-[slot=input-group-control]:pl-2',
@@ -23,7 +23,7 @@ const props = defineProps<{
                 // Focus state.
                 'has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-[1.5px] has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50',
                 // Error state.
-                'has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-destructive/20 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40',
+                'has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-destructive/20',
 
                 props.class,
             )
