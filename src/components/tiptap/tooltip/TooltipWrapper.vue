@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
+
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
+        class?: HTMLAttributes['class'];
         showTooltip?: boolean;
         showShortcut?: boolean;
         shortcutKeys?: string[];
@@ -17,7 +20,7 @@ withDefaults(
 
 <template>
     <Tooltip v-if="showTooltip">
-        <TooltipTrigger>
+        <TooltipTrigger :class="props.class">
             <slot />
         </TooltipTrigger>
 

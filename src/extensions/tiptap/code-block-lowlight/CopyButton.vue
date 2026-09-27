@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CopyCheckIcon, CopyIcon } from '@lucide/vue';
+import { useClipboard } from '@vueuse/core';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Button } from '@/components/ui/button';
@@ -8,37 +9,29 @@ const props = defineProps<{
     text: string;
 }>();
 
-const copied = ref(false);
-let resetCopiedTimer: ReturnType<typeof setTimeout> | undefined;
+const { copied, copy } = useClipboard({
+    source: () => props.text,
+    copiedDuring: 2000,
+});
 
 async function copyCode() {
-    await navigator.clipboard.writeText(props.text);
-    copied.value = true;
-
-    clearTimeout(resetCopiedTimer);
-    resetCopiedTimer = setTimeout(() => {
-        copied.value = false;
-    }, 2000);
+    await copy();
 }
-
-onBeforeUnmount(() => {
-    clearTimeout(resetCopiedTimer);
-});
 </script>
 
 <template>
-    <TooltipWrapper>
+    <TooltipWrapper class="flex size-6 items-center justify-center">
         <Button
             :aria-label="copied ? 'Copied' : 'Copy code'"
-            class="size-7 bg-transparent text-muted-foreground shadow-none hover:text-interactive-foreground"
+            class="size-6 bg-transparent text-muted-foreground shadow-none hover:text-interactive-foreground"
             size="icon"
             type="button"
             variant="ghost"
             @click="copyCode"
             @mousedown.prevent
         >
-            <CopyCheckIcon v-if="copied" />
-            <CopyIcon v-else />
+            <CopyCheckIcon v-if="copied" class="size-3" />
+            <CopyIcon v-else class="size-3" />
         </Button>
 
         <template #tooltip>

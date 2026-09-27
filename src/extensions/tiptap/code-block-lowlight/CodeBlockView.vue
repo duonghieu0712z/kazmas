@@ -15,7 +15,7 @@ const codeBlockAttributes = computed(() => ({
     class: cn(
         props.extension.options.HTMLAttributes.class,
         props.HTMLAttributes.class,
-        'my-0 pt-11',
+        'my-0 px-2 pt-8 pb-1',
     ),
 }));
 
@@ -41,7 +41,7 @@ function selectLanguage(language: string) {
         as="div"
         class="group relative my-6 before:absolute before:top-11 before:left-4"
     >
-        <div class="absolute top-2 right-2 z-10 flex items-center gap-1" contenteditable="false">
+        <div class="absolute top-1 right-2 z-10 flex items-center gap-1" contenteditable="false">
             <LanguageSelect
                 :current-language="currentLanguage"
                 :disabled="!editor.isEditable"
