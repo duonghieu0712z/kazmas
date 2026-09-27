@@ -43,7 +43,7 @@
     --radius: 0.625rem;
 
     --background: oklch(0.973146 0 0);
-    --foreground: oklch(0.555527 0 0);
+    --foreground: oklch(0.527796 0 0);
     --primary: var(--foreground);
     --primary-foreground: var(--background);
     --secondary: oklch(0.949119 0 0);
