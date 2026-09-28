@@ -41,9 +41,9 @@ const EMPTY_EDITOR_STATE: FindAndReplaceEditorState = {
 
 export function isFindAndReplaceAvailable(editor: Editor | null) {
     return Boolean(
-        editor?.extensionManager.extensions.some(
-            (extension) => extension.name === 'findAndReplace',
-        ),
+        editor &&
+        !editor.isDestroyed &&
+        editor.extensionManager.extensions.some((extension) => extension.name === 'findAndReplace'),
     );
 }
 
@@ -164,6 +164,11 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
         () => Boolean(editor.value?.isEditable) && isAvailable.value && total.value > 0,
     );
 
+    const getAvailableEditor = () => {
+        const currentEditor = editor.value;
+        return isFindAndReplaceAvailable(currentEditor) ? currentEditor : null;
+    };
+
     watch(
         editor,
         (currentEditor, _previousEditor, onCleanup) => {
@@ -217,11 +222,12 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     const setSearchTerm = (value: string | number) => {
         const term = String(value);
         searchTerm.value = term;
-        if (isAvailable.value) {
+        const currentEditor = getAvailableEditor();
+        if (currentEditor) {
             if (term) {
-                editor.value?.commands.setSearchTerm(term);
+                currentEditor.commands.setSearchTerm(term);
             } else {
-                editor.value?.commands.clearSearch();
+                currentEditor.commands.clearSearch();
             }
         }
     };
@@ -229,35 +235,29 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     const setReplaceTerm = (value: string | number) => {
         const term = String(value);
         replaceTerm.value = term;
-        if (isAvailable.value) {
-            editor.value?.commands.setReplaceTerm(term);
-        }
+        getAvailableEditor()?.commands.setReplaceTerm(term);
     };
 
     const toggleCaseSensitive = (value: boolean) => {
-        if (isAvailable.value) {
-            editor.value?.commands.setCaseSensitive(value);
-        }
+        getAvailableEditor()?.commands.setCaseSensitive(value);
     };
 
     const toggleWholeWord = (value: boolean) => {
-        if (isAvailable.value) {
-            editor.value?.commands.setWholeWord(value);
-        }
+        getAvailableEditor()?.commands.setWholeWord(value);
     };
 
     const toggleUseRegex = (value: boolean) => {
-        if (isAvailable.value) {
-            editor.value?.commands.setUseRegex(value);
-        }
+        getAvailableEditor()?.commands.setUseRegex(value);
     };
 
     const goToNext = () => {
-        return editor.value ? navigateFindResult(editor.value, 'next') : false;
+        const currentEditor = getAvailableEditor();
+        return currentEditor ? navigateFindResult(currentEditor, 'next') : false;
     };
 
     const goToPrevious = () => {
-        return editor.value ? navigateFindResult(editor.value, 'previous') : false;
+        const currentEditor = getAvailableEditor();
+        return currentEditor ? navigateFindResult(currentEditor, 'previous') : false;
     };
 
     const replaceCurrent = () => {
@@ -265,7 +265,7 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
             return false;
         }
 
-        const success = editor.value?.commands.replace() ?? false;
+        const success = getAvailableEditor()?.commands.replace() ?? false;
         if (success) {
             config.onReplaced?.();
         }
@@ -277,7 +277,7 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
             return false;
         }
 
-        const success = editor.value?.commands.replaceAll() ?? false;
+        const success = getAvailableEditor()?.commands.replaceAll() ?? false;
         if (success) {
             config.onReplacedAll?.();
         }
@@ -285,20 +285,19 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     };
 
     const applySearch = () => {
-        if (!isAvailable.value) {
+        const currentEditor = getAvailableEditor();
+        if (!currentEditor) {
             return;
         }
 
-        editor.value?.commands.setReplaceTerm(replaceTerm.value);
+        currentEditor.commands.setReplaceTerm(replaceTerm.value);
         if (searchTerm.value) {
-            editor.value?.commands.setSearchTerm(searchTerm.value);
+            currentEditor.commands.setSearchTerm(searchTerm.value);
         }
     };
 
     const suspendSearch = () => {
-        if (isAvailable.value) {
-            editor.value?.commands.clearSearch();
-        }
+        getAvailableEditor()?.commands.clearSearch();
     };
 
     return {
