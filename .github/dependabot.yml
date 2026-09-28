@@ -3,6 +3,7 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    versioning-strategy: increase
     schedule:
       interval: weekly
       day: monday
@@ -17,6 +18,7 @@ updates:
 
   - package-ecosystem: cargo
     directory: /src-tauri
+    versioning-strategy: increase
     schedule:
       interval: weekly
       day: monday
