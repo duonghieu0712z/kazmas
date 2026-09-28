@@ -9,7 +9,7 @@ const nodes = useNodeStore();
 
 <template>
     <SidebarInset class="min-h-0 min-w-0 overflow-hidden">
-        <header class="flex h-5 shrink-0 items-center border-b px-2">
+        <header class="relative z-50 flex h-5 shrink-0 items-center border-b bg-background px-2">
             <NodeBreadcrumb />
         </header>
         <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
