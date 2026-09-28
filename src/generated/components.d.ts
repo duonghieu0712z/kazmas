@@ -159,6 +159,7 @@ declare module 'vue' {
     TextAlignPopover: typeof import('./../components/tiptap/text-align/TextAlignPopover.vue')['default']
     Textarea: typeof import('./../components/ui/textarea/Textarea.vue')['default']
     Toggle: typeof import('./../components/ui/toggle/Toggle.vue')['default']
+    Toolbar: typeof import('./../components/tiptap/toolbar/Toolbar.vue')['default']
     Tooltip: typeof import('./../components/ui/tooltip/Tooltip.vue')['default']
     TooltipContent: typeof import('./../components/ui/tooltip/TooltipContent.vue')['default']
     TooltipProvider: typeof import('./../components/ui/tooltip/TooltipProvider.vue')['default']
