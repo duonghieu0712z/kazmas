@@ -200,7 +200,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
         aria-label="Find and replace"
         :class="
             cn(
-                'absolute top-11 right-2 z-40 w-lg max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
+                'absolute top-11 right-2 z-30 w-lg max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
                 props.class,
             )
         "

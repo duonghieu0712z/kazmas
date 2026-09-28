@@ -78,7 +78,7 @@ const selectedLabel = computed(
             </ComboboxTrigger>
         </ComboboxAnchor>
 
-        <ComboboxList align="end" class="z-40 w-56 py-1 pl-1 font-code">
+        <ComboboxList align="end" class="z-30 w-56 py-1 pl-1 font-code">
             <ComboboxInput
                 aria-label="Search code block languages"
                 autocomplete="off"

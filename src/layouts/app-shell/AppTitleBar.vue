@@ -22,7 +22,7 @@ onMounted(async () => {
 
 <template>
     <div
-        class="sticky z-50 grid h-(--title-bar-height) shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b bg-background"
+        class="sticky z-40 grid h-(--title-bar-height) shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b bg-background"
         data-tauri-drag-region="deep"
     >
         <div v-if="!mac" class="flex h-full items-center justify-self-start">

@@ -34,7 +34,7 @@ function updateFindAndReplaceOpen(open: boolean) {
 
 <template>
     <ButtonGroup
-        class="relative z-50 h-auto min-h-9 w-full shrink-0 flex-wrap content-center items-center justify-center border-b bg-background px-2 py-1 has-[>[data-slot=button-group]]:shrink-0 has-[>[data-slot=button-group]]:gap-0.5"
+        class="relative z-40 h-auto min-h-9 w-full shrink-0 flex-wrap content-center items-center justify-center border-b bg-background px-2 py-1 has-[>[data-slot=button-group]]:shrink-0 has-[>[data-slot=button-group]]:gap-0.5"
         spacing="spaced"
     >
         <ButtonGroup spacing="spaced">
