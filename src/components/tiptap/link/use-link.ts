@@ -51,9 +51,9 @@ export function setLink(editor: Editor | null, url: string) {
         return false;
     }
 
-    const isEmpty = editor.state.selection.empty;
+    const shouldInsertText = editor.state.selection.empty && !editor.isActive('link');
     let chain = editor.chain().focus().extendMarkRange('link').setLink({ href });
-    if (isEmpty) {
+    if (shouldInsertText) {
         chain = chain.insertContent({ type: 'text', text: href });
     }
 
@@ -117,15 +117,20 @@ export function useLink(config: UseLinkConfig = {}) {
 
             updateLinkState();
             currentEditor.on('selectionUpdate', updateLinkState);
-            onCleanup(() => currentEditor.off('selectionUpdate', updateLinkState));
+            currentEditor.on('update', updateLinkState);
+            onCleanup(() => {
+                currentEditor.off('selectionUpdate', updateLinkState);
+                currentEditor.off('update', updateLinkState);
+            });
         },
         { immediate: true },
     );
 
     const handleSetLink = () => {
-        const success = setLink(editor.value, url.value);
+        const href = url.value.trim();
+        const success = setLink(editor.value, href);
         if (success) {
-            url.value = '';
+            url.value = href;
             config.onSetLink?.();
         }
         return success;
