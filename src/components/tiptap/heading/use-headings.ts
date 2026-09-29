@@ -1,4 +1,4 @@
-import type { HeadingLevel } from './use-heading';
+import type { HeadingLevel, HeadingNodeLevel } from './use-heading';
 import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
@@ -23,7 +23,7 @@ import {
     toggleHeading,
 } from './use-heading';
 
-export type HeadingOptionLevel = Exclude<HeadingLevel, 0>;
+export type HeadingOptionLevel = HeadingNodeLevel;
 
 export interface UseHeadingsConfig {
     editor?: MaybeRefOrGetter<Editor>;
