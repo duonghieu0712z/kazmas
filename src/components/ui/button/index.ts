@@ -21,9 +21,9 @@ export const buttonVariants = cva(
                 destructive:
                     'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20',
                 outline:
-                    'hover:bg-interactive hover:text-interactive-foreground border bg-background shadow-xs',
+                    'border bg-background shadow-xs hover:bg-interactive hover:text-interactive-foreground',
                 secondary:
-                    'hover:bg-interactive hover:text-interactive-foreground border bg-secondary text-secondary-foreground',
+                    'border bg-secondary text-secondary-foreground hover:bg-interactive hover:text-interactive-foreground',
                 ghost: 'hover:bg-interactive hover:text-interactive-foreground',
                 link: 'text-primary underline-offset-4 hover:underline',
             },
