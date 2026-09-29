@@ -127,9 +127,10 @@ export function useLink(config: UseLinkConfig = {}) {
     );
 
     const handleSetLink = () => {
-        const success = setLink(editor.value, url.value);
+        const href = url.value.trim();
+        const success = setLink(editor.value, href);
         if (success) {
-            url.value = '';
+            url.value = href;
             config.onSetLink?.();
         }
         return success;
