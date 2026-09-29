@@ -30,7 +30,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...forwarded, ...$attrs }"
             :class="
                 cn(
-                    'z-50 w-fit animate-in rounded-sm bg-muted px-3 py-1.5 text-xs text-balance text-muted-foreground fade-in-0 zoom-in-95',
+                    'z-50 w-fit animate-in rounded-sm border bg-muted px-3 py-1.5 text-xs text-balance text-muted-foreground fade-in-0 zoom-in-95',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
                     props.class,
@@ -41,7 +41,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             <slot />
 
             <TooltipArrow
-                class="z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-muted fill-muted"
+                class="-translate-y-px overflow-visible fill-muted stroke-border stroke-[1px] [stroke-linejoin:round]"
             />
         </TooltipContent>
     </TooltipPortal>

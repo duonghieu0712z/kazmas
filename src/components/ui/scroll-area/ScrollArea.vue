@@ -9,9 +9,14 @@ import { cn } from '@/lib/utils';
 
 import ScrollBar from './ScrollBar.vue';
 
-const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'] }>();
+const props = defineProps<
+    ScrollAreaRootProps & {
+        class?: HTMLAttributes['class'];
+        horizontal?: boolean;
+    }
+>();
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'horizontal');
 </script>
 
 <template>
@@ -24,12 +29,14 @@ const delegatedProps = reactiveOmit(props, 'class');
             :class="[
                 'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
                 'focus-visible:ring-[1.5px] focus-visible:ring-ring/50 focus-visible:outline-1',
+                '[&>div]:grid [&>div]:min-h-full',
             ]"
             data-slot="scroll-area-viewport"
         >
             <slot />
         </ScrollAreaViewport>
         <ScrollBar />
+        <ScrollBar v-if="horizontal" orientation="horizontal" />
         <ScrollAreaCorner />
     </ScrollAreaRoot>
 </template>
