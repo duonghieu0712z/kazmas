@@ -117,7 +117,11 @@ export function useLink(config: UseLinkConfig = {}) {
 
             updateLinkState();
             currentEditor.on('selectionUpdate', updateLinkState);
-            onCleanup(() => currentEditor.off('selectionUpdate', updateLinkState));
+            currentEditor.on('update', updateLinkState);
+            onCleanup(() => {
+                currentEditor.off('selectionUpdate', updateLinkState);
+                currentEditor.off('update', updateLinkState);
+            });
         },
         { immediate: true },
     );
