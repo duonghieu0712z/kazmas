@@ -26,7 +26,7 @@ const props = withDefaults(
         :class="
             cn(
                 'absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-sm p-0 text-foreground ring-ring outline-hidden transition-transform focus-visible:ring-2',
-                'peer-hover/menu-button:text-interactive-foreground hover:bg-interactive hover:text-interactive-foreground',
+                'peer-hover/menu-button:text-interactive-foreground peer-data-[active=true]/menu-button:text-interactive-foreground hover:bg-interactive hover:text-interactive-foreground',
                 'after:absolute after:-inset-2 md:after:hidden',
                 'peer-data-[size=sm]/menu-button:top-1',
                 'peer-data-[size=default]/menu-button:top-1.5',
@@ -34,7 +34,7 @@ const props = withDefaults(
                 'group-data-[collapsible=icon]:hidden',
                 `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
                 showOnHover &&
-                    'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 peer-data-[active=true]/menu-button:text-interactive-foreground data-[state=open]:opacity-100 md:opacity-0',
+                    'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
                 props.class,
             )
         "
