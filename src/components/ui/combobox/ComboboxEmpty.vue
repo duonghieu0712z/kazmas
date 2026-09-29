@@ -13,11 +13,13 @@ const delegatedProps = reactiveOmit(props, 'class');
 </script>
 
 <template>
-    <ComboboxEmpty
-        v-bind="delegatedProps"
-        :class="cn('py-6 text-center text-sm', props.class)"
-        data-slot="combobox-empty"
-    >
-        <slot />
-    </ComboboxEmpty>
+    <div aria-live="polite">
+        <ComboboxEmpty
+            v-bind="delegatedProps"
+            :class="cn('py-6 text-center text-sm', props.class)"
+            data-slot="combobox-empty"
+        >
+            <slot />
+        </ComboboxEmpty>
+    </div>
 </template>
