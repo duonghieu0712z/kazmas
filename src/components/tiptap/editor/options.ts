@@ -1,0 +1,50 @@
+import type { EditorState } from '@tiptap/pm/state';
+import type { EditorOptions } from '@tiptap/vue-3';
+
+import StarterKit from '@tiptap/starter-kit';
+
+import { cn } from '@/lib/utils';
+
+const defaultEditorClass = cn(
+    'prose prose-editor',
+    'min-h-full w-full max-w-none px-4 pt-2 pb-[50vh]',
+    'font-document wrap-break-word outline-hidden',
+);
+
+const defaultEditorAttributes = {
+    class: defaultEditorClass,
+    spellCheck: 'false',
+};
+
+function mergeEditorAttributes(attributes?: EditorOptions['editorProps']['attributes']) {
+    if (typeof attributes === 'function') {
+        return (state: EditorState) => {
+            const resolvedAttributes = attributes(state);
+
+            return {
+                ...defaultEditorAttributes,
+                ...resolvedAttributes,
+                class: cn(defaultEditorClass, resolvedAttributes.class),
+            };
+        };
+    }
+
+    return {
+        ...defaultEditorAttributes,
+        ...attributes,
+        class: cn(defaultEditorClass, attributes?.class),
+    };
+}
+
+export function createEditorOptions(options: Partial<EditorOptions> = {}): Partial<EditorOptions> {
+    return {
+        ...options,
+        extensions: options.extensions ?? [StarterKit],
+        autofocus: options.autofocus ?? 'end',
+        editable: options.editable ?? true,
+        editorProps: {
+            ...options.editorProps,
+            attributes: mergeEditorAttributes(options.editorProps?.attributes),
+        },
+    };
+}

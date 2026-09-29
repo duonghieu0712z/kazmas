@@ -1,0 +1,67 @@
+<script setup lang="ts">
+import type { MarkButtonProps } from '.';
+
+import { reactiveOmit } from '@vueuse/core';
+
+import { TooltipWrapper } from '@/components/tiptap/tooltip';
+import { Toggle } from '@/components/ui/toggle';
+
+import { useMark } from './use-mark';
+
+const props = withDefaults(defineProps<MarkButtonProps>(), {
+    variant: 'default',
+    hideWhenUnavailable: false,
+    showLabel: false,
+    showTooltip: true,
+    showShortcut: false,
+});
+
+const emits = defineEmits<{
+    'update:toggled': [];
+}>();
+
+const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleMark } = useMark({
+    editor: props.editor,
+    type: props.type,
+    label: props.label,
+    hideWhenUnavailable: props.hideWhenUnavailable,
+    onToggled: () => emits('update:toggled'),
+});
+
+const delegatedProps = reactiveOmit(
+    props,
+    'editor',
+    'type',
+    'hideWhenUnavailable',
+    'label',
+    'showLabel',
+    'showTooltip',
+    'showShortcut',
+);
+</script>
+
+<template>
+    <TooltipWrapper
+        v-if="isVisible"
+        :shortcut-keys="shortcutKeys"
+        :show-shortcut="showShortcut"
+        :show-tooltip="showTooltip"
+    >
+        <Toggle
+            v-bind="delegatedProps"
+            :disabled="!canToggle"
+            :model-value="isActive"
+            :size="showLabel ? 'default' : 'icon'"
+            @click="handleMark"
+        >
+            <slot>
+                <component :is="icon" />
+            </slot>
+            <span v-if="showLabel">{{ label }}</span>
+        </Toggle>
+
+        <template #tooltip>
+            {{ label }}
+        </template>
+    </TooltipWrapper>
+</template>
