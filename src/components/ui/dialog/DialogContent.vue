@@ -36,7 +36,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...$attrs, ...forwarded }"
             :class="
                 cn(
-                    'fixed z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-sm border bg-background p-6 shadow-xs duration-200 sm:max-w-lg',
+                    'fixed z-60 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-sm border bg-background p-6 shadow-xs duration-200 sm:max-w-lg',
                     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'top-[50%] left-[50%]',
@@ -52,7 +52,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                 :class="[
                     'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none',
                     'focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden',
-                    'data-[state=open]:bg-accent data-[state=open]:text-muted-foreground',
+                    'data-[state=open]:bg-interactive data-[state=open]:text-interactive-foreground',
                     `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
                 ]"
                 data-slot="dialog-close"

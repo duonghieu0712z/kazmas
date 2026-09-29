@@ -20,7 +20,7 @@ const props = defineProps<
         :class="
             cn(
                 'absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-sm p-0 text-foreground ring-ring outline-hidden transition-transform focus-visible:ring-2',
-                'hover:bg-accent hover:text-accent-foreground',
+                'hover:bg-interactive hover:text-interactive-foreground',
                 'after:absolute after:-inset-2 md:after:hidden',
                 'group-data-[collapsible=icon]:hidden',
                 `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,

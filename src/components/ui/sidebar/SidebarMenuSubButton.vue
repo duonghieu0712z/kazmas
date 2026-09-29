@@ -28,8 +28,8 @@ const props = withDefaults(
         :class="
             cn(
                 'flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-sm px-2 text-foreground ring-ring outline-hidden focus-visible:ring-2 [&>span:last-child]:truncate',
-                'data-[active=true]:bg-accent data-[active=true]:text-accent-foreground',
-                'hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground',
+                'data-[active=true]:bg-interactive data-[active=true]:text-interactive-foreground',
+                'hover:bg-interactive hover:text-interactive-foreground active:bg-interactive active:text-interactive-foreground',
                 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
                 size === 'sm' && 'text-xs',
                 size === 'md' && 'text-sm',
