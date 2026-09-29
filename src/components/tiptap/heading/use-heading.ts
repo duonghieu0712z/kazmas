@@ -8,7 +8,6 @@ import {
     Heading4Icon,
     Heading5Icon,
     Heading6Icon,
-    HeadingIcon,
 } from '@lucide/vue';
 import { isNodeSelection, isTextSelection } from '@tiptap/vue-3';
 import { computed } from 'vue';
@@ -23,35 +22,34 @@ import {
 } from '@/lib/tiptap';
 
 export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type HeadingNodeLevel = Exclude<HeadingLevel, 0>;
 
 export interface UseHeadingConfig {
     editor?: MaybeRefOrGetter<Editor>;
-    level: HeadingLevel;
+    level: HeadingNodeLevel;
     hideWhenUnavailable?: boolean;
     onToggled?: () => void;
 }
 
-export const HEADING_ICONS = [
-    HeadingIcon,
-    Heading1Icon,
-    Heading2Icon,
-    Heading3Icon,
-    Heading4Icon,
-    Heading5Icon,
-    Heading6Icon,
-] satisfies Record<HeadingLevel, Component>;
+export const HEADING_ICONS = {
+    1: Heading1Icon,
+    2: Heading2Icon,
+    3: Heading3Icon,
+    4: Heading4Icon,
+    5: Heading5Icon,
+    6: Heading6Icon,
+} satisfies Record<HeadingNodeLevel, Component>;
 
 export const HEADING_SHORTCUT_KEYS = {
-    0: 'mod+alt+0',
     1: 'mod+alt+1',
     2: 'mod+alt+2',
     3: 'mod+alt+3',
     4: 'mod+alt+4',
     5: 'mod+alt+5',
     6: 'mod+alt+6',
-} satisfies Record<HeadingLevel, string>;
+} satisfies Record<HeadingNodeLevel, string>;
 
-export function canToggleHeading(editor: Editor | null, level?: HeadingLevel, turnInto = true) {
+export function canToggleHeading(editor: Editor | null, level?: HeadingNodeLevel, turnInto = true) {
     if (
         !editor?.isEditable ||
         !isNodeInSchema(editor, 'heading') ||
@@ -61,7 +59,9 @@ export function canToggleHeading(editor: Editor | null, level?: HeadingLevel, tu
     }
 
     if (!turnInto) {
-        return level ? editor.can().setNode('heading', { level }) : editor.can().setNode('heading');
+        return level === undefined
+            ? editor.can().setNode('heading')
+            : editor.can().setNode('heading', { level });
     }
 
     try {
@@ -78,7 +78,10 @@ export function canToggleHeading(editor: Editor | null, level?: HeadingLevel, tu
     }
 }
 
-export function isHeadingActive(editor: Editor | null, level?: HeadingLevel | HeadingLevel[]) {
+export function isHeadingActive(
+    editor: Editor | null,
+    level?: HeadingNodeLevel | HeadingNodeLevel[],
+) {
     if (!editor?.isEditable) {
         return false;
     }
@@ -87,12 +90,12 @@ export function isHeadingActive(editor: Editor | null, level?: HeadingLevel | He
         return level.some((l) => editor.isActive('heading', { level: l }));
     }
 
-    return level ? editor.isActive('heading', { level }) : editor.isActive('heading');
+    return level === undefined ? editor.isActive('heading') : editor.isActive('heading', { level });
 }
 
 export function toggleHeading(
     editor: Editor | null,
-    level: HeadingLevel | HeadingLevel[],
+    level: HeadingNodeLevel | HeadingNodeLevel[],
 ): boolean {
     if (!editor?.isEditable) {
         return false;
@@ -101,7 +104,7 @@ export function toggleHeading(
     const levels = Array.isArray(level) ? level : [level];
     const toggleLevel = levels.find((l) => canToggleHeading(editor, l));
 
-    if (!toggleLevel) {
+    if (toggleLevel === undefined) {
         return false;
     }
 
@@ -131,7 +134,7 @@ export function toggleHeading(
 
 export function shouldShowHeadingButton(
     editor: Editor | null,
-    level: HeadingLevel | HeadingLevel[] | undefined,
+    level: HeadingNodeLevel | HeadingNodeLevel[] | undefined,
     hideWhenUnavailable: boolean,
 ): boolean {
     if (!editor?.isEditable || !isNodeInSchema(editor, 'heading')) {
