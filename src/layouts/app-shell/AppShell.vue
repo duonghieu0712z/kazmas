@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useColorMode } from '@vueuse/core';
-
 import { TITLE_BAR_HEIGHT } from '@/generated/bindings';
 
 import AppContent from './AppContent.vue';
@@ -9,8 +7,6 @@ import AppStatusBar from './AppStatusBar.vue';
 import AppTitleBar from './AppTitleBar.vue';
 
 const STATUS_BAR_HEIGHT = '1.5rem';
-
-useColorMode({ initialValue: 'auto' });
 </script>
 
 <template>
