@@ -51,9 +51,9 @@ export function setLink(editor: Editor | null, url: string) {
         return false;
     }
 
-    const isEmpty = editor.state.selection.empty;
+    const shouldInsertText = editor.state.selection.empty && !editor.isActive('link');
     let chain = editor.chain().focus().extendMarkRange('link').setLink({ href });
-    if (isEmpty) {
+    if (shouldInsertText) {
         chain = chain.insertContent({ type: 'text', text: href });
     }
 
