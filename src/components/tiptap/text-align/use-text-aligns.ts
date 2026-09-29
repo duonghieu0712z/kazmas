@@ -5,9 +5,13 @@ import type { MaybeRefOrGetter } from 'vue';
 import { computed } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isExtensionAvailable } from '@/lib/tiptap';
 
-import { canSetTextAlign, isTextAlignActive, TEXT_ALIGN_ICONS } from './use-text-align';
+import {
+    canSetTextAlign,
+    isTextAlignActive,
+    isTextAlignAvailable,
+    TEXT_ALIGN_ICONS,
+} from './use-text-align';
 
 export interface UseTextAlignsConfig {
     editor?: MaybeRefOrGetter<Editor>;
@@ -30,7 +34,7 @@ export function shouldShowTextAligns(
     aligns: TextAlign[],
     hideWhenUnavailable: boolean,
 ) {
-    if (!editor?.isEditable || !isExtensionAvailable(editor, 'textAlign')) {
+    if (!editor?.isEditable || !isTextAlignAvailable(editor)) {
         return false;
     }
 
