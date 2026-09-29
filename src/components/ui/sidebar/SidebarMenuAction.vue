@@ -34,7 +34,7 @@ const props = withDefaults(
                 'group-data-[collapsible=icon]:hidden',
                 `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
                 showOnHover &&
-                    'peer-data-[active=true]/menu-button:text-interactive-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
+                    'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 peer-data-[active=true]/menu-button:text-interactive-foreground data-[state=open]:opacity-100 md:opacity-0',
                 props.class,
             )
         "
