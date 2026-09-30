@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import type { Content, EditorOptions } from '@tiptap/vue-3';
+import type { Content } from '@tiptap/vue-3';
 
-import StarterKit from '@tiptap/starter-kit';
 import { useDebounceFn } from '@vueuse/core';
 
+import { createEditorOptions } from '@/components/tiptap/editor';
 import { commands } from '@/generated/bindings';
 import { useNodeStore } from '@/stores/nodes';
+
+import EditorToolbar from './EditorToolbar.vue';
+import { createEditorExtensions } from './options';
 
 const nodes = useNodeStore();
 const document = shallowRef<{ nodeId: string; content: Content }>();
@@ -22,25 +25,19 @@ function flushDocumentSave() {
     }
 }
 
-const options = computed<Partial<EditorOptions>>(() => ({
-    content: document.value?.content,
-    extensions: [StarterKit],
-    autofocus: 'end',
-    editable: true,
-    editorProps: {
-        attributes: {
-            class: 'prose prose-editor font-document min-h-full w-full max-w-none px-4 py-2 wrap-break-word outline-hidden',
-            spellCheck: 'false',
+const options = computed(() =>
+    createEditorOptions({
+        content: document.value?.content,
+        extensions: createEditorExtensions(),
+        onUpdate: ({ editor }) => {
+            const nodeId = document.value?.nodeId;
+            if (nodeId) {
+                void debouncedSaveDocument(nodeId, JSON.stringify(editor.getJSON()));
+            }
         },
-    },
-    onUpdate: ({ editor }) => {
-        const nodeId = document.value?.nodeId;
-        if (nodeId) {
-            void debouncedSaveDocument(nodeId, JSON.stringify(editor.getJSON()));
-        }
-    },
-    onDestroy: flushDocumentSave,
-}));
+        onDestroy: flushDocumentSave,
+    }),
+);
 
 watch(
     () => nodes.openedNodeId,
@@ -66,17 +63,19 @@ onBeforeUnmount(flushDocumentSave);
 </script>
 
 <template>
-    <EditorProvider
-        :key="document?.nodeId"
-        v-slot="{ editor }"
-        class="flex h-full min-w-0 flex-col overflow-hidden"
-        :options="options"
-    >
-        <ScrollArea
-            class="m-2 min-h-0 min-w-0 flex-1 cursor-text overflow-hidden border bg-editor"
-            @click="editor?.chain().focus().run()"
-        >
-            <EditorContent class="min-h-full w-full" />
-        </ScrollArea>
-    </EditorProvider>
+    <div class="relative flex h-full min-w-0 flex-col overflow-hidden">
+        <EditorProvider :key="document?.nodeId" :options="options">
+            <EditorToolbar />
+
+            <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
+                <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
+                    <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
+                </div>
+            </ScrollArea>
+
+            <Teleport defer to="#app-status-bar">
+                <CharacterCountIndicator />
+            </Teleport>
+        </EditorProvider>
+    </div>
 </template>
