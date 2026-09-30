@@ -11,7 +11,7 @@ export async function newWorld() {
         return;
     }
 
-    const newWindow = await chooseNewWindow();
+    const newWindow = world.hasWorld ? await chooseNewWindow() : false;
     if (newWindow === null) {
         return;
     }
@@ -33,7 +33,7 @@ export async function openWorld() {
         return;
     }
 
-    const newWindow = await chooseNewWindow();
+    const newWindow = world.hasWorld ? await chooseNewWindow() : false;
     if (newWindow === null) {
         return;
     }
