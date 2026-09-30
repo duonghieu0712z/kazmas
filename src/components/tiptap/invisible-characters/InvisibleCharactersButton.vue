@@ -39,6 +39,7 @@ const delegatedProps = reactiveOmit(
     <TooltipWrapper v-if="isVisible" :show-tooltip="showTooltip">
         <Toggle
             v-bind="delegatedProps"
+            :aria-label="showLabel ? undefined : label"
             :disabled="!canToggle"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
