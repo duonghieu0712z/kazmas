@@ -129,10 +129,10 @@ export function createEditorExtensions() {
         Placeholder.configure({
             placeholder: 'Write something …',
             emptyEditorClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-ring before:content-[attr(data-placeholder)]',
             ),
             emptyNodeClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-ring before:content-[attr(data-placeholder)]',
             ),
         }),
         RubyText.configure({

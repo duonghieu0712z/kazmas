@@ -2,10 +2,11 @@
 import type { FindAndReplacePanelProps } from '.';
 
 import {
+    ArrowDownIcon,
+    ArrowUpIcon,
     CaseSensitiveIcon,
     ChevronDownIcon,
     ChevronRightIcon,
-    ChevronUpIcon,
     RegexIcon,
     ReplaceAllIcon,
     ReplaceIcon,
@@ -47,7 +48,6 @@ const {
     wholeWord,
     useRegex,
     resultCountLabel,
-    hasNoResults,
     canNavigate,
     canReplace,
     canReplaceAll,
@@ -200,7 +200,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
         aria-label="Find and replace"
         :class="
             cn(
-                'absolute top-11 right-2 z-30 w-lg max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
+                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
                 props.class,
             )
         "
@@ -225,9 +225,8 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <template #tooltip>Toggle replace</template>
             </TooltipWrapper>
 
-            <InputGroup class="h-7 min-w-0 flex-1" :data-invalid="hasNoResults">
+            <InputGroup class="h-7 min-w-0 flex-1">
                 <InputGroupInput
-                    :aria-invalid="hasNoResults"
                     autocapitalize="off"
                     autocomplete="off"
                     autocorrect="off"
@@ -243,13 +242,6 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 />
 
                 <InputGroupAddon align="inline-end" class="gap-0 pr-0.5">
-                    <span
-                        aria-live="polite"
-                        class="min-w-12 px-1 text-center text-xs font-normal tabular-nums"
-                    >
-                        {{ resultCountLabel }}
-                    </span>
-
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Match case"
@@ -297,6 +289,13 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 </InputGroupAddon>
             </InputGroup>
 
+            <span
+                aria-live="polite"
+                class="w-12 shrink-0 text-center text-xs font-normal tabular-nums"
+            >
+                {{ resultCountLabel }}
+            </span>
+
             <ButtonGroup spacing="spaced">
                 <TooltipWrapper>
                     <Button
@@ -308,7 +307,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                         variant="ghost"
                         @click="goToPrevious"
                     >
-                        <ChevronUpIcon />
+                        <ArrowUpIcon />
                     </Button>
 
                     <template #tooltip>Previous match</template>
@@ -324,7 +323,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                         variant="ghost"
                         @click="goToNext"
                     >
-                        <ChevronDownIcon />
+                        <ArrowDownIcon />
                     </Button>
 
                     <template #tooltip>Next match</template>
