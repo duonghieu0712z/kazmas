@@ -1,19 +1,8 @@
 <script setup lang="ts">
-import { MoonIcon, SunIcon } from '@lucide/vue';
-import { useColorMode } from '@vueuse/core';
-
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 
 const findAndReplaceOpen = ref(false);
-const theme = useColorMode({ initialValue: 'auto' });
-const isDark = computed(() => theme.value === 'dark');
-const themeIcon = computed(() => (isDark.value ? SunIcon : MoonIcon));
-const themeLabel = computed(() => `Switch to ${isDark.value ? 'light' : 'dark'} theme`);
-
-function toggleTheme() {
-    theme.value = isDark.value ? 'light' : 'dark';
-}
 </script>
 
 <template>
@@ -28,16 +17,10 @@ function toggleTheme() {
 
         <ButtonGroup spacing="spaced">
             <HeadingDropdown />
-        </ButtonGroup>
-
-        <ButtonGroupSeparator class="my-1" />
-
-        <ButtonGroup spacing="spaced">
+            <ListDropdown />
             <BlockquoteButton />
             <CodeBlockButton />
             <HorizontalRuleButton />
-            <LinkPopover />
-            <RubyTextPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
@@ -50,7 +33,8 @@ function toggleTheme() {
 
         <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
-            <ResetAllFormattingButton />
+            <LinkPopover />
+            <RubyTextPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
@@ -62,29 +46,8 @@ function toggleTheme() {
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
-            <ListDropdown />
-            <ListPopover />
-        </ButtonGroup>
-
-        <ButtonGroupSeparator class="my-1" />
-
-        <ButtonGroup spacing="spaced">
+            <ResetAllFormattingButton />
             <InvisibleCharactersButton />
-            <TooltipWrapper>
-                <Button
-                    :aria-label="themeLabel"
-                    size="icon"
-                    type="button"
-                    variant="ghost"
-                    @click="toggleTheme"
-                >
-                    <component :is="themeIcon" />
-                </Button>
-
-                <template #tooltip>
-                    {{ themeLabel }}
-                </template>
-            </TooltipWrapper>
         </ButtonGroup>
     </Toolbar>
 
