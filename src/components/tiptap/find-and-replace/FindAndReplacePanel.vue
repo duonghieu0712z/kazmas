@@ -370,7 +370,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <Button
                         aria-label="Replace current match"
                         class="size-7"
-                        :disabled="!canReplaceAll"
+                        :disabled="!canReplace"
                         size="icon"
                         type="button"
                         variant="ghost"
@@ -386,7 +386,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <Button
                         aria-label="Replace all matches"
                         class="size-7"
-                        :disabled="!canReplace"
+                        :disabled="!canReplaceAll"
                         size="icon"
                         type="button"
                         variant="ghost"
