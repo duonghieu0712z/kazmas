@@ -70,6 +70,7 @@ declare module 'vue' {
     DropdownMenuSubContent: typeof import('./../components/ui/dropdown-menu/DropdownMenuSubContent.vue')['default']
     DropdownMenuSubTrigger: typeof import('./../components/ui/dropdown-menu/DropdownMenuSubTrigger.vue')['default']
     DropdownMenuTrigger: typeof import('./../components/ui/dropdown-menu/DropdownMenuTrigger.vue')['default']
+    EditableButton: typeof import('./../components/tiptap/editable/EditableButton.vue')['default']
     EditorContent: typeof import('./../components/tiptap/editor/EditorContent.vue')['default']
     EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
     FindAndReplaceButton: typeof import('./../components/tiptap/find-and-replace/FindAndReplaceButton.vue')['default']
