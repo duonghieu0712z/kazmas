@@ -1,11 +1,11 @@
-import type { ChainedCommands, Editor } from '@tiptap/vue-3';
+import type { CanCommands, ChainedCommands, Editor } from '@tiptap/vue-3';
 import type { Component, MaybeRefOrGetter } from 'vue';
 
 import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isExtensionAvailable, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 
@@ -37,22 +37,38 @@ export const TEXT_ALIGN_SHORTCUT_KEYS = {
     justify: 'mod+shift+j',
 } satisfies Record<TextAlign, string>;
 
+export function hasSetTextAlign(commands: CanCommands): commands is CanCommands & {
+    setTextAlign: (align: TextAlign) => boolean;
+};
 export function hasSetTextAlign(commands: ChainedCommands): commands is ChainedCommands & {
     setTextAlign: (align: TextAlign) => ChainedCommands;
-} {
+};
+export function hasSetTextAlign(commands: CanCommands | ChainedCommands) {
     return 'setTextAlign' in commands;
+}
+
+export function isTextAlignAvailable(editor: Editor | null) {
+    return (
+        editor?.extensionManager.extensions.some((extension) => extension.name === 'textAlign') ??
+        false
+    );
 }
 
 export function canSetTextAlign(editor: Editor | null, align: TextAlign) {
     if (
         !editor?.isEditable ||
-        !isExtensionAvailable(editor, 'textAlign') ||
+        !isTextAlignAvailable(editor) ||
         isNodeTypeSelected(editor, ['image', 'horizontalRule'])
     ) {
         return false;
     }
 
-    return editor.can().setTextAlign(align);
+    const commands = editor.can();
+    if (!hasSetTextAlign(commands)) {
+        return false;
+    }
+
+    return commands.setTextAlign(align);
 }
 
 export function isTextAlignActive(editor: Editor | null, align: TextAlign) {
@@ -81,7 +97,7 @@ export function shouldShowTextAlignButton(
     align: TextAlign,
     hideWhenUnavailable: boolean,
 ) {
-    if (!editor?.isEditable || !isExtensionAvailable(editor, 'textAlign')) {
+    if (!editor?.isEditable || !isTextAlignAvailable(editor)) {
         return false;
     }
 

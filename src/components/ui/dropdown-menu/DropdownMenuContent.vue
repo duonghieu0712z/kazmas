@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { DropdownMenuContentEmits, DropdownMenuContentProps } from 'reka-ui';
+import type {
+    DropdownMenuContentEmits,
+    DropdownMenuContentProps,
+    DropdownMenuPortalProps,
+} from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 
 import { reactiveOmit } from '@vueuse/core';
@@ -12,20 +16,25 @@ defineOptions({
 });
 
 const props = withDefaults(
-    defineProps<DropdownMenuContentProps & { class?: HTMLAttributes['class'] }>(),
+    defineProps<
+        DropdownMenuContentProps & {
+            class?: HTMLAttributes['class'];
+            portal?: DropdownMenuPortalProps;
+        }
+    >(),
     {
         sideOffset: 4,
     },
 );
 const emits = defineEmits<DropdownMenuContentEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'portal');
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
-    <DropdownMenuPortal>
+    <DropdownMenuPortal v-bind="portal">
         <DropdownMenuContent
             v-bind="{ ...$attrs, ...forwarded }"
             :class="
