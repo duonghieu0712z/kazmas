@@ -2,14 +2,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { MinusIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema } from '@/lib/tiptap';
 
 export interface UseHorizontalRuleConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onInserted?: () => void;
 }
 
@@ -34,12 +34,13 @@ export function insertHorizontalRule(editor: Editor | null) {
 export function shouldShowHorizontalRuleButton(
     editor: Editor | null,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, 'horizontalRule')) {
+    if (!editor || !isNodeInSchema(editor, 'horizontalRule')) {
         return false;
     }
 
-    if (hideWhenUnavailable) {
+    if (hideWhenUnavailable && editable) {
         return canInsertHorizontalRule(editor);
     }
 
@@ -47,11 +48,15 @@ export function shouldShowHorizontalRuleButton(
 }
 
 export function useHorizontalRule(config: UseHorizontalRuleConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canInsert = computed(() => canInsertHorizontalRule(editor.value));
+    const canInsert = computed(() => isEditable.value && canInsertHorizontalRule(editor.value));
     const isVisible = computed(() =>
-        shouldShowHorizontalRuleButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowHorizontalRuleButton(
+            editor.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleHorizontalRule = () => {

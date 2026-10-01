@@ -43,9 +43,9 @@ const {
     canSetLevel,
     handleLevel,
 } = useHeadings({
-    editor: props.editor,
-    levels: props.levels,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    levels: () => props.levels,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onChanged: (level) => emits('update:changed', level),
 });
 

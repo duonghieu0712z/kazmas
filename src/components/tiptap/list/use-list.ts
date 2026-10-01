@@ -3,7 +3,7 @@ import type { Component, MaybeRefOrGetter } from 'vue';
 
 import { ListIcon, ListOrderedIcon, ListTodoIcon } from '@lucide/vue';
 import { isTextSelection } from '@tiptap/vue-3';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import {
@@ -17,9 +17,9 @@ import {
 export type ListType = 'bulletList' | 'orderedList' | 'taskList';
 
 export interface UseListConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    type: ListType;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    type: MaybeRefOrGetter<ListType>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -76,7 +76,7 @@ export function canToggleList(editor: Editor | null, type: ListType, turnInto = 
 }
 
 export function isListActive(editor: Editor | null, type: ListType) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -111,12 +111,13 @@ export function shouldShowListButton(
     editor: Editor | null,
     type: ListType,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, type)) {
+    if (!editor || !isNodeInSchema(editor, type)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleList(editor, type);
     }
 
@@ -124,16 +125,25 @@ export function shouldShowListButton(
 }
 
 export function useList(config: UseListConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
+    const type = computed(() => toValue(config.type));
 
-    const canToggle = computed(() => canToggleList(editor.value, config.type));
-    const isActive = computed(() => isListActive(editor.value, config.type));
+    const canToggle = computed(() => isEditable.value && canToggleList(editor.value, type.value));
+    const isActive = computed(() => isListActive(editor.value, type.value));
     const isVisible = computed(() =>
-        shouldShowListButton(editor.value, config.type, config.hideWhenUnavailable ?? false),
+        shouldShowListButton(
+            editor.value,
+            type.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
+    const label = computed(() => LIST_LABELS[type.value]);
+    const icon = computed(() => LIST_ICONS[type.value]);
+    const shortcutKeys = computed(() => parseShortcutKeys(LIST_SHORTCUT_KEYS[type.value]));
 
     const handleList = () => {
-        const success = toggleList(editor.value, config.type);
+        const success = toggleList(editor.value, type.value);
         if (success) {
             config.onToggled?.();
         }
@@ -144,9 +154,9 @@ export function useList(config: UseListConfig) {
         isVisible,
         isActive,
         canToggle,
-        label: LIST_LABELS[config.type],
-        icon: LIST_ICONS[config.type],
-        shortcutKeys: parseShortcutKeys(LIST_SHORTCUT_KEYS[config.type]),
+        label,
+        icon,
+        shortcutKeys,
         handleList,
     };
 }

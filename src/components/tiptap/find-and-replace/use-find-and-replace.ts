@@ -2,14 +2,14 @@ import type { FindAndReplaceStorage } from '@tiptap/extension-find-and-replace';
 import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
 export interface UseFindAndReplaceConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
-    scrollIntoViewOptions?: ScrollIntoViewOptions;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
+    scrollIntoViewOptions?: MaybeRefOrGetter<ScrollIntoViewOptions | undefined>;
     onReplaced?: () => void;
     onReplacedAll?: () => void;
 }
@@ -130,15 +130,16 @@ export function scrollCurrentFindResultIntoView(
 }
 
 export function useFindAndReplace(config: UseFindAndReplaceConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const searchTerm = ref('');
     const replaceTerm = ref('');
     const editorState = ref<FindAndReplaceEditorState>(EMPTY_EDITOR_STATE);
 
     const isAvailable = computed(() => isFindAndReplaceAvailable(editor.value));
     const isVisible = computed(() =>
-        shouldShowFindAndReplace(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowFindAndReplace(editor.value, toValue(config.hideWhenUnavailable) ?? false),
     );
+    const scrollIntoViewOptions = computed(() => toValue(config.scrollIntoViewOptions));
     const appliedSearchTerm = computed(() => editorState.value.appliedSearchTerm);
     const total = computed(() => editorState.value.total);
     const currentIndex = computed(() => editorState.value.currentIndex);
@@ -155,14 +156,9 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     const canNavigate = computed(() => isAvailable.value && total.value > 0);
     const canReplace = computed(
         () =>
-            Boolean(editor.value?.isEditable) &&
-            isAvailable.value &&
-            total.value > 0 &&
-            currentIndex.value !== null,
+            isEditable.value && isAvailable.value && total.value > 0 && currentIndex.value !== null,
     );
-    const canReplaceAll = computed(
-        () => Boolean(editor.value?.isEditable) && isAvailable.value && total.value > 0,
-    );
+    const canReplaceAll = computed(() => isEditable.value && isAvailable.value && total.value > 0);
 
     const getAvailableEditor = () => {
         const currentEditor = editor.value;
@@ -206,14 +202,14 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     );
 
     watch(
-        [editor, total, currentIndex, appliedSearchTerm],
+        [editor, total, currentIndex, appliedSearchTerm, scrollIntoViewOptions],
         ([currentEditor, resultTotal, index], _, onCleanup) => {
             if (!currentEditor || !resultTotal || index === null) {
                 return;
             }
 
             const frame = requestAnimationFrame(() => {
-                scrollCurrentFindResultIntoView(currentEditor, config.scrollIntoViewOptions);
+                scrollCurrentFindResultIntoView(currentEditor, scrollIntoViewOptions.value);
             });
             onCleanup(() => cancelAnimationFrame(frame));
         },

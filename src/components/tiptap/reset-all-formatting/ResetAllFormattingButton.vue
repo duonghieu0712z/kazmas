@@ -21,9 +21,9 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, canReset, label, icon, handleResetAllFormatting } = useResetAllFormatting({
-    editor: props.editor,
-    preserveMarks: props.preserveMarks,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    preserveMarks: () => props.preserveMarks,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onReset: () => emits('update:reset'),
 });
 

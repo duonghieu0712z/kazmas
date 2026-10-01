@@ -2,7 +2,7 @@ import type { CanCommands, ChainedCommands, Editor } from '@tiptap/vue-3';
 import type { Component, MaybeRefOrGetter } from 'vue';
 
 import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
@@ -10,9 +10,9 @@ import { isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 
 export interface UseTextAlignConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    align: TextAlign;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    align: MaybeRefOrGetter<TextAlign>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onAligned?: () => void;
 }
 
@@ -72,7 +72,7 @@ export function canSetTextAlign(editor: Editor | null, align: TextAlign) {
 }
 
 export function isTextAlignActive(editor: Editor | null, align: TextAlign) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -96,12 +96,13 @@ export function shouldShowTextAlignButton(
     editor: Editor | null,
     align: TextAlign,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isTextAlignAvailable(editor)) {
+    if (!editor || !isTextAlignAvailable(editor)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canSetTextAlign(editor, align);
     }
 
@@ -109,16 +110,25 @@ export function shouldShowTextAlignButton(
 }
 
 export function useTextAlign(config: UseTextAlignConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
+    const align = computed(() => toValue(config.align));
 
-    const canAlign = computed(() => canSetTextAlign(editor.value, config.align));
-    const isActive = computed(() => isTextAlignActive(editor.value, config.align));
+    const canAlign = computed(() => isEditable.value && canSetTextAlign(editor.value, align.value));
+    const isActive = computed(() => isTextAlignActive(editor.value, align.value));
     const isVisible = computed(() =>
-        shouldShowTextAlignButton(editor.value, config.align, config.hideWhenUnavailable ?? false),
+        shouldShowTextAlignButton(
+            editor.value,
+            align.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
+    const label = computed(() => TEXT_ALIGN_LABELS[align.value]);
+    const icon = computed(() => TEXT_ALIGN_ICONS[align.value]);
+    const shortcutKeys = computed(() => parseShortcutKeys(TEXT_ALIGN_SHORTCUT_KEYS[align.value]));
 
     const handleTextAlign = () => {
-        const success = setTextAlign(editor.value, config.align);
+        const success = setTextAlign(editor.value, align.value);
         if (success) {
             config.onAligned?.();
         }
@@ -129,9 +139,9 @@ export function useTextAlign(config: UseTextAlignConfig) {
         isVisible,
         isActive,
         canAlign,
-        label: TEXT_ALIGN_LABELS[config.align],
-        icon: TEXT_ALIGN_ICONS[config.align],
-        shortcutKeys: parseShortcutKeys(TEXT_ALIGN_SHORTCUT_KEYS[config.align]),
+        label,
+        icon,
+        shortcutKeys,
         handleTextAlign,
     };
 }

@@ -3,14 +3,14 @@ import type { MaybeRefOrGetter } from 'vue';
 
 import { TextQuoteIcon } from '@lucide/vue';
 import { isNodeSelection } from '@tiptap/vue-3';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 
 export interface UseBlockquoteConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -30,7 +30,7 @@ export function canToggleBlockquote(editor: Editor | null) {
 }
 
 export function isBlockquoteActive(editor: Editor | null) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -65,12 +65,16 @@ export function toggleBlockquote(editor: Editor | null) {
     }
 }
 
-export function shouldShowBlockquoteButton(editor: Editor | null, hideWhenUnavailable: boolean) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, 'blockquote')) {
+export function shouldShowBlockquoteButton(
+    editor: Editor | null,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+) {
+    if (!editor || !isNodeInSchema(editor, 'blockquote')) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleBlockquote(editor);
     }
 
@@ -78,12 +82,16 @@ export function shouldShowBlockquoteButton(editor: Editor | null, hideWhenUnavai
 }
 
 export function useBlockquote(config: UseBlockquoteConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleBlockquote(editor.value));
+    const canToggle = computed(() => isEditable.value && canToggleBlockquote(editor.value));
     const isActive = computed(() => isBlockquoteActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowBlockquoteButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowBlockquoteButton(
+            editor.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleBlockquote = () => {

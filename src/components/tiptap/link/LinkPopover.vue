@@ -37,8 +37,8 @@ const {
     handleRemoveLink,
     handleOpenLink,
 } = useLink({
-    editor: props.editor,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onSetLink: () => emits('update:set'),
 });
 

@@ -21,9 +21,9 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, isActive, canAlign, label, icon, shortcutKeys, handleTextAlign } = useTextAlign({
-    editor: props.editor,
-    align: props.align,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    align: () => props.align,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onAligned: () => emits('update:aligned'),
 });
 

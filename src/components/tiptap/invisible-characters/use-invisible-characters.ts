@@ -3,13 +3,13 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { PilcrowIcon } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
 export interface UseInvisibleCharactersConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -59,12 +59,15 @@ export function shouldShowInvisibleCharactersButton(
 }
 
 export function useInvisibleCharacters(config: UseInvisibleCharactersConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor } = useTiptapEditor(config.editor);
     const isActive = ref(false);
 
     const canToggle = computed(() => canToggleInvisibleCharacters(editor.value));
     const isVisible = computed(() =>
-        shouldShowInvisibleCharactersButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowInvisibleCharactersButton(
+            editor.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+        ),
     );
 
     watch(

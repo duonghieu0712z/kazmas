@@ -2,14 +2,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { LanguagesIcon } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isMarkInSchema, isNodeTypeSelected } from '@/lib/tiptap';
 
 export interface UseRubyTextConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onSetRubyText?: () => void;
 }
 
@@ -32,19 +32,23 @@ export function canSetRubyText(editor: Editor | null) {
 }
 
 export function isRubyTextActive(editor: Editor | null) {
-    if (!editor?.isEditable || !isMarkInSchema(editor, 'rubyText')) {
+    if (!editor || !isMarkInSchema(editor, 'rubyText')) {
         return false;
     }
 
     return editor.isActive('rubyText');
 }
 
-export function shouldShowRubyTextButton(editor: Editor | null, hideWhenUnavailable: boolean) {
-    if (!editor?.isEditable || !isMarkInSchema(editor, 'rubyText')) {
+export function shouldShowRubyTextButton(
+    editor: Editor | null,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+) {
+    if (!editor || !isMarkInSchema(editor, 'rubyText')) {
         return false;
     }
 
-    return !hideWhenUnavailable || canSetRubyText(editor);
+    return !hideWhenUnavailable || !editable || canSetRubyText(editor);
 }
 
 export function setRubyText(editor: Editor | null, annotation: string) {
@@ -65,13 +69,17 @@ export function removeRubyText(editor: Editor | null) {
 }
 
 export function useRubyText(config: UseRubyTextConfig = {}) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const annotation = ref('');
 
-    const canSet = computed(() => canSetRubyText(editor.value));
+    const canSet = computed(() => isEditable.value && canSetRubyText(editor.value));
     const isActive = computed(() => isRubyTextActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowRubyTextButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowRubyTextButton(
+            editor.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
 
     watch(
