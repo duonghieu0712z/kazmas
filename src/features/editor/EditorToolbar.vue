@@ -6,7 +6,7 @@ const findAndReplaceOpen = ref(false);
 </script>
 
 <template>
-    <Toolbar>
+    <Toolbar overflow="navigation">
         <ButtonGroup spacing="spaced">
             <UndoRedoButton action="undo" />
             <UndoRedoButton action="redo" />
