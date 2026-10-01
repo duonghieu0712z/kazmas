@@ -34,6 +34,30 @@ function getGroups() {
     );
 }
 
+function getGroupItems(group: HTMLElement) {
+    return Array.from(group.children, (element) => element as HTMLElement);
+}
+
+function getNextNavigationTarget(viewportRect: DOMRect) {
+    for (const group of getGroups()) {
+        const groupRect = group.getBoundingClientRect();
+
+        if (groupRect.width > viewportRect.width + 1) {
+            const item = getGroupItems(group).find(
+                (item) => item.getBoundingClientRect().right > viewportRect.right + 1,
+            );
+
+            if (item) {
+                return item;
+            }
+        }
+
+        if (groupRect.right > viewportRect.right + 1) {
+            return group;
+        }
+    }
+}
+
 function updateGroupVisibility() {
     const viewport = navigationViewport.value;
     const content = navigationContent.value;
@@ -48,11 +72,33 @@ function updateGroupVisibility() {
     const visibleGroups = new Set<HTMLElement>();
 
     for (const group of getGroups()) {
-        for (const item of Array.from(group.children, (element) => element as HTMLElement)) {
+        const groupRect = group.getBoundingClientRect();
+        const items = getGroupItems(group);
+        const isOversized = groupRect.width > viewportRect.width + 1;
+
+        if (isOversized) {
+            group.style.visibility = '';
+
+            for (const item of items) {
+                const itemRect = item.getBoundingClientRect();
+                const isFullyVisible =
+                    itemRect.left >= viewportRect.left - 1 &&
+                    itemRect.right <= viewportRect.right + 1;
+
+                item.style.visibility = isFullyVisible ? '' : 'hidden';
+
+                if (isFullyVisible) {
+                    visibleGroups.add(group);
+                }
+            }
+
+            continue;
+        }
+
+        for (const item of items) {
             item.style.visibility = '';
         }
 
-        const groupRect = group.getBoundingClientRect();
         const isFullyVisible =
             groupRect.left >= viewportRect.left - 1 && groupRect.right <= viewportRect.right + 1;
 
@@ -95,16 +141,13 @@ function updateNavigation() {
     }
 
     const viewportRect = viewport.getBoundingClientRect();
-    const groups = getGroups();
 
     if (viewport.scrollLeft <= 1) {
         previousNavigationPositions.length = 0;
     }
 
     canGoBackward.value = previousNavigationPositions.length > 0;
-    canGoForward.value = groups.some(
-        (group) => group.getBoundingClientRect().right > viewportRect.right + 1,
-    );
+    canGoForward.value = Boolean(getNextNavigationTarget(viewportRect));
     updateGroupVisibility();
 }
 
@@ -129,9 +172,7 @@ function goToNextGroup() {
     }
 
     const viewportRect = viewport.getBoundingClientRect();
-    const target = getGroups().find(
-        (group) => group.getBoundingClientRect().right > viewportRect.right + 1,
-    );
+    const target = getNextNavigationTarget(viewportRect);
     const targetRect = target?.getBoundingClientRect();
 
     if (!targetRect) {
