@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Editor } from '@/features/editor';
 import { NodeBreadcrumb } from '@/features/node-breadcrumb';
+import { TestEditor } from '@/features/test-editor';
 import { useNodeStore } from '@/stores/nodes';
 
 const nodes = useNodeStore();
@@ -13,6 +14,7 @@ const nodes = useNodeStore();
         </header>
         <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
             <Editor v-if="nodes.openedNodeId" />
+            <TestEditor v-else />
         </main>
     </SidebarInset>
 </template>
