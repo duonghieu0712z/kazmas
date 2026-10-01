@@ -38,12 +38,13 @@ export function shouldShowLists(
     editor: Editor | null,
     types: ListType[],
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !types.some((type) => isNodeInSchema(editor, type))) {
+    if (!editor || !types.some((type) => isNodeInSchema(editor, type))) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleAnyList(editor, types);
     }
 
@@ -51,12 +52,19 @@ export function shouldShowLists(
 }
 
 export function useLists(config: UseListsConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const types = computed(() => config.types ?? DEFAULT_LIST_TYPES);
     const activeType = computed(() => getActiveListType(editor.value, types.value));
-    const canToggle = computed(() => canToggleAnyList(editor.value, types.value));
+    const canToggle = computed(
+        () => isEditable.value && canToggleAnyList(editor.value, types.value),
+    );
     const isVisible = computed(() =>
-        shouldShowLists(editor.value, types.value, config.hideWhenUnavailable ?? false),
+        shouldShowLists(
+            editor.value,
+            types.value,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
     const label = computed(() => (activeType.value ? LIST_LABELS[activeType.value] : 'List'));
     const icon = computed(() => (activeType.value ? LIST_ICONS[activeType.value] : ListIcon));

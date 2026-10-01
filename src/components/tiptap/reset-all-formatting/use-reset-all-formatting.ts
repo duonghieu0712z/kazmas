@@ -62,24 +62,28 @@ export function shouldShowResetAllFormattingButton(
     editor: Editor | null,
     preserveMarks: string[],
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
-    return !hideWhenUnavailable || canResetAllFormatting(editor, preserveMarks);
+    return !hideWhenUnavailable || !editable || canResetAllFormatting(editor, preserveMarks);
 }
 
 export function useResetAllFormatting(config: UseResetAllFormattingConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const preserveMarks = config.preserveMarks ?? [];
 
-    const canReset = computed(() => canResetAllFormatting(editor.value, preserveMarks));
+    const canReset = computed(
+        () => isEditable.value && canResetAllFormatting(editor.value, preserveMarks),
+    );
     const isVisible = computed(() =>
         shouldShowResetAllFormattingButton(
             editor.value,
             preserveMarks,
             config.hideWhenUnavailable ?? false,
+            isEditable.value,
         ),
     );
 

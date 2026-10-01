@@ -29,7 +29,7 @@ export function canSetParagraph(editor: Editor | null) {
 }
 
 export function isParagraphActive(editor: Editor | null) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -44,12 +44,16 @@ export function setParagraph(editor: Editor | null) {
     return editor.chain().focus().setParagraph().run();
 }
 
-export function shouldShowParagraphButton(editor: Editor | null, hideWhenUnavailable: boolean) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, 'paragraph')) {
+export function shouldShowParagraphButton(
+    editor: Editor | null,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+) {
+    if (!editor || !isNodeInSchema(editor, 'paragraph')) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canSetParagraph(editor);
     }
 
@@ -57,12 +61,16 @@ export function shouldShowParagraphButton(editor: Editor | null, hideWhenUnavail
 }
 
 export function useParagraph(config: UseParagraphConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canSet = computed(() => canSetParagraph(editor.value));
+    const canSet = computed(() => isEditable.value && canSetParagraph(editor.value));
     const isActive = computed(() => isParagraphActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowParagraphButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowParagraphButton(
+            editor.value,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleParagraph = () => {

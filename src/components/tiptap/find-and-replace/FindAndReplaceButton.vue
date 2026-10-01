@@ -29,7 +29,7 @@ const emits = defineEmits<{
     'update:open': [open: boolean];
 }>();
 
-const editor = useTiptapEditor(props.editor);
+const { editor } = useTiptapEditor(props.editor);
 const isAvailable = computed(() => isFindAndReplaceAvailable(editor.value));
 const isVisible = computed(() => shouldShowFindAndReplace(editor.value, props.hideWhenUnavailable));
 const shortcutKeys = parseShortcutKeys(FIND_AND_REPLACE_SHORTCUT_KEY);

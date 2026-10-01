@@ -16,7 +16,7 @@ const props = defineProps<
     }
 >();
 
-const editor = useTiptapEditor(toRef(props, 'editor'));
+const { editor } = useTiptapEditor(toRef(props, 'editor'));
 
 const delegatedProps = reactiveOmit(props, 'editor');
 const forwardedProps = useForwardProps(delegatedProps);

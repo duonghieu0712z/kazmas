@@ -130,7 +130,7 @@ export function scrollCurrentFindResultIntoView(
 }
 
 export function useFindAndReplace(config: UseFindAndReplaceConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const searchTerm = ref('');
     const replaceTerm = ref('');
     const editorState = ref<FindAndReplaceEditorState>(EMPTY_EDITOR_STATE);
@@ -155,14 +155,9 @@ export function useFindAndReplace(config: UseFindAndReplaceConfig) {
     const canNavigate = computed(() => isAvailable.value && total.value > 0);
     const canReplace = computed(
         () =>
-            Boolean(editor.value?.isEditable) &&
-            isAvailable.value &&
-            total.value > 0 &&
-            currentIndex.value !== null,
+            isEditable.value && isAvailable.value && total.value > 0 && currentIndex.value !== null,
     );
-    const canReplaceAll = computed(
-        () => Boolean(editor.value?.isEditable) && isAvailable.value && total.value > 0,
-    );
+    const canReplaceAll = computed(() => isEditable.value && isAvailable.value && total.value > 0);
 
     const getAvailableEditor = () => {
         const currentEditor = editor.value;

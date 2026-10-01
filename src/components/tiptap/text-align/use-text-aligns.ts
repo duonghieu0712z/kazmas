@@ -33,12 +33,13 @@ export function shouldShowTextAligns(
     editor: Editor | null,
     aligns: TextAlign[],
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isTextAlignAvailable(editor)) {
+    if (!editor || !isTextAlignAvailable(editor)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canSetAnyTextAlign(editor, aligns);
     }
 
@@ -46,12 +47,19 @@ export function shouldShowTextAligns(
 }
 
 export function useTextAligns(config: UseTextAlignsConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const aligns = computed(() => config.aligns ?? DEFAULT_TEXT_ALIGNS);
     const activeAlign = computed(() => getActiveTextAlign(editor.value, aligns.value));
-    const canAlign = computed(() => canSetAnyTextAlign(editor.value, aligns.value));
+    const canAlign = computed(
+        () => isEditable.value && canSetAnyTextAlign(editor.value, aligns.value),
+    );
     const isVisible = computed(() =>
-        shouldShowTextAligns(editor.value, aligns.value, config.hideWhenUnavailable ?? false),
+        shouldShowTextAligns(
+            editor.value,
+            aligns.value,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
     const icon = computed(() => TEXT_ALIGN_ICONS[activeAlign.value]);
 

@@ -30,7 +30,7 @@ export function canToggleCodeBlock(editor: Editor | null) {
 }
 
 export function isCodeBlockActive(editor: Editor | null) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -65,12 +65,16 @@ export function toggleCodeBlock(editor: Editor | null) {
     }
 }
 
-export function shouldShowCodeBlockButton(editor: Editor | null, hideWhenUnavailable: boolean) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, 'codeBlock')) {
+export function shouldShowCodeBlockButton(
+    editor: Editor | null,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+) {
+    if (!editor || !isNodeInSchema(editor, 'codeBlock')) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleCodeBlock(editor);
     }
 
@@ -78,12 +82,16 @@ export function shouldShowCodeBlockButton(editor: Editor | null, hideWhenUnavail
 }
 
 export function useCodeBlock(config: UseCodeBlockConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleCodeBlock(editor.value));
+    const canToggle = computed(() => isEditable.value && canToggleCodeBlock(editor.value));
     const isActive = computed(() => isCodeBlockActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowCodeBlockButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowCodeBlockButton(
+            editor.value,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleCodeBlock = () => {

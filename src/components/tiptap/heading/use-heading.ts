@@ -82,7 +82,7 @@ export function isHeadingActive(
     editor: Editor | null,
     level?: HeadingNodeLevel | HeadingNodeLevel[],
 ) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -136,12 +136,13 @@ export function shouldShowHeadingButton(
     editor: Editor | null,
     level: HeadingNodeLevel | HeadingNodeLevel[] | undefined,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ): boolean {
-    if (!editor?.isEditable || !isNodeInSchema(editor, 'heading')) {
+    if (!editor || !isNodeInSchema(editor, 'heading')) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         if (Array.isArray(level)) {
             return level.some((l) => canToggleHeading(editor, l));
         }
@@ -152,12 +153,19 @@ export function shouldShowHeadingButton(
 }
 
 export function useHeading(config: UseHeadingConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleHeading(editor.value, config.level));
+    const canToggle = computed(
+        () => isEditable.value && canToggleHeading(editor.value, config.level),
+    );
     const isActive = computed(() => isHeadingActive(editor.value, config.level));
     const isVisible = computed(() =>
-        shouldShowHeadingButton(editor.value, config.level, config.hideWhenUnavailable ?? false),
+        shouldShowHeadingButton(
+            editor.value,
+            config.level,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleHeading = () => {

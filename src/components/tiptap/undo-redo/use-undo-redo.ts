@@ -47,12 +47,13 @@ export function shouldShowUndoRedoButton(
     editor: Editor | null,
     action: UndoRedoAction,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canExecuteUndoRedo(editor, action);
     }
 
@@ -64,11 +65,18 @@ export function getFormattedUndoRedoName(action: UndoRedoAction) {
 }
 
 export function useUndoRedo(config: UseUndoRedoConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canExecuteUndoRedo(editor.value, config.action));
+    const canToggle = computed(
+        () => isEditable.value && canExecuteUndoRedo(editor.value, config.action),
+    );
     const isVisible = computed(() =>
-        shouldShowUndoRedoButton(editor.value, config.action, config.hideWhenUnavailable ?? false),
+        shouldShowUndoRedoButton(
+            editor.value,
+            config.action,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleAction = () => {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
 
+import { useTiptapEditor } from '@/components/tiptap/editor';
 import { cn } from '@/lib/utils';
 
 import CopyButton from './CopyButton.vue';
@@ -8,6 +9,7 @@ import { getCodeBlockLanguageOptions } from './languages';
 import LanguageSelect from './LanguageSelect.vue';
 
 const props = defineProps(nodeViewProps);
+const { isEditable } = useTiptapEditor();
 
 const codeBlockAttributes = computed(() => ({
     ...props.extension.options.HTMLAttributes,
@@ -44,7 +46,7 @@ function selectLanguage(language: string) {
         <div class="absolute top-1 right-2 z-10 flex items-center gap-1" contenteditable="false">
             <LanguageSelect
                 :current-language="currentLanguage"
-                :disabled="!editor.isEditable"
+                :disabled="!isEditable"
                 :languages="languages"
                 @update:selected="selectLanguage"
             />

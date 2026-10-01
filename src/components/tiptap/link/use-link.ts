@@ -30,19 +30,23 @@ export function canSetLink(editor: Editor | null) {
 }
 
 export function isLinkActive(editor: Editor | null) {
-    if (!editor?.isEditable || !isMarkInSchema(editor, 'link')) {
+    if (!editor || !isMarkInSchema(editor, 'link')) {
         return false;
     }
 
     return editor.isActive('link');
 }
 
-export function shouldShowLinkButton(editor: Editor | null, hideWhenUnavailable: boolean) {
-    if (!editor?.isEditable || !isMarkInSchema(editor, 'link')) {
+export function shouldShowLinkButton(
+    editor: Editor | null,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+) {
+    if (!editor || !isMarkInSchema(editor, 'link')) {
         return false;
     }
 
-    return !hideWhenUnavailable || canSetLink(editor);
+    return !hideWhenUnavailable || !editable || canSetLink(editor);
 }
 
 export function setLink(editor: Editor | null, url: string) {
@@ -93,13 +97,13 @@ export async function openLink(url: string) {
 }
 
 export function useLink(config: UseLinkConfig = {}) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const url = ref('');
 
-    const canSet = computed(() => canSetLink(editor.value));
+    const canSet = computed(() => isEditable.value && canSetLink(editor.value));
     const isActive = computed(() => isLinkActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowLinkButton(editor.value, config.hideWhenUnavailable ?? false),
+        shouldShowLinkButton(editor.value, config.hideWhenUnavailable ?? false, isEditable.value),
     );
 
     watch(

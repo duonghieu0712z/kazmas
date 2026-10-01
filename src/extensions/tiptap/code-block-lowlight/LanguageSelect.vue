@@ -54,7 +54,7 @@ const selectedLabel = computed(
 
 <template>
     <Combobox v-model="selectedLanguage" v-model:open="open" :disabled="disabled">
-        <ComboboxAnchor class="w-auto">
+        <ComboboxAnchor class="w-auto select-none">
             <ComboboxTrigger as="div" class="flex h-6 items-center justify-center">
                 <Button
                     aria-label="Code block language"

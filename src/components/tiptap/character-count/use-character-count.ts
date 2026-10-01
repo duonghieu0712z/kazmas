@@ -14,7 +14,7 @@ function formatCount(count: number, name: string) {
 }
 
 export function useCharacterCount(config: UseCharacterCountConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor } = useTiptapEditor(config.editor);
 
     const isAvailable = computed(() => Boolean(editor.value?.storage.characterCount));
     const characters = computed(() => editor.value?.storage.characterCount?.characters() ?? 0);

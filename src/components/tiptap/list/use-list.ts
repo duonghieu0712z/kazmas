@@ -76,7 +76,7 @@ export function canToggleList(editor: Editor | null, type: ListType, turnInto = 
 }
 
 export function isListActive(editor: Editor | null, type: ListType) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -111,12 +111,13 @@ export function shouldShowListButton(
     editor: Editor | null,
     type: ListType,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isNodeInSchema(editor, type)) {
+    if (!editor || !isNodeInSchema(editor, type)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleList(editor, type);
     }
 
@@ -124,12 +125,17 @@ export function shouldShowListButton(
 }
 
 export function useList(config: UseListConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleList(editor.value, config.type));
+    const canToggle = computed(() => isEditable.value && canToggleList(editor.value, config.type));
     const isActive = computed(() => isListActive(editor.value, config.type));
     const isVisible = computed(() =>
-        shouldShowListButton(editor.value, config.type, config.hideWhenUnavailable ?? false),
+        shouldShowListButton(
+            editor.value,
+            config.type,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleList = () => {

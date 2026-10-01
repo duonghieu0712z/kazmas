@@ -14,12 +14,12 @@ const props = defineProps<{
     class?: HTMLAttributes['class'];
 }>();
 
-const editor = useTiptapEditor(toRef(props, 'editor'));
+const { editor } = useTiptapEditor(toRef(props, 'editor'));
 </script>
 
 <template>
     <EditorContent
-        :class="cn('min-h-full w-full', props.class)"
+        :class="cn('min-h-full w-full select-auto', props.class)"
         data-slot="editor-content"
         :editor="editor ?? undefined"
     />

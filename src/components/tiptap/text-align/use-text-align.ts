@@ -72,7 +72,7 @@ export function canSetTextAlign(editor: Editor | null, align: TextAlign) {
 }
 
 export function isTextAlignActive(editor: Editor | null, align: TextAlign) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -96,12 +96,13 @@ export function shouldShowTextAlignButton(
     editor: Editor | null,
     align: TextAlign,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isTextAlignAvailable(editor)) {
+    if (!editor || !isTextAlignAvailable(editor)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canSetTextAlign(editor, align);
     }
 
@@ -109,12 +110,19 @@ export function shouldShowTextAlignButton(
 }
 
 export function useTextAlign(config: UseTextAlignConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canAlign = computed(() => canSetTextAlign(editor.value, config.align));
+    const canAlign = computed(
+        () => isEditable.value && canSetTextAlign(editor.value, config.align),
+    );
     const isActive = computed(() => isTextAlignActive(editor.value, config.align));
     const isVisible = computed(() =>
-        shouldShowTextAlignButton(editor.value, config.align, config.hideWhenUnavailable ?? false),
+        shouldShowTextAlignButton(
+            editor.value,
+            config.align,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleTextAlign = () => {

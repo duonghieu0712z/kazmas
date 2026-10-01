@@ -53,23 +53,22 @@ export function shouldShowHeadings(
     editor: Editor | null,
     levels: HeadingOptionLevel[],
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (
-        !editor?.isEditable ||
-        (!isNodeInSchema(editor, 'paragraph') && !isNodeInSchema(editor, 'heading'))
-    ) {
+    if (!editor || (!isNodeInSchema(editor, 'paragraph') && !isNodeInSchema(editor, 'heading'))) {
         return false;
     }
 
     return (
         !hideWhenUnavailable ||
+        !editable ||
         canSetParagraph(editor) ||
         levels.some((level) => canToggleHeading(editor, level))
     );
 }
 
 export function useHeadings(config: UseHeadingsConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
     const levels = computed(() => config.levels ?? DEFAULT_HEADING_LEVELS);
     const activeLevel = computed<HeadingLevel | undefined>(() => {
         if (isParagraphActive(editor.value)) {
@@ -80,11 +79,17 @@ export function useHeadings(config: UseHeadingsConfig) {
     });
     const canSet = computed(
         () =>
-            canSetParagraph(editor.value) ||
-            levels.value.some((level) => canToggleHeading(editor.value, level)),
+            isEditable.value &&
+            (canSetParagraph(editor.value) ||
+                levels.value.some((level) => canToggleHeading(editor.value, level))),
     );
     const isVisible = computed(() =>
-        shouldShowHeadings(editor.value, levels.value, config.hideWhenUnavailable ?? false),
+        shouldShowHeadings(
+            editor.value,
+            levels.value,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
     const label = computed(() =>
         activeLevel.value === 0

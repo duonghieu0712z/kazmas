@@ -65,7 +65,7 @@ export function canToggleMark(editor: Editor | null, type: MarkType) {
 }
 
 export function isMarkActive(editor: Editor | null, type: MarkType) {
-    if (!editor?.isEditable) {
+    if (!editor) {
         return false;
     }
 
@@ -84,12 +84,13 @@ export function shouldShowMarkButton(
     editor: Editor | null,
     type: MarkType,
     hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
 ) {
-    if (!editor?.isEditable || !isMarkInSchema(editor, type)) {
+    if (!editor || !isMarkInSchema(editor, type)) {
         return false;
     }
 
-    if (hideWhenUnavailable && !editor.isActive('code')) {
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
         return canToggleMark(editor, type);
     }
 
@@ -101,12 +102,17 @@ export function getFormattedMarkName(type: MarkType) {
 }
 
 export function useMark(config: UseMarkConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor, isEditable } = useTiptapEditor(config.editor);
 
-    const canToggle = computed(() => canToggleMark(editor.value, config.type));
+    const canToggle = computed(() => isEditable.value && canToggleMark(editor.value, config.type));
     const isActive = computed(() => isMarkActive(editor.value, config.type));
     const isVisible = computed(() =>
-        shouldShowMarkButton(editor.value, config.type, config.hideWhenUnavailable ?? false),
+        shouldShowMarkButton(
+            editor.value,
+            config.type,
+            config.hideWhenUnavailable ?? false,
+            isEditable.value,
+        ),
     );
 
     const handleMark = () => {

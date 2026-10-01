@@ -14,8 +14,38 @@ defineSlots<{
 }>();
 
 const editor = useEditor(props.options);
+const isEditable = ref(false);
 
-provideTiptapEditorContext({ editor });
+function syncEditable() {
+    isEditable.value = editor.value?.isEditable ?? false;
+}
+
+function setEditable(editable: boolean, emitUpdate = true) {
+    const currentEditor = editor.value;
+    if (!currentEditor || currentEditor.isDestroyed) {
+        return false;
+    }
+
+    currentEditor.setEditable(editable, emitUpdate);
+    syncEditable();
+    return true;
+}
+
+watch(
+    editor,
+    (currentEditor, _previousEditor, onCleanup) => {
+        syncEditable();
+        currentEditor?.on('update', syncEditable);
+        onCleanup(() => currentEditor?.off('update', syncEditable));
+    },
+    { immediate: true },
+);
+
+provideTiptapEditorContext({
+    editor,
+    isEditable: readonly(isEditable),
+    setEditable,
+});
 </script>
 
 <template>

@@ -59,7 +59,7 @@ export function shouldShowInvisibleCharactersButton(
 }
 
 export function useInvisibleCharacters(config: UseInvisibleCharactersConfig) {
-    const editor = useTiptapEditor(config.editor);
+    const { editor } = useTiptapEditor(config.editor);
     const isActive = ref(false);
 
     const canToggle = computed(() => canToggleInvisibleCharacters(editor.value));
