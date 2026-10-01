@@ -20,8 +20,8 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, canInsert, label, icon, handleHorizontalRule } = useHorizontalRule({
-    editor: props.editor,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onInserted: () => emits('update:inserted'),
 });
 

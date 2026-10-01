@@ -10,7 +10,7 @@ import {
     SuperscriptIcon,
     UnderlineIcon,
 } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isMarkInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
@@ -25,10 +25,10 @@ export type MarkType =
     | 'subscript';
 
 export interface UseMarkConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    type: MarkType;
-    label?: string;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    type: MaybeRefOrGetter<MarkType>;
+    label?: MaybeRefOrGetter<string | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -103,20 +103,24 @@ export function getFormattedMarkName(type: MarkType) {
 
 export function useMark(config: UseMarkConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
+    const type = computed(() => toValue(config.type));
 
-    const canToggle = computed(() => isEditable.value && canToggleMark(editor.value, config.type));
-    const isActive = computed(() => isMarkActive(editor.value, config.type));
+    const canToggle = computed(() => isEditable.value && canToggleMark(editor.value, type.value));
+    const isActive = computed(() => isMarkActive(editor.value, type.value));
     const isVisible = computed(() =>
         shouldShowMarkButton(
             editor.value,
-            config.type,
-            config.hideWhenUnavailable ?? false,
+            type.value,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );
+    const label = computed(() => toValue(config.label) ?? getFormattedMarkName(type.value));
+    const icon = computed(() => MARK_ICONS[type.value]);
+    const shortcutKeys = computed(() => parseShortcutKeys(MARK_SHORTCUT_KEYS[type.value]));
 
     const handleMark = () => {
-        const success = toggleMark(editor.value, config.type);
+        const success = toggleMark(editor.value, type.value);
         if (success) {
             config.onToggled?.();
         }
@@ -127,9 +131,9 @@ export function useMark(config: UseMarkConfig) {
         isVisible,
         isActive,
         canToggle,
-        label: config.label ?? getFormattedMarkName(config.type),
-        icon: MARK_ICONS[config.type],
-        shortcutKeys: parseShortcutKeys(MARK_SHORTCUT_KEYS[config.type]),
+        label,
+        icon,
+        shortcutKeys,
         handleMark,
     };
 }

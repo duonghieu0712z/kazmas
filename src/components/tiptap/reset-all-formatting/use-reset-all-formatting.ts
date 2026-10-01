@@ -3,14 +3,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { RemoveFormattingIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
 export interface UseResetAllFormattingConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    preserveMarks?: string[];
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    preserveMarks?: MaybeRefOrGetter<string[] | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onReset?: () => void;
 }
 
@@ -73,22 +73,22 @@ export function shouldShowResetAllFormattingButton(
 
 export function useResetAllFormatting(config: UseResetAllFormattingConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
-    const preserveMarks = config.preserveMarks ?? [];
+    const preserveMarks = computed(() => toValue(config.preserveMarks) ?? []);
 
     const canReset = computed(
-        () => isEditable.value && canResetAllFormatting(editor.value, preserveMarks),
+        () => isEditable.value && canResetAllFormatting(editor.value, preserveMarks.value),
     );
     const isVisible = computed(() =>
         shouldShowResetAllFormattingButton(
             editor.value,
-            preserveMarks,
-            config.hideWhenUnavailable ?? false,
+            preserveMarks.value,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );
 
     const handleResetAllFormatting = () => {
-        const success = resetAllFormatting(editor.value, preserveMarks);
+        const success = resetAllFormatting(editor.value, preserveMarks.value);
         if (success) {
             config.onReset?.();
         }

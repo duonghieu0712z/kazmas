@@ -2,14 +2,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { MinusIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema } from '@/lib/tiptap';
 
 export interface UseHorizontalRuleConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onInserted?: () => void;
 }
 
@@ -54,7 +54,7 @@ export function useHorizontalRule(config: UseHorizontalRuleConfig) {
     const isVisible = computed(() =>
         shouldShowHorizontalRuleButton(
             editor.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

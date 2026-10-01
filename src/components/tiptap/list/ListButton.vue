@@ -21,9 +21,9 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleList } = useList({
-    editor: props.editor,
-    type: props.type,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    type: () => props.type,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onToggled: () => emits('update:toggled'),
 });
 

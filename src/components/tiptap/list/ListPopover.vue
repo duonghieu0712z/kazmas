@@ -25,9 +25,9 @@ const emits = defineEmits<{
 
 const open = ref(false);
 const { activeType, canToggle, isVisible, label, icon } = useLists({
-    editor: props.editor,
-    types: props.types,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    types: () => props.types,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
 });
 const delegatedProps = reactiveOmit(
     props,

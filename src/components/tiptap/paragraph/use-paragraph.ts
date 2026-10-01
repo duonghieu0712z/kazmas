@@ -2,14 +2,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { TypeIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 
 export interface UseParagraphConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onSet?: () => void;
 }
 
@@ -68,7 +68,7 @@ export function useParagraph(config: UseParagraphConfig) {
     const isVisible = computed(() =>
         shouldShowParagraphButton(
             editor.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

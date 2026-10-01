@@ -22,8 +22,8 @@ const emits = defineEmits<{
 
 const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleCodeBlock } = useCodeBlock(
     {
-        editor: props.editor,
-        hideWhenUnavailable: props.hideWhenUnavailable,
+        editor: () => props.editor,
+        hideWhenUnavailable: () => props.hideWhenUnavailable,
         onToggled: () => emits('update:toggled'),
     },
 );

@@ -21,8 +21,8 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, isActive, canSet, label, icon, shortcutKeys, handleParagraph } = useParagraph({
-    editor: props.editor,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onSet: () => emits('update:set'),
 });
 

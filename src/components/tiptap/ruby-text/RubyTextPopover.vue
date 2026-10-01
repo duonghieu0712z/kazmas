@@ -35,8 +35,8 @@ const {
     handleSetRubyText,
     handleRemoveRubyText,
 } = useRubyText({
-    editor: props.editor,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onSetRubyText: () => emits('update:set'),
 });
 

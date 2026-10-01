@@ -7,7 +7,7 @@ import { computed } from 'vue';
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
 export interface UseEditableConfig {
-    editor?: MaybeRefOrGetter<Editor>;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
     onChanged?: (editable: boolean) => void;
 }
 

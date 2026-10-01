@@ -19,7 +19,7 @@ const emits = defineEmits<{
 }>();
 
 const { isEditable, canToggle, label, icon, handleEditable } = useEditable({
-    editor: props.editor,
+    editor: () => props.editor,
     onChanged: (editable) => emits('update:editable', editable),
 });
 

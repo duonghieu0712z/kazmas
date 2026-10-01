@@ -3,7 +3,7 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { HeadingIcon, TypeIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import {
@@ -26,9 +26,9 @@ import {
 export type HeadingOptionLevel = HeadingNodeLevel;
 
 export interface UseHeadingsConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    levels?: HeadingOptionLevel[];
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    levels?: MaybeRefOrGetter<HeadingOptionLevel[] | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onChanged?: (level: HeadingLevel) => void;
 }
 
@@ -69,7 +69,7 @@ export function shouldShowHeadings(
 
 export function useHeadings(config: UseHeadingsConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
-    const levels = computed(() => config.levels ?? DEFAULT_HEADING_LEVELS);
+    const levels = computed(() => toValue(config.levels) ?? DEFAULT_HEADING_LEVELS);
     const activeLevel = computed<HeadingLevel | undefined>(() => {
         if (isParagraphActive(editor.value)) {
             return 0;
@@ -87,7 +87,7 @@ export function useHeadings(config: UseHeadingsConfig) {
         shouldShowHeadings(
             editor.value,
             levels.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

@@ -10,7 +10,7 @@ import {
     Heading6Icon,
 } from '@lucide/vue';
 import { isNodeSelection, isTextSelection } from '@tiptap/vue-3';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import {
@@ -25,9 +25,9 @@ export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type HeadingNodeLevel = Exclude<HeadingLevel, 0>;
 
 export interface UseHeadingConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    level: HeadingNodeLevel;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    level: MaybeRefOrGetter<HeadingNodeLevel>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -154,22 +154,26 @@ export function shouldShowHeadingButton(
 
 export function useHeading(config: UseHeadingConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
+    const level = computed(() => toValue(config.level));
 
     const canToggle = computed(
-        () => isEditable.value && canToggleHeading(editor.value, config.level),
+        () => isEditable.value && canToggleHeading(editor.value, level.value),
     );
-    const isActive = computed(() => isHeadingActive(editor.value, config.level));
+    const isActive = computed(() => isHeadingActive(editor.value, level.value));
     const isVisible = computed(() =>
         shouldShowHeadingButton(
             editor.value,
-            config.level,
-            config.hideWhenUnavailable ?? false,
+            level.value,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );
+    const label = computed(() => `Heading ${level.value}`);
+    const icon = computed(() => HEADING_ICONS[level.value]);
+    const shortcutKeys = computed(() => parseShortcutKeys(HEADING_SHORTCUT_KEYS[level.value]));
 
     const handleHeading = () => {
-        const success = toggleHeading(editor.value, config.level);
+        const success = toggleHeading(editor.value, level.value);
         if (success) {
             config.onToggled?.();
         }
@@ -180,9 +184,9 @@ export function useHeading(config: UseHeadingConfig) {
         isVisible,
         isActive,
         canToggle,
-        label: `Heading ${config.level}`,
-        icon: HEADING_ICONS[config.level],
-        shortcutKeys: parseShortcutKeys(HEADING_SHORTCUT_KEYS[config.level]),
+        label,
+        icon,
+        shortcutKeys,
         handleHeading,
     };
 }

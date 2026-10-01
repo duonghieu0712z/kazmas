@@ -21,9 +21,9 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleHeading } = useHeading({
-    editor: props.editor,
-    level: props.level,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    level: () => props.level,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onToggled: () => emits('update:toggled'),
 });
 

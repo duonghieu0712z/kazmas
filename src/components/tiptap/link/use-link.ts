@@ -4,14 +4,14 @@ import type { MaybeRefOrGetter } from 'vue';
 import { LinkIcon } from '@lucide/vue';
 import { isTauri } from '@tauri-apps/api/core';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isMarkInSchema, isNodeTypeSelected, sanitizeUrl } from '@/lib/tiptap';
 
 export interface UseLinkConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onSetLink?: () => void;
 }
 
@@ -103,7 +103,11 @@ export function useLink(config: UseLinkConfig = {}) {
     const canSet = computed(() => isEditable.value && canSetLink(editor.value));
     const isActive = computed(() => isLinkActive(editor.value));
     const isVisible = computed(() =>
-        shouldShowLinkButton(editor.value, config.hideWhenUnavailable ?? false, isEditable.value),
+        shouldShowLinkButton(
+            editor.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
     );
 
     watch(

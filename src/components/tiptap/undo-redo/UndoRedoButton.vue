@@ -21,10 +21,10 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, canToggle, label, icon, shortcutKeys, handleAction } = useUndoRedo({
-    editor: props.editor,
-    action: props.action,
-    label: props.label,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    action: () => props.action,
+    label: () => props.label,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onExecuted: () => emits('update:executed'),
 });
 

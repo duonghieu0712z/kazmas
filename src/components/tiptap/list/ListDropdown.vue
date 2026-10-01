@@ -43,9 +43,9 @@ const {
     canToggleType,
     handleList,
 } = useLists({
-    editor: props.editor,
-    types: props.types,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    types: () => props.types,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onToggled: (type) => emits('update:toggled', type),
 });
 

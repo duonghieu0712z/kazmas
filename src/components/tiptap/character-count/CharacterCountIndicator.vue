@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<CharacterCountIndicatorProps>(), {
 });
 
 const { isAvailable, characterLabel, wordLabel } = useCharacterCount({
-    editor: props.editor,
+    editor: () => props.editor,
 });
 </script>
 

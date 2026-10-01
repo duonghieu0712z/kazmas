@@ -2,14 +2,14 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { LanguagesIcon } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toValue, watch } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isMarkInSchema, isNodeTypeSelected } from '@/lib/tiptap';
 
 export interface UseRubyTextConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onSetRubyText?: () => void;
 }
 
@@ -77,7 +77,7 @@ export function useRubyText(config: UseRubyTextConfig = {}) {
     const isVisible = computed(() =>
         shouldShowRubyTextButton(
             editor.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

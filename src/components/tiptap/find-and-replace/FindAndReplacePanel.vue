@@ -63,8 +63,9 @@ const {
     applySearch,
     suspendSearch,
 } = useFindAndReplace({
-    editor: props.editor,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
+    scrollIntoViewOptions: () => props.scrollIntoViewOptions,
     onReplaced: () => emits('update:replaced'),
     onReplacedAll: () => emits('update:replacedAll'),
 });

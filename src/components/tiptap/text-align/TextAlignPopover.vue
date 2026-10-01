@@ -25,9 +25,9 @@ const emits = defineEmits<{
 
 const open = ref(false);
 const { canAlign, isVisible, label, icon } = useTextAligns({
-    editor: props.editor,
-    aligns: props.aligns,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    aligns: () => props.aligns,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
 });
 const delegatedProps = reactiveOmit(
     props,

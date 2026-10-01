@@ -2,7 +2,7 @@ import type { TextAlign } from './use-text-align';
 import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
@@ -14,9 +14,9 @@ import {
 } from './use-text-align';
 
 export interface UseTextAlignsConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    aligns?: TextAlign[];
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    aligns?: MaybeRefOrGetter<TextAlign[] | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
 }
 
 export const DEFAULT_TEXT_ALIGNS: TextAlign[] = ['left', 'center', 'right', 'justify'];
@@ -48,7 +48,7 @@ export function shouldShowTextAligns(
 
 export function useTextAligns(config: UseTextAlignsConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
-    const aligns = computed(() => config.aligns ?? DEFAULT_TEXT_ALIGNS);
+    const aligns = computed(() => toValue(config.aligns) ?? DEFAULT_TEXT_ALIGNS);
     const activeAlign = computed(() => getActiveTextAlign(editor.value, aligns.value));
     const canAlign = computed(
         () => isEditable.value && canSetAnyTextAlign(editor.value, aligns.value),
@@ -57,7 +57,7 @@ export function useTextAligns(config: UseTextAlignsConfig) {
         shouldShowTextAligns(
             editor.value,
             aligns.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

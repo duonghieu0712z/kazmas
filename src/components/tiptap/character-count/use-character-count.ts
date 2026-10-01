@@ -6,7 +6,7 @@ import { computed } from 'vue';
 import { useTiptapEditor } from '@/components/tiptap/editor';
 
 export interface UseCharacterCountConfig {
-    editor?: MaybeRefOrGetter<Editor>;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
 }
 
 function formatCount(count: number, name: string) {

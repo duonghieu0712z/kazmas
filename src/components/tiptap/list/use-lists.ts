@@ -3,7 +3,7 @@ import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { ListIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema, parseShortcutKeys } from '@/lib/tiptap';
@@ -18,9 +18,9 @@ import {
 } from './use-list';
 
 export interface UseListsConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    types?: ListType[];
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    types?: MaybeRefOrGetter<ListType[] | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: (type: ListType) => void;
 }
 
@@ -53,7 +53,7 @@ export function shouldShowLists(
 
 export function useLists(config: UseListsConfig) {
     const { editor, isEditable } = useTiptapEditor(config.editor);
-    const types = computed(() => config.types ?? DEFAULT_LIST_TYPES);
+    const types = computed(() => toValue(config.types) ?? DEFAULT_LIST_TYPES);
     const activeType = computed(() => getActiveListType(editor.value, types.value));
     const canToggle = computed(
         () => isEditable.value && canToggleAnyList(editor.value, types.value),
@@ -62,7 +62,7 @@ export function useLists(config: UseListsConfig) {
         shouldShowLists(
             editor.value,
             types.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

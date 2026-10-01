@@ -3,14 +3,14 @@ import type { MaybeRefOrGetter } from 'vue';
 
 import { TextQuoteIcon } from '@lucide/vue';
 import { isNodeSelection } from '@tiptap/vue-3';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 
 export interface UseBlockquoteConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -89,7 +89,7 @@ export function useBlockquote(config: UseBlockquoteConfig) {
     const isVisible = computed(() =>
         shouldShowBlockquoteButton(
             editor.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );

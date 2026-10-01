@@ -21,10 +21,10 @@ const emits = defineEmits<{
 }>();
 
 const { isVisible, isActive, canToggle, label, icon, shortcutKeys, handleMark } = useMark({
-    editor: props.editor,
-    type: props.type,
-    label: props.label,
-    hideWhenUnavailable: props.hideWhenUnavailable,
+    editor: () => props.editor,
+    type: () => props.type,
+    label: () => props.label,
+    hideWhenUnavailable: () => props.hideWhenUnavailable,
     onToggled: () => emits('update:toggled'),
 });
 

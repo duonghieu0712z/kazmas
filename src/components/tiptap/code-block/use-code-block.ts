@@ -3,14 +3,14 @@ import type { MaybeRefOrGetter } from 'vue';
 
 import { SquareCodeIcon } from '@lucide/vue';
 import { isNodeSelection } from '@tiptap/vue-3';
-import { computed } from 'vue';
+import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
 
 export interface UseCodeBlockConfig {
-    editor?: MaybeRefOrGetter<Editor>;
-    hideWhenUnavailable?: boolean;
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
     onToggled?: () => void;
 }
 
@@ -89,7 +89,7 @@ export function useCodeBlock(config: UseCodeBlockConfig) {
     const isVisible = computed(() =>
         shouldShowCodeBlockButton(
             editor.value,
-            config.hideWhenUnavailable ?? false,
+            toValue(config.hideWhenUnavailable) ?? false,
             isEditable.value,
         ),
     );
