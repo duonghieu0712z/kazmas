@@ -35,6 +35,7 @@ const findAndReplaceOpen = ref(false);
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
             <LinkPopover />
             <RubyTextPopover />
+            <ResetAllFormattingButton />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
@@ -46,8 +47,8 @@ const findAndReplaceOpen = ref(false);
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
-            <ResetAllFormattingButton />
             <InvisibleCharactersButton />
+            <EditableButton />
         </ButtonGroup>
     </Toolbar>
 
