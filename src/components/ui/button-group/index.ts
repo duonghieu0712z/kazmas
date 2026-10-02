@@ -21,12 +21,21 @@ export const buttonGroupVariants = cva(
             },
             spacing: {
                 spaced: 'gap-0.5',
-                compact: [
-                    'data-[orientation=horizontal]:[&>*:not(:first-child)]:rounded-l-none data-[orientation=horizontal]:[&>*:not(:first-child)]:border-l-0 data-[orientation=horizontal]:[&>*:not(:last-child)]:rounded-r-none',
-                    'data-[orientation=vertical]:[&>*:not(:first-child)]:rounded-t-none data-[orientation=vertical]:[&>*:not(:first-child)]:border-t-0 data-[orientation=vertical]:[&>*:not(:last-child)]:rounded-b-none',
-                ],
+                compact: null,
             },
         },
+        compoundVariants: [
+            {
+                spacing: 'compact',
+                orientation: 'horizontal',
+                class: '[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none',
+            },
+            {
+                spacing: 'compact',
+                orientation: 'vertical',
+                class: '[&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none',
+            },
+        ],
         defaultVariants: {
             orientation: 'horizontal',
             spacing: 'compact',
