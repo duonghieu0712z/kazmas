@@ -2,7 +2,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 import { cva } from 'class-variance-authority';
 
-export type { ResizableAppearance, ResizableOrientation } from './context';
+export type { ResizableSeparation, ResizableOrientation } from './context';
 export { default as ResizableHandle } from './ResizableHandle.vue';
 export { default as ResizablePanel } from './ResizablePanel.vue';
 export { default as ResizablePanelGroup } from './ResizablePanelGroup.vue';
@@ -14,9 +14,9 @@ export const resizableHandleVariants = cva(
     ],
     {
         variants: {
-            appearance: {
-                boxed: null,
-                split: 'before:absolute before:bg-border',
+            separation: {
+                gap: null,
+                divider: 'before:absolute before:bg-border',
             },
             orientation: {
                 horizontal:
@@ -27,28 +27,28 @@ export const resizableHandleVariants = cva(
         },
         compoundVariants: [
             {
-                appearance: 'boxed',
+                separation: 'gap',
                 orientation: 'horizontal',
                 class: 'w-1',
             },
             {
-                appearance: 'boxed',
+                separation: 'gap',
                 orientation: 'vertical',
                 class: 'h-1',
             },
             {
-                appearance: 'split',
+                separation: 'divider',
                 orientation: 'horizontal',
                 class: 'w-px before:inset-y-0 before:left-0 before:w-px before:-translate-x-1/2',
             },
             {
-                appearance: 'split',
+                separation: 'divider',
                 orientation: 'vertical',
                 class: 'h-px before:inset-x-0 before:top-1/2 before:h-px before:w-full before:-translate-y-1/2',
             },
         ],
         defaultVariants: {
-            appearance: 'boxed',
+            separation: 'gap',
             orientation: 'horizontal',
         },
     },

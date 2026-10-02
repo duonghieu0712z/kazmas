@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ResizableAppearance } from './context';
+import type { ResizableSeparation } from './context';
 import type { SplitterGroupEmits, SplitterGroupProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 
@@ -14,23 +14,23 @@ import { provideResizableContext } from './context';
 const props = withDefaults(
     defineProps<
         SplitterGroupProps & {
-            appearance?: ResizableAppearance;
+            separation?: ResizableSeparation;
             class?: HTMLAttributes['class'];
         }
     >(),
     {
-        appearance: 'boxed',
+        separation: 'gap',
         direction: 'horizontal',
     },
 );
 const emits = defineEmits<SplitterGroupEmits>();
 
-const delegatedProps = reactiveOmit(props, 'appearance', 'class');
+const delegatedProps = reactiveOmit(props, 'separation', 'class');
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 provideResizableContext({
-    appearance: computed(() => props.appearance),
+    separation: computed(() => props.separation),
     orientation: computed(() => props.direction),
 });
 </script>

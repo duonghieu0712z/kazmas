@@ -2,10 +2,10 @@ import type { ComputedRef } from 'vue';
 
 import { createContext } from 'reka-ui';
 
-export type ResizableAppearance = 'boxed' | 'split';
+export type ResizableSeparation = 'gap' | 'divider';
 export type ResizableOrientation = 'horizontal' | 'vertical';
 
 export const [injectResizableContext, provideResizableContext] = createContext<{
-    appearance: ComputedRef<ResizableAppearance>;
+    separation: ComputedRef<ResizableSeparation>;
     orientation: ComputedRef<ResizableOrientation>;
 }>('Resizable');

@@ -18,20 +18,20 @@ const emits = defineEmits<SplitterResizeHandleEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'withHandle');
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
-const { appearance, orientation } = injectResizableContext();
+const { separation, orientation } = injectResizableContext();
 </script>
 
 <template>
     <SplitterResizeHandle
         v-bind="forwarded"
-        :class="cn(resizableHandleVariants({ appearance, orientation }), props.class)"
-        :data-appearance="appearance"
+        :class="cn(resizableHandleVariants({ separation, orientation }), props.class)"
+        :data-separation="separation"
         data-slot="resizable-handle"
     >
         <template v-if="props.withHandle">
             <div class="z-10">
                 <slot>
-                    <GripVerticalIcon v-if="appearance === 'split'" class="size-3 stroke-ring" />
+                    <GripVerticalIcon v-if="separation === 'divider'" class="size-3 stroke-ring" />
                     <EllipsisVerticalIcon v-else class="size-3 stroke-ring" />
                 </slot>
             </div>

@@ -10,15 +10,15 @@ const emits = defineEmits<SplitterPanelEmits>();
 
 const forwarded = useForwardPropsEmits(props, emits);
 const { forwardRef } = useForwardExpose();
-const { appearance } = injectResizableContext();
+const { separation } = injectResizableContext();
 </script>
 
 <template>
     <SplitterPanel
         :ref="forwardRef"
         v-slot="slotProps"
-        class="data-[appearance=boxed]:not-has-data-[slot=resizable-panel]:rounded-sm data-[appearance=boxed]:not-has-data-[slot=resizable-panel]:border"
-        :data-appearance="appearance"
+        class="data-[separation=gap]:not-has-data-[slot=resizable-panel]:rounded-sm data-[separation=gap]:not-has-data-[slot=resizable-panel]:border"
+        :data-separation="separation"
         data-slot="resizable-panel"
         v-bind="forwarded"
     >
