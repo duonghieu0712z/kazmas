@@ -70,11 +70,13 @@ function createDialogProvider() {
     const openDialog = <TComponent extends DialogComponent>(
         entry: DialogProviderOpenEntry<TComponent>,
     ) => {
-        focusTarget =
-            document.activeElement instanceof HTMLElement &&
-            document.activeElement !== document.body
-                ? document.activeElement
-                : null;
+        if (!activeDialog.value) {
+            focusTarget =
+                document.activeElement instanceof HTMLElement &&
+                document.activeElement !== document.body
+                    ? document.activeElement
+                    : null;
+        }
         dismissActiveDialog();
 
         return new Promise<DialogResult<TComponent> | null>((resolve) => {
