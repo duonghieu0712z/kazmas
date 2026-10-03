@@ -27,6 +27,7 @@ export default defineConfig({
     projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
     webServer: {
         command: 'pnpm exec vite --mode test-ui',
+        env: { VITE_UI_TEST_PLATFORM: process.platform },
         url: 'http://127.0.0.1:1421',
         reuseExistingServer: false,
         timeout: 60000,

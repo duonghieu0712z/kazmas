@@ -94,6 +94,12 @@ pub fn run() {
             let handle = app.handle();
             specta_builder.mount_events(handle);
 
+            #[cfg(feature = "desktop-tests")]
+            {
+                log::set_max_level(log::LevelFilter::Info);
+                log::info!("desktop test application initialized with embedded WebDriver");
+            }
+
             #[cfg(target_os = "macos")]
             {
                 let state = state::get_state(handle);

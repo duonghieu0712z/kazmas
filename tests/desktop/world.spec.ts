@@ -129,8 +129,37 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
     it('focuses an existing project instead of creating a duplicate window', async () => {
         await browser.execute(() => window.__kazmasDesktopTest.save());
+        const owner = await browser.getWindowHandle();
         const before = await browser.getWindowHandles();
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path, true), packagePath);
-        expect(await browser.getWindowHandles()).toEqual(before);
+        await browser.execute(() => window.__kazmasDesktopTest.newWindow());
+        await browser.waitUntil(
+            async () => (await browser.getWindowHandles()).length === before.length + 1,
+        );
+        const handles = await browser.getWindowHandles();
+        const other = handles.find((handle) => !before.includes(handle));
+        if (!other) {
+            throw new Error('The second window was not created.');
+        }
+        try {
+            await browser.switchToWindow(other);
+            await browser.waitUntil(() =>
+                browser.execute(() => Boolean(window.__kazmasDesktopTest)),
+            );
+            expect(await browser.execute(() => window.__kazmasDesktopTest.world())).toBeNull();
+            await browser.execute(
+                (path) => window.__kazmasDesktopTest.open(path, true),
+                packagePath,
+            );
+            expect(await browser.getWindowHandles()).toEqual(handles);
+            expect(await browser.execute(() => window.__kazmasDesktopTest.world())).toBeNull();
+            await browser.switchToWindow(owner);
+            expect(await browser.execute(() => window.__kazmasDesktopTest.world()?.name)).toBe(
+                name,
+            );
+        } finally {
+            await browser.switchToWindow(other);
+            await browser.closeWindow();
+            await browser.switchToWindow(owner);
+        }
     });
 });

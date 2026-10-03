@@ -2,9 +2,24 @@ import type { Page } from '@playwright/test';
 
 import { expect, test } from '@playwright/test';
 
+const mac = process.platform === 'darwin';
+
+async function expectPlatformChrome(page: Page) {
+    const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true });
+    const closeWindow = page.getByRole('button', { name: 'Close window', exact: true });
+    if (mac) {
+        await expect(fileMenu).toHaveCount(0);
+        await expect(closeWindow).toHaveCount(0);
+    } else {
+        await expect(fileMenu).toBeVisible();
+        await expect(closeWindow).toBeVisible();
+    }
+}
+
 async function openEditor(page: Page) {
     await page.goto('/?scenario=editor');
     await expect(page.locator('.tiptap')).toContainText('A sample manuscript');
+    await expectPlatformChrome(page);
     await page.evaluate(() => document.fonts.ready);
 }
 
@@ -49,8 +64,19 @@ test('switching documents immediately preserves the pending edit', async ({ page
 
 test('new world dialog validates input and restores focus after cancellation', async ({ page }) => {
     await page.goto('/?scenario=empty');
-    await page.getByRole('menuitem', { name: 'File', exact: true }).click();
-    await page.getByRole('menuitem', { name: /New World/ }).click();
+    const focusTarget = mac
+        ? page.getByRole('button', { name: 'Manuscript', exact: true })
+        : page.getByRole('menuitem', { name: 'File', exact: true });
+    await expect(focusTarget).toBeVisible();
+    await expectPlatformChrome(page);
+    if (mac) {
+        await focusTarget.focus();
+        await page.waitForFunction(() => Boolean(window.__kazmasTest));
+        await page.evaluate(() => window.__kazmasTest.menuCommand('new-world'));
+    } else {
+        await focusTarget.click();
+        await page.getByRole('menuitem', { name: /New World/ }).click();
+    }
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Browse', exact: true }).click();
@@ -60,7 +86,7 @@ test('new world dialog validates input and restores focus after cancellation', a
     await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeEnabled();
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(page.getByRole('dialog')).toBeHidden();
-    await expect(page.getByRole('menuitem', { name: 'File', exact: true })).toBeFocused();
+    await expect(focusTarget).toBeFocused();
 });
 
 test('sidebar can be resized with the keyboard and collapsed', async ({ page }) => {
@@ -81,7 +107,7 @@ test('small workspace keeps controls accessible without document-level overflow'
 }) => {
     await page.setViewportSize({ width: 640, height: 480 });
     await openEditor(page);
-    await expect(page.getByRole('button', { name: 'Close window', exact: true })).toBeVisible();
+    await expectPlatformChrome(page);
     await expect(page.locator('.tiptap')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
@@ -153,9 +179,10 @@ for (const scenario of ['empty', 'editor', 'long', 'dialog']) {
                 await expect(page.getByRole('dialog')).toBeVisible();
             } else {
                 await expect(
-                    page.getByRole('menuitem', { name: 'File', exact: true }),
+                    page.getByRole('button', { name: 'Manuscript', exact: true }),
                 ).toBeVisible();
             }
+            await expectPlatformChrome(page);
             await page.evaluate(() => document.fonts.ready);
             await page.mouse.move(1190, 790);
             await expect(page).toHaveScreenshot(`${scenario}-${theme}.png`);

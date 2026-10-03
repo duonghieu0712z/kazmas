@@ -31,7 +31,9 @@ Generated output lives under `.artifacts/`: coverage reports in `coverage/`, Pla
 
 ## Screenshot Baselines
 
-Baselines live in `tests/ui/snapshots`, separated by operating system and browser project. Windows Chromium baselines cover the empty application, editor, long titles, and dialogs in light and dark themes. Locale, timezone, viewport, fonts, and animations are controlled. Screenshot comparisons allow a small difference threshold for rasterization.
+Baselines live in `tests/ui/snapshots`, separated by operating system and browser project. Windows and macOS Chromium baselines cover the empty application, editor, long titles, and dialogs in light and dark themes. Locale, timezone, viewport, fonts, and animations are controlled. Screenshot comparisons allow a small difference threshold for rasterization. Playwright passes its host platform to the Vite test server through `VITE_UI_TEST_PLATFORM`; the harness maps it to Tauri's platform name and fails when it is missing or unsupported. macOS screenshots render the macOS frontend branch, without the in-window menu or custom window controls. Native menu-bar items and traffic-light controls are outside browser screenshots and require desktop verification.
+
+Interaction tests assert that the in-window File menu and Close window control are absent on macOS and visible on Windows. The macOS dialog test dispatches a mocked `menu-command` event through the application's native-menu listener, validates the dialog, and checks focus restoration to the previously focused workspace control. This verifies the frontend response to a native menu event, not an actual click on the system menu bar.
 
 For intentional UI changes, run `pnpm test:ui:update`, visually inspect the new screenshots, and review the differences before adding them to Git. Do not update baselines merely to make tests pass. When adding a platform, generate and review its baselines on that platform.
 
@@ -45,6 +47,6 @@ UI tests cover mouse and keyboard interactions, the toolbar, find and replace, f
 
 ## CI and Manual Release Checks
 
-The `quality-checks.yml` workflow runs frontend tests with coverage, Rust tests on Windows and macOS, UI tests and screenshot comparisons on Windows, and desktop tests on Windows and macOS. The existing PR and release workflows call this workflow. Artifact uploads explicitly include hidden files so reports under `.artifacts` are retained. There is no global coverage threshold; reports identify untested business logic branches.
+The `quality-checks.yml` workflow runs frontend tests with coverage, Rust tests on Windows and macOS, UI tests and screenshot comparisons on Windows and macOS, and desktop tests on Windows and macOS. UI and desktop artifacts include the matrix operating system in their names. The existing PR and release workflows call this workflow. Artifact uploads explicitly include hidden files so reports under `.artifacts` are retained. There is no global coverage threshold; reports identify untested business logic branches.
 
-On each release operating system, manually verify native file selection and Save As dialogs, the title bar, operating system menus, the clipboard, Vietnamese input through an input method, display scaling at 125%/150%/200%, and closing or quitting with unsaved changes. Browser UI tests do not establish correctness of these native behaviors. macOS results require verification on a runner or an actual macOS machine.
+On each release operating system, manually verify native file selection and Save As dialogs, the title bar, operating system menus, the clipboard, input method composition, display scaling at 125%/150%/200%, and closing or quitting with unsaved changes. Browser UI tests do not establish correctness of these native behaviors.

@@ -113,9 +113,16 @@ jobs:
         run: cargo test --locked
 
   ui-tests:
-    name: Browser UI and visual regression
-    runs-on: windows-latest
+    name: Browser UI and visual regression (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
 
     steps:
       - name: Checkout repository
@@ -143,7 +150,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-ui-results
+          name: browser-ui-results-${{ matrix.os }}
           path: |
             .artifacts/playwright/results
             .artifacts/playwright/report

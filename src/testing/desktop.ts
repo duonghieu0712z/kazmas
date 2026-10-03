@@ -44,6 +44,7 @@ const bridge = {
         await invoke('test_save_world_as', { path });
     },
     close: closeWorld,
+    newWindow: () => executeMenuCommand('new-window'),
     save: () => executeMenuCommand('save'),
     world: () => useWorldStore().manifest,
 };

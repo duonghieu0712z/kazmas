@@ -1,3 +1,6 @@
+import type { MenuCommand } from '@/generated/bindings';
+
+import { emit } from '@tauri-apps/api/event';
 import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { nextTick } from 'vue';
 
@@ -35,35 +38,49 @@ const documents = new Map(
 );
 const calls: { command: string; args: Record<string, unknown> }[] = [];
 
-Object.assign(window, { __TAURI_OS_PLUGIN_INTERNALS__: { platform: 'windows' } });
+const platforms: Record<string, string> = { darwin: 'macos', win32: 'windows', linux: 'linux' };
+const platform = platforms[import.meta.env.VITE_UI_TEST_PLATFORM];
+if (!platform) {
+    throw new Error('The UI test host platform must be configured by Playwright.');
+}
+Object.assign(window, { __TAURI_OS_PLUGIN_INTERNALS__: { platform } });
 mockWindows('test-window');
-mockIPC((command, args) => {
-    const data = (args ?? {}) as Record<string, unknown>;
-    calls.push({ command, args: data });
-    switch (command) {
-        case 'get_world':
-            return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
-        case 'get_manuscripts':
-            return entries;
-        case 'get_wikis':
-            return [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
-        case 'get_document':
-            return documents.get(String(data.nodeId)) ?? null;
-        case 'update_document':
-            documents.set(String(data.nodeId), String(data.content));
-            return true;
-        case 'plugin:window|title':
-            return 'Test World';
-        case 'plugin:window|is_maximized':
-            return false;
-        case 'plugin:dialog|open':
-            return '/test/worlds';
-        case 'plugin:event|listen':
-            return calls.length;
-        default:
-            return null;
-    }
-});
+mockIPC(
+    (command, args) => {
+        const data = (args ?? {}) as Record<string, unknown>;
+        calls.push({ command, args: data });
+        switch (command) {
+            case 'get_world':
+                return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
+            case 'get_manuscripts':
+                return entries;
+            case 'get_wikis':
+                return [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+            case 'get_document':
+                return documents.get(String(data.nodeId)) ?? null;
+            case 'update_document':
+                documents.set(String(data.nodeId), String(data.content));
+                return true;
+            case 'plugin:window|title':
+                return 'Test World';
+            case 'plugin:window|is_maximized':
+                return false;
+            case 'plugin:dialog|open':
+                return '/test/worlds';
+            default:
+                return null;
+        }
+    },
+    { shouldMockEvents: true },
+);
+
+const bridge = {
+    calls,
+    documents,
+    menuCommand: (command: MenuCommand) => emit('menu-command', command),
+};
+
+export type UiTestBridge = typeof bridge;
 
 export async function initializeUiTest() {
     const [{ useNodeStore }, { openNewWorldDialog }] = await Promise.all([
@@ -77,5 +94,5 @@ export async function initializeUiTest() {
     if (scenario === 'dialog') {
         void openNewWorldDialog();
     }
-    Object.assign(window, { __kazmasTest: { calls, documents } });
+    Object.assign(window, { __kazmasTest: bridge });
 }
