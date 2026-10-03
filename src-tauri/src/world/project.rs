@@ -1,5 +1,9 @@
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
+#[path = "project_tests.rs"]
+mod tests;
+
 use sqlx::{Acquire, SqliteConnection};
 use tokio::fs;
 use uuid::Uuid;
@@ -106,6 +110,15 @@ impl WorldProject {
 
         let workspace_path = create_workspace_path(manifest.id, &temp_dir).await?;
         unpack_world(&package_path, &workspace_path)?;
+
+        let database_path = workspace_path.join(manifest.world_path());
+        if !fs::try_exists(&database_path).await? || !fs::metadata(&database_path).await?.is_file()
+        {
+            let _ = fs::remove_dir_all(&workspace_path).await;
+            return Err(KazmasError::Invalid(
+                "world package has no database file".into(),
+            ));
+        }
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = database::open_database(world_db).await?;

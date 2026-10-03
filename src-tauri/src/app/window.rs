@@ -75,7 +75,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
 
     focus_window(&window)?;
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     window.open_devtools();
 
     Ok(())

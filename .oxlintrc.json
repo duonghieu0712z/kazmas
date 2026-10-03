@@ -7,7 +7,14 @@
     "categories": {
         "correctness": "error"
     },
-    "ignorePatterns": ["dist/**", "src/generated/**", "src-tauri/target/**"],
+    "ignorePatterns": [
+        "dist/**",
+        "temp/**",
+        ".artifacts/**",
+        "src/generated/**",
+        "src-tauri/target/**",
+        "src-tauri/gen/**"
+    ],
     "rules": {
         "curly": "error",
         "import/consistent-type-specifier-style": "error",

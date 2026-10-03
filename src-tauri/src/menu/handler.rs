@@ -28,6 +28,9 @@ pub(crate) async fn handle_menu_event(
         return Ok(());
     };
     let command = MenuCommand::from_str(id)?;
+    if matches!(command, MenuCommand::Save | MenuCommand::SaveAs) {
+        return emit_menu_event(app, window_id, command);
+    }
     handle_command(app, command, window_id).await
 }
 

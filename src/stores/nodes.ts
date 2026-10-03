@@ -18,6 +18,7 @@ export const useNodeStore = defineStore('nodes', () => {
     const wikiNodes = shallowRef<NodeDto[]>([]);
     const selectedNodeId = shallowRef<string | null>(null);
     const openedNodeId = shallowRef<string | null>(null);
+    let revision = 0;
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
@@ -34,37 +35,41 @@ export const useNodeStore = defineStore('nodes', () => {
     });
 
     const clearNodes = () => {
+        revision += 1;
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
         openedNodeId.value = null;
     };
 
-    function selectNode(node: NodeDto) {
+    const selectNode = (node: NodeDto) => {
         selectedNodeId.value = node.id;
-    }
+    };
 
-    function openNode(node: NodeDto) {
+    const openNode = (node: NodeDto) => {
         if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
             openedNodeId.value = node.id;
         }
-    }
+    };
 
     const loadManuscripts = async () => {
+        const currentRevision = revision;
         const result = await commands.getManuscripts();
-        if (result.status === 'ok') {
+        if (currentRevision === revision && result.status === 'ok') {
             manuscriptNodes.value = result.data ?? [];
         }
     };
 
     const loadWikis = async () => {
+        const currentRevision = revision;
         const result = await commands.getWikis();
-        if (result.status === 'ok') {
+        if (currentRevision === revision && result.status === 'ok') {
             wikiNodes.value = result.data ?? [];
         }
     };
 
     const reloadNodes = async () => {
+        revision += 1;
         await Promise.all([loadManuscripts(), loadWikis()]);
     };
 
@@ -109,8 +114,13 @@ function buildNodePath(rootName: string, nodes: NodeDto[], nodeId: string) {
     }
 
     const path: NodePathItem[] = [];
+    const visited = new Set<string>();
     let node = nodeMap.get(nodeId);
     while (node) {
+        if (visited.has(node.id)) {
+            return;
+        }
+        visited.add(node.id);
         path.unshift({
             id: node.id,
             name: node.name,

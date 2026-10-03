@@ -2,7 +2,13 @@ import { open } from '@tauri-apps/plugin-dialog';
 
 import { openNewWorldDialog, openSaveWorldDialog, openWindowPlacementDialog } from '@/dialogs';
 import { commands, EXTENSION } from '@/generated/bindings';
-import { AlertDialogResult } from '@/providers/dialog';
+import { flushDocumentSaves } from '@/lib/document-saves';
+import {
+    AlertDialogButtons,
+    AlertDialogKind,
+    AlertDialogResult,
+    openAlertDialog,
+} from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
 export async function newWorld() {
@@ -74,6 +80,18 @@ export async function closeWorld() {
 
 async function confirmWorldTransition() {
     const world = useWorldStore();
+    try {
+        await flushDocumentSaves();
+    } catch (error) {
+        await openAlertDialog({
+            title: 'Document Save Failed',
+            content: error instanceof Error ? error.message : String(error),
+            kind: AlertDialogKind.Error,
+            buttons: AlertDialogButtons.Ok,
+        });
+        return false;
+    }
+
     if (!world.isDirty) {
         return true;
     }

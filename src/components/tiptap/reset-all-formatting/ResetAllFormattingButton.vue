@@ -41,6 +41,7 @@ const delegatedProps = reactiveOmit(
     <TooltipWrapper v-if="isVisible" :show-tooltip="showTooltip">
         <Button
             v-bind="delegatedProps"
+            :aria-label="label"
             :disabled="!canReset"
             :size="showLabel ? 'default' : 'icon'"
             type="button"

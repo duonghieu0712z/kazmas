@@ -5,6 +5,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { closeWorld, newWorld, openWorld } from '@/actions/world';
 import { openAboutDialog } from '@/dialogs';
 import { commands, events } from '@/generated/bindings';
+import { flushDocumentSaves } from '@/lib/document-saves';
 import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
@@ -48,6 +49,9 @@ export async function executeMenuCommand(command: MenuCommand) {
     }
 
     if (backendMenuCommands.has(command)) {
+        if (['save', 'save-as', 'close-window', 'quit'].includes(command)) {
+            await flushDocumentSaves();
+        }
         await commands.executeMenuCommand(command);
         return;
     }

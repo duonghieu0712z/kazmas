@@ -6,7 +6,11 @@ use tokio::fs;
 use uuid::Uuid;
 use zip::ZipArchive;
 
-use crate::app::KazmasResult;
+use crate::app::{KazmasError, KazmasResult};
+
+#[cfg(test)]
+#[path = "manifest_tests.rs"]
+mod tests;
 
 const MANIFEST_ENTRY: &str = "manifest.json";
 const WORLD_DB: &str = "data/world.db";
@@ -65,7 +69,19 @@ pub(crate) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldMani
     let mut manifest_json = String::new();
     manifest_file.read_to_string(&mut manifest_json)?;
 
-    let manifest = serde_json::from_str(&manifest_json)?;
+    let manifest: WorldManifest = serde_json::from_str(&manifest_json)?;
+    for path in [&manifest.paths.world, &manifest.paths.assets] {
+        let normalized = path.replace('\\', "/");
+        if normalized.is_empty()
+            || normalized.starts_with('/')
+            || normalized.contains(':')
+            || normalized
+                .split('/')
+                .any(|part| part == ".." || part == ".")
+        {
+            return Err(KazmasError::Invalid(format!("unsafe manifest path {path}")));
+        }
+    }
     Ok(manifest)
 }
 
