@@ -24,8 +24,11 @@ const workspaceWidth = ref(1200);
 const panelScale = ref(1);
 const sidebarBorderWidth = ref(2);
 const activityBarWidth = ref(41);
+const activityBarBorderWidth = ref(1);
 
 const fixedSidebarWidth = computed(() => activityBarWidth.value + sidebarBorderWidth.value);
+const collapsedWidth = computed(() => fixedSidebarWidth.value - activityBarBorderWidth.value);
+const collapsedSidebarSize = computed(() => toPanelSize(collapsedWidth.value));
 const lastExpandedSize = computed({
     get: () => sidebarPreferences.value.width + fixedSidebarWidth.value,
     set: (width: number) => {
@@ -84,10 +87,11 @@ useResizeObserver(workspace, ([entry]) => {
     sidebarBorderWidth.value = sidebarStyle
         ? parseFloat(sidebarStyle.borderLeftWidth) + parseFloat(sidebarStyle.borderRightWidth)
         : 0;
-    activityBarWidth.value =
-        panels[0]
-            ?.querySelector('[data-slot=sidebar-content]')
-            ?.parentElement?.getBoundingClientRect().width ?? activityBarWidth.value;
+    const activityBar = panels[0]?.querySelector('[data-slot=sidebar-content]')?.parentElement;
+    if (activityBar) {
+        activityBarWidth.value = activityBar.getBoundingClientRect().width;
+        activityBarBorderWidth.value = parseFloat(getComputedStyle(activityBar).borderRightWidth);
+    }
     nextTick(() => {
         if (open.value) {
             restoreSidebarSize();
@@ -107,7 +111,7 @@ function handleSidebarDragging(dragging: boolean) {
 
 function handleSidebarResize(size: number) {
     if (isResizing.value) {
-        setOpen(size > 42.01);
+        setOpen(size > collapsedSidebarSize.value + 0.01);
     }
 }
 
@@ -150,16 +154,17 @@ watch(open, (value) => {
             :class="
                 open
                     ? 'max-w-(--sidebar-max-width) min-w-(--sidebar-min-width)'
-                    : 'flex-[0_0_calc(var(--sidebar-width-icon)+2px)]!'
+                    : 'flex-[0_0_var(--sidebar-collapsed-width)]!'
             "
-            :collapsed-size="42"
+            :collapsed-size="collapsedSidebarSize"
             collapsible
-            :default-size="open ? toPanelSize(lastExpandedSize) : 42"
+            :default-size="open ? toPanelSize(lastExpandedSize) : collapsedSidebarSize"
             :max-size="maxSidebarSize"
             :min-size="minSidebarSize"
             size-unit="px"
             :style="{
                 flexGrow: layout[0],
+                '--sidebar-collapsed-width': `${collapsedWidth}px`,
                 '--sidebar-min-width': `${minExpandedWidth}px`,
                 '--sidebar-max-width': `${maxExpandedWidth}px`,
             }"
