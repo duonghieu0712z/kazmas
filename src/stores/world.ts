@@ -9,7 +9,10 @@ import { useNodeStore } from '@/stores/nodes';
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
     const dirty = shallowRef(false);
-    let initialized = false;
+
+    let initialization: Promise<void> | undefined;
+    let stopListening: (() => void) | undefined;
+    onScopeDispose(() => stopListening?.());
 
     const hasWorld = computed(() => manifest.value !== null);
     const isDirty = computed(() => dirty.value);
@@ -17,14 +20,16 @@ export const useWorldStore = defineStore('world', () => {
 
     const nodes = useNodeStore();
 
-    watch(hasWorld, async (value) => {
-        if (value) {
-            await nodes.reloadNodes();
-            return;
-        }
-
-        nodes.clearNodes();
-    });
+    watch(
+        () => manifest.value?.id,
+        async (value) => {
+            nodes.clearNodes();
+            if (value) {
+                await nodes.reloadNodes();
+                return;
+            }
+        },
+    );
 
     const setManifest = (value: WorldManifestDto) => {
         manifest.value = value;
@@ -49,18 +54,29 @@ export const useWorldStore = defineStore('world', () => {
         }
     };
 
-    const initWorld = async () => {
-        if (initialized) {
-            return;
+    const initialize = async () => {
+        let unlisten: (() => void) | undefined;
+        try {
+            const window = getCurrentWebviewWindow();
+            unlisten = await events.worldChanged(window).listen(({ payload }) => {
+                dirty.value = payload;
+            });
+            await loadWorld();
+            stopListening = unlisten;
+        } catch (error) {
+            unlisten?.();
+            initialization = undefined;
+            throw error;
         }
+    };
 
-        const window = getCurrentWebviewWindow();
-        await events.worldChanged(window).listen(({ payload }) => {
-            dirty.value = payload;
-        });
-        await loadWorld();
+    const initWorld = () => {
+        initialization ??= initialize();
+        return initialization;
+    };
 
-        initialized = true;
+    const markDirty = () => {
+        dirty.value = true;
     };
 
     return {
@@ -71,5 +87,6 @@ export const useWorldStore = defineStore('world', () => {
         initWorld,
         setManifest,
         clearManifest,
+        markDirty,
     };
 });

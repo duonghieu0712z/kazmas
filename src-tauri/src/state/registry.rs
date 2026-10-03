@@ -3,6 +3,10 @@ use std::collections::HashMap;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+#[cfg(test)]
+#[path = "registry_tests.rs"]
+mod tests;
+
 use crate::app::{KazmasError, KazmasResult};
 
 type WindowId = Uuid;

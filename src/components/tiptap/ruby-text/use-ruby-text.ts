@@ -90,10 +90,10 @@ export function useRubyText(config: UseRubyTextConfig = {}) {
                 return;
             }
 
-            function updateRubyTextState() {
+            const updateRubyTextState = () => {
                 const rt = currentEditor?.getAttributes('rubyText').rt;
                 annotation.value = typeof rt === 'string' ? rt : '';
-            }
+            };
 
             updateRubyTextState();
             currentEditor.on('selectionUpdate', updateRubyTextState);

@@ -1,0 +1,16 @@
+{
+    "identifier": "com.kazmas.desktop.tests",
+    "app": {
+        "withGlobalTauri": true,
+        "security": {
+            "capabilities": [
+                "default",
+                {
+                    "identifier": "desktop-tests",
+                    "windows": ["kazmas-window:*"],
+                    "permissions": ["wdio:default"]
+                }
+            ]
+        }
+    }
+}

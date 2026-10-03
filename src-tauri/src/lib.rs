@@ -9,9 +9,12 @@ mod store;
 mod utils;
 mod world;
 
+#[cfg(test)]
+mod test_support;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     let devtools_plugin = tauri_plugin_devtools::init::<tauri::Wry>();
 
     let specta_builder = tauri_specta::Builder::<tauri::Wry>::new()
@@ -20,7 +23,7 @@ pub fn run() {
         .constant("EXTENSION", world::EXTENSION)
         .constant("TITLE_BAR_HEIGHT", app::TITLE_BAR_HEIGHT);
 
-    #[cfg(all(debug_assertions, not(mobile)))]
+    #[cfg(all(debug_assertions, not(mobile), not(feature = "desktop-tests")))]
     {
         use specta_typescript::Typescript;
 
@@ -33,6 +36,11 @@ pub fn run() {
 
     let builder = tauri::Builder::default();
 
+    #[cfg(feature = "desktop-tests")]
+    let builder = builder
+        .plugin(tauri_plugin_wdio::init())
+        .plugin(tauri_plugin_wdio_webdriver::init());
+
     #[cfg(desktop)]
     let builder = builder.plugin(tauri_plugin_single_instance::init(
         app::handle_single_instance_launch,
@@ -44,7 +52,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_prevent_default::debug());
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     let builder = builder.plugin(devtools_plugin);
 
     #[cfg(not(debug_assertions))]
@@ -63,9 +71,25 @@ pub fn run() {
             .build(),
     );
 
+    let invoke_handler = specta_builder.invoke_handler();
+
+    #[cfg(feature = "desktop-tests")]
+    #[allow(clippy::items_after_statements)]
+    let testing_handler: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool =
+        tauri::generate_handler![command::testing::test_save_world_as];
+
+    #[cfg(feature = "desktop-tests")]
+    let invoke_handler = move |invoke: tauri::ipc::Invoke<tauri::Wry>| {
+        if invoke.message.command() == "test_save_world_as" {
+            testing_handler(invoke)
+        } else {
+            invoke_handler(invoke)
+        }
+    };
+
     if let Err(error) = builder
         .manage(state::AppState::default())
-        .invoke_handler(specta_builder.invoke_handler())
+        .invoke_handler(invoke_handler)
         .setup(move |app| {
             let handle = app.handle();
             specta_builder.mount_events(handle);

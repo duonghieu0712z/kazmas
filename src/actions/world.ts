@@ -2,6 +2,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 
 import { openNewWorldDialog, openSaveWorldDialog, openWindowPlacementDialog } from '@/dialogs';
 import { commands, EXTENSION } from '@/generated/bindings';
+import { flushDocumentSaves } from '@/lib/document-saves';
 import { AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
@@ -74,6 +75,12 @@ export async function closeWorld() {
 
 async function confirmWorldTransition() {
     const world = useWorldStore();
+    try {
+        await flushDocumentSaves();
+    } catch {
+        return false;
+    }
+
     if (!world.isDirty) {
         return true;
     }

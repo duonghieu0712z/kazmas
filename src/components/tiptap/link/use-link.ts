@@ -118,10 +118,10 @@ export function useLink(config: UseLinkConfig = {}) {
                 return;
             }
 
-            function updateLinkState() {
+            const updateLinkState = () => {
                 const href = currentEditor?.getAttributes('link').href;
                 url.value = typeof href === 'string' ? href : '';
-            }
+            };
 
             updateLinkState();
             currentEditor.on('selectionUpdate', updateLinkState);
