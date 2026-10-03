@@ -8,5 +8,5 @@ interface SidebarPreferences {
 export const sidebarPreferences = useLocalStorage<SidebarPreferences>(
     'sidebar_state',
     { open: true, width: 240 },
-    { flush: 'sync' },
+    { flush: 'sync', mergeDefaults: true },
 );
