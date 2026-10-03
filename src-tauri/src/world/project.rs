@@ -114,6 +114,7 @@ impl WorldProject {
         let database_path = workspace_path.join(manifest.world_path());
         if !fs::try_exists(&database_path).await? || !fs::metadata(&database_path).await?.is_file()
         {
+            let _ = fs::remove_dir_all(&workspace_path).await;
             return Err(KazmasError::Invalid(
                 "world package has no database file".into(),
             ));

@@ -160,19 +160,24 @@ async fn rejects_existing_target_invalid_extension_missing_and_corrupt_packages(
 }
 
 #[tokio::test]
-async fn rejects_package_with_missing_database_without_rewriting_it() -> TestResult {
+async fn missing_database_cleans_workspace_and_preserves_package() -> TestResult {
     let dir = temp_dir()?;
     let workspace = dir.path().join("incomplete");
     fs::create_dir(&workspace).await?;
-    write_manifest(&WorldManifest::new("Incomplete"), &workspace).await?;
+    let manifest = WorldManifest::new("Incomplete");
+    write_manifest(&manifest, &workspace).await?;
     let package = dir.path().join("incomplete.kazmas");
     pack_world(&workspace, &package)?;
     let original = fs::read(&package).await?;
-    assert!(
-        WorldProject::open_world(&package, dir.path())
-            .await
-            .is_err()
-    );
+    let temp = dir.path().join("workspaces");
+    for _ in 0..2 {
+        assert!(matches!(
+            WorldProject::open_world(&package, &temp).await,
+            Err(KazmasError::Invalid(message)) if message == "world package has no database file"
+        ));
+        let mut workspaces = fs::read_dir(temp.join(manifest.id.simple().to_string())).await?;
+        assert!(workspaces.next_entry().await?.is_none());
+    }
     assert_eq!(fs::read(package).await?, original);
     Ok(())
 }
