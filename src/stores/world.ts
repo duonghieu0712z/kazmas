@@ -19,17 +19,24 @@ export const useWorldStore = defineStore('world', () => {
     const worldName = computed(() => manifest.value?.name ?? null);
 
     const nodes = useNodeStore();
+    let nodeReload = Promise.resolve();
 
     watch(
         () => manifest.value?.id,
         async (value) => {
             nodes.clearNodes();
+            nodeReload = value ? nodes.reloadNodes() : Promise.resolve();
             if (value) {
-                await nodes.reloadNodes();
+                await nodeReload;
                 return;
             }
         },
     );
+
+    const waitForNodes = async () => {
+        await nextTick();
+        await nodeReload;
+    };
 
     const setManifest = (value: WorldManifestDto) => {
         manifest.value = value;
@@ -87,6 +94,7 @@ export const useWorldStore = defineStore('world', () => {
         initWorld,
         setManifest,
         clearManifest,
+        waitForNodes,
         markDirty,
     };
 });

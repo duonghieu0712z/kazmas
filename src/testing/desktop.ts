@@ -15,7 +15,7 @@ const bridge = {
         }
         if (result.data) {
             useWorldStore().setManifest(result.data);
-            await useNodeStore().reloadNodes();
+            await useWorldStore().waitForNodes();
         }
         return result.data;
     },
@@ -26,7 +26,7 @@ const bridge = {
         }
         if (result.data) {
             useWorldStore().setManifest(result.data);
-            await useNodeStore().reloadNodes();
+            await useWorldStore().waitForNodes();
         }
         return result.data;
     },
