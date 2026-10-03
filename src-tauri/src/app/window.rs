@@ -19,6 +19,8 @@ const WEBVIEW_URL: &str = "index.html";
 const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
+const WINDOW_MIN_WIDTH: f64 = 420.0;
+const WINDOW_MIN_HEIGHT: f64 = 300.0;
 
 pub(crate) const TITLE_BAR_HEIGHT: f64 = 32.0;
 #[cfg(target_os = "macos")]
@@ -31,6 +33,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
     let builder = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
         .title(WINDOW_TITLE)
         .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
         .center();
 
     #[cfg(target_os = "macos")]
