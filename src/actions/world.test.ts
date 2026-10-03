@@ -1,7 +1,9 @@
+import type * as DialogModule from '@/providers/dialog';
+
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AlertDialogResult } from '@/providers/dialog';
+import { AlertDialogButtons, AlertDialogKind, AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
 import { manifest } from '../../tests/unit/fixtures';
@@ -13,6 +15,7 @@ const dialogs = vi.hoisted(() => ({
     create: vi.fn(),
     placement: vi.fn(),
     flush: vi.fn(),
+    error: vi.fn(),
 }));
 vi.mock('@/dialogs', () => ({
     openSaveWorldDialog: dialogs.save,
@@ -20,6 +23,10 @@ vi.mock('@/dialogs', () => ({
     openWindowPlacementDialog: dialogs.placement,
 }));
 vi.mock('@/lib/document-saves', () => ({ flushDocumentSaves: dialogs.flush }));
+vi.mock('@/providers/dialog', async (importOriginal) => ({
+    ...(await importOriginal<typeof DialogModule>()),
+    openAlertDialog: dialogs.error,
+}));
 
 describe('world actions', () => {
     beforeEach(() => {
@@ -70,14 +77,26 @@ describe('world actions', () => {
         expect(store.hasWorld).toBe(true);
     });
 
-    it('does not switch worlds when a document write fails', async () => {
+    it('reports failed document writes and cancels all world transitions', async () => {
+        const store = useWorldStore();
+        store.setManifest(manifest());
         dialogs.flush.mockRejectedValue(new Error('Write failed'));
         await newWorld();
         await openWorld();
         await closeWorld();
+        expect(dialogs.error).toHaveBeenCalledTimes(3);
+        expect(dialogs.error).toHaveBeenCalledWith({
+            title: 'Document Save Failed',
+            content: 'Write failed',
+            kind: AlertDialogKind.Error,
+            buttons: AlertDialogButtons.Ok,
+        });
+        expect(dialogs.save).not.toHaveBeenCalled();
+        expect(dialogs.placement).not.toHaveBeenCalled();
         expect(dialogs.create).not.toHaveBeenCalled();
         expect(tauri.open).not.toHaveBeenCalled();
         expect(tauri.closeWorld).not.toHaveBeenCalled();
+        expect(store.worldName).toBe('world-a');
     });
 
     it('creates a world and uses the returned manifest', async () => {
