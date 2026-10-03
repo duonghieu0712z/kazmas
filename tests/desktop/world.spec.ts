@@ -150,7 +150,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
                 (path) => window.__kazmasDesktopTest.open(path, true),
                 packagePath,
             );
-            expect(await browser.getWindowHandles()).toEqual(handles);
+            expect((await browser.getWindowHandles()).sort()).toEqual([...handles].sort());
             expect(await browser.execute(() => window.__kazmasDesktopTest.world())).toBeNull();
             await browser.switchToWindow(owner);
             expect(await browser.execute(() => window.__kazmasDesktopTest.world()?.name)).toBe(

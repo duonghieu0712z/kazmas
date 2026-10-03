@@ -5,8 +5,12 @@ import { expect, test } from '@playwright/test';
 const mac = process.platform === 'darwin';
 
 async function expectPlatformChrome(page: Page) {
-    const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true });
-    const closeWindow = page.getByRole('button', { name: 'Close window', exact: true });
+    const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true, includeHidden: true });
+    const closeWindow = page.getByRole('button', {
+        name: 'Close window',
+        exact: true,
+        includeHidden: true,
+    });
     if (mac) {
         await expect(fileMenu).toHaveCount(0);
         await expect(closeWindow).toHaveCount(0);
