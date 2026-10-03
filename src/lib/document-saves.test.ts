@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { deferred } from '../../tests/unit/fixtures';
+import { deferred } from '../../tests/support/fixtures';
 import { createDocumentSaveQueue, flushDocumentSaves } from './document-saves';
 
 describe('document saves', () => {

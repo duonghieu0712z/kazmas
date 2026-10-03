@@ -1,4 +1,4 @@
-import type { DesktopTestBridge } from '@/testing/desktop';
+import type { DesktopTestBridge } from './bridge';
 import type {
     describe as mochaDescribe,
     it as mochaIt,

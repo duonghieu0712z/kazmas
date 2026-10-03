@@ -19,7 +19,7 @@ export const config: WebdriverIO.Config = {
             browserName: 'wry',
             'wdio:tauriServiceOptions': {
                 appBinaryPath: resolve(
-                    `src-tauri/target/debug/kazmas${process.platform === 'win32' ? '.exe' : ''}`,
+                    `.artifacts/desktop/bin/kazmas${process.platform === 'win32' ? '.exe' : ''}`,
                 ),
                 driverProvider: 'embedded',
             },
@@ -31,7 +31,7 @@ export const config: WebdriverIO.Config = {
             {
                 driverProvider: 'embedded',
                 appBinaryPath: resolve(
-                    `src-tauri/target/debug/kazmas${process.platform === 'win32' ? '.exe' : ''}`,
+                    `.artifacts/desktop/bin/kazmas${process.platform === 'win32' ? '.exe' : ''}`,
                 ),
                 captureBackendLogs: true,
                 captureFrontendLogs: true,

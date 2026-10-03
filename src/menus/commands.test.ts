@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { deferred } from '../../tests/unit/fixtures';
+import { deferred } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
 import { executeMenuCommand } from './commands';
 

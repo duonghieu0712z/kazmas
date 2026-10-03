@@ -58,6 +58,9 @@ watch(
 
         try {
             const result = await commands.getDocument(nodeId);
+            if (result.status === 'error') {
+                throw new Error('Document could not be loaded.');
+            }
             if (nodes.openedNodeId === nodeId && result.status === 'ok') {
                 document.value = {
                     nodeId,

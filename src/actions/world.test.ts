@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AlertDialogButtons, AlertDialogKind, AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
-import { manifest } from '../../tests/unit/fixtures';
+import { manifest } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
 import { closeWorld, newWorld, openWorld } from './world';
 

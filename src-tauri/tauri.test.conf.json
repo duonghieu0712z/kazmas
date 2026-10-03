@@ -1,5 +1,9 @@
 {
     "identifier": "com.kazmas.desktop.tests",
+    "build": {
+        "beforeBuildCommand": "node scripts/build-desktop-tests.js --frontend-only",
+        "frontendDist": "../.artifacts/desktop/frontend"
+    },
     "app": {
         "withGlobalTauri": true,
         "security": {

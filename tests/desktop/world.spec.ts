@@ -28,8 +28,10 @@ async function expectDocumentText(expected: string) {
 describe('desktop world lifecycle with real SQLite and packages', () => {
     let name: string;
     let packagePath: string;
+    let owner: string;
 
     beforeEach(async () => {
+        owner = await browser.getWindowHandle();
         await browser.waitUntil(() => browser.execute(() => Boolean(window.__kazmasDesktopTest)), {
             timeout: 30000,
         });
@@ -49,10 +51,24 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
     });
 
     afterEach(async () => {
-        const hasWorld = await browser.execute(() => Boolean(window.__kazmasDesktopTest.world()));
-        if (hasWorld) {
-            await browser.execute(() => window.__kazmasDesktopTest.save());
-            await browser.execute(() => window.__kazmasDesktopTest.close());
+        const errors: unknown[] = [];
+        const handles = await browser.getWindowHandles();
+        for (const handle of handles.filter((handle) => handle !== owner)) {
+            try {
+                await browser.switchToWindow(handle);
+                await browser.closeWindow();
+            } catch (error) {
+                errors.push(error);
+            }
+        }
+        try {
+            await browser.switchToWindow(owner);
+            await browser.execute(() => window.__kazmasDesktopTest.reset());
+        } catch (error) {
+            errors.push(error);
+        }
+        if (errors.length) {
+            throw new AggregateError(errors, 'Desktop test cleanup failed.');
         }
     });
 
@@ -63,6 +79,34 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await openChapterA();
         await expectDocumentText('Unicode \u65e5\u672c\u8a9e and formatted manuscript');
+    });
+
+    it('saves formatted content through application controls', async () => {
+        await $('.tiptap').setValue('Formatted manuscript');
+        await $('.tiptap').click();
+        await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+        await $('button[aria-label="Bold"]').click();
+        await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
+        if (process.platform === 'darwin') {
+            await browser.keys(['Meta', 's']);
+        } else {
+            await $('//*[@role="menuitem"][normalize-space(.)="File"]').click();
+            await browser.keys('ArrowDown');
+            await $(
+                '//*[@role="menuitem"][contains(., "Save") and not(contains(., "Save As"))]',
+            ).click();
+        }
+        await browser.waitUntil(async () => {
+            const saved = await readFile(packagePath);
+            return (
+                saved.length > 0 &&
+                !(await browser.execute(() => window.__kazmasDesktopTest.isDirty()))
+            );
+        });
+        await browser.execute(() => window.__kazmasDesktopTest.close());
+        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await openChapterA();
+        await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
     });
 
     it('switches documents before debounce expires without losing the first edit', async () => {
@@ -127,9 +171,8 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect($('.tiptap')).toBeDisplayed();
     });
 
-    it('focuses an existing project instead of creating a duplicate window', async () => {
+    it('keeps the existing project owner without creating a duplicate window', async () => {
         await browser.execute(() => window.__kazmasDesktopTest.save());
-        const owner = await browser.getWindowHandle();
         const before = await browser.getWindowHandles();
         await browser.execute(() => window.__kazmasDesktopTest.newWindow());
         await browser.waitUntil(

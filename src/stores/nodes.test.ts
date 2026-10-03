@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { deferred, node } from '../../tests/unit/fixtures';
+import { deferred, node } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
 import { useNodeStore } from './nodes';
 

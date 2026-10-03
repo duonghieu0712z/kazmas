@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 
 import { useNodeStore } from '@/stores/nodes';
 
-import { node } from '../../../tests/unit/fixtures';
+import { node } from '../../../tests/support/fixtures';
 import { tauri } from '../../../tests/unit/tauri';
 import NodeBreadcrumb from './NodeBreadcrumb.vue';
 

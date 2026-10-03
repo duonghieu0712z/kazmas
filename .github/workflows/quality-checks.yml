@@ -42,10 +42,7 @@ jobs:
           fail_level: error
           eslint_flags: '. --cache'
 
-      - name: Check types
-        run: pnpm type-check
-
-      - name: Check test types
+      - name: Check application, test and configuration types
         run: pnpm test:types
 
       - name: Test frontend with coverage

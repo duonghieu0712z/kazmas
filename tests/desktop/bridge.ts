@@ -4,6 +4,7 @@ import { closeWorld } from '@/actions/world';
 import { commands } from '@/generated/bindings';
 import { flushDocumentSaves } from '@/lib/document-saves';
 import { executeMenuCommand } from '@/menus';
+import { useDialogProvider } from '@/providers/dialog';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
@@ -43,10 +44,21 @@ const bridge = {
         await flushDocumentSaves();
         await invoke('test_save_world_as', { path });
     },
+    async reset() {
+        useDialogProvider().closeDialog();
+        await flushDocumentSaves();
+        const result = await commands.closeWorld();
+        if (result.status !== 'ok') {
+            throw new Error(result.error.message);
+        }
+        useWorldStore().clearManifest();
+        await useWorldStore().waitForNodes();
+    },
     close: closeWorld,
     newWindow: () => executeMenuCommand('new-window'),
     save: () => executeMenuCommand('save'),
     world: () => useWorldStore().manifest,
+    isDirty: () => useWorldStore().isDirty,
 };
 
 Object.assign(window, { __kazmasDesktopTest: bridge });

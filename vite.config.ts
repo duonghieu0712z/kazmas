@@ -11,20 +11,22 @@ const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(({ mode }) => {
     const isUiTest = mode === 'test-ui';
+    const isDesktopTest = mode === 'test-desktop';
+    const isTest = isUiTest || isDesktopTest;
 
     return {
         plugins: [
             vue(),
             tailwindcss(),
-            ...(!isUiTest ? [vueDevTools()] : []),
+            !isUiTest && vueDevTools(),
             AutoImport({
                 imports: ['vue'],
-                dts: isUiTest ? false : 'src/generated/auto-import.d.ts',
+                dts: isTest ? false : 'src/generated/auto-import.d.ts',
                 vueTemplate: true,
             }),
             Components({
                 dirs: ['src/components'],
-                dts: isUiTest ? false : 'src/generated/components.d.ts',
+                dts: isTest ? false : 'src/generated/components.d.ts',
             }),
         ],
         resolve: {
@@ -33,9 +35,16 @@ export default defineConfig(({ mode }) => {
             },
         },
 
-        optimizeDeps: isUiTest ? { entries: ['index.html'] } : undefined,
+        optimizeDeps: isUiTest ? { entries: ['tests/ui/index.html'] } : undefined,
+        build: isDesktopTest
+            ? {
+                  outDir: '.artifacts/desktop/frontend',
+                  rolldownOptions: { input: 'tests/desktop/index.html' },
+              }
+            : undefined,
         clearScreen: false,
         server: {
+            warmup: isUiTest ? { clientFiles: ['./tests/ui/main.ts', './src/main.ts'] } : undefined,
             port: isUiTest ? 1421 : 1420,
             strictPort: true,
             host: isUiTest ? '127.0.0.1' : host || false,

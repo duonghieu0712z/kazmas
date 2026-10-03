@@ -18,7 +18,7 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['src/**/*.test.ts'],
+        include: ['src/**/*.test.ts', 'tests/desktop/**/*.test.ts'],
         setupFiles: ['tests/unit/setup.ts'],
         clearMocks: true,
         restoreMocks: true,
@@ -29,6 +29,9 @@ export default defineConfig({
             include: [
                 'src/stores/**',
                 'src/actions/**',
+                'src/menus/**',
+                'src/dialogs/**',
+                'src/providers/**',
                 'src/features/**',
                 'src/extensions/tiptap/**',
                 'src/lib/document-saves.ts',

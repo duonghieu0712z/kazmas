@@ -3,14 +3,16 @@ import type { NodeDto } from '@/generated/bindings';
 import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineComponent } from 'vue';
 
+import { useDialogProvider } from '@/providers/dialog';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
-import { deferred, manifest, node } from '../../tests/unit/fixtures';
-import { tauri } from '../../tests/unit/tauri';
+import { deferred, manifest, node } from '../support/fixtures';
+import { tauri } from '../unit/tauri';
 
-import './desktop';
+import './bridge';
 
 vi.mock('@/actions/world', () => ({ closeWorld: vi.fn() }));
 vi.mock('@/menus', () => ({ executeMenuCommand: vi.fn() }));
@@ -54,4 +56,30 @@ describe('desktop bridge world loading', () => {
             expect(completed).toBe(true);
         },
     );
+
+    it('dismisses an active dialog and clears the world during cleanup', async () => {
+        const world = useWorldStore();
+        world.setManifest(manifest());
+        await flushPromises();
+        useNodeStore().openNode(node());
+        const dialogs = useDialogProvider();
+        const pending = dialogs.openDialog({ component: defineComponent({ render: () => null }) });
+        await window.__kazmasDesktopTest.reset();
+        await expect(pending).resolves.toBeNull();
+        expect(dialogs.activeDialog.value).toBeNull();
+        expect(tauri.closeWorld).toHaveBeenCalledTimes(1);
+        expect(world.hasWorld).toBe(false);
+        expect(useNodeStore().openedNodeId).toBeNull();
+    });
+
+    it('reports cleanup failures without clearing the current world', async () => {
+        useWorldStore().setManifest(manifest());
+        await flushPromises();
+        tauri.closeWorld.mockResolvedValueOnce({
+            status: 'error',
+            error: { code: 'IO', message: 'Close failed' },
+        });
+        await expect(window.__kazmasDesktopTest.reset()).rejects.toThrow('Close failed');
+        expect(useWorldStore().hasWorld).toBe(true);
+    });
 });

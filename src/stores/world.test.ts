@@ -2,7 +2,7 @@ import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { deferred, manifest, node } from '../../tests/unit/fixtures';
+import { deferred, manifest, node } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
 import { useNodeStore } from './nodes';
 import { useWorldStore } from './world';

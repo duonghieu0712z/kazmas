@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { useNodeStore } from '@/stores/nodes';
 
-import { node } from '../../../tests/unit/fixtures';
+import { node } from '../../../tests/support/fixtures';
 import NodeTreeView from './NodeTreeView.vue';
 
 describe('node tree interactions', () => {

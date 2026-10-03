@@ -9,7 +9,7 @@ import { flushDocumentSaves } from '@/lib/document-saves';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
-import { deferred, node } from '../../../tests/unit/fixtures';
+import { deferred, node } from '../../../tests/support/fixtures';
 import { tauri } from '../../../tests/unit/tauri';
 import Editor from './Editor.vue';
 
@@ -108,8 +108,11 @@ describe('editor persistence', () => {
         expect(tauri.updateDocument).toHaveBeenCalledTimes(1);
     });
 
-    it('shows malformed document errors without throwing from the watcher', async () => {
-        tauri.getDocument.mockResolvedValue({ status: 'ok', data: '{broken' });
+    it.each([
+        { status: 'ok' as const, data: '{broken' },
+        { status: 'error' as const, error: 'Read failed' },
+    ])('shows document load errors without throwing from the watcher: %j', async (result) => {
+        tauri.getDocument.mockResolvedValue(result);
         const wrapper = createEditor();
         await flushPromises();
         expect(wrapper.get('[role="alert"]').text()).toBe('Document could not be loaded.');

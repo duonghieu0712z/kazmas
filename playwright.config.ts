@@ -12,7 +12,7 @@ export default defineConfig({
     snapshotPathTemplate: '{testDir}/snapshots/{platform}/{projectName}/{testFilePath}/{arg}{ext}',
     reporter: [['list'], ['html', { outputFolder: '.artifacts/playwright/report', open: 'never' }]],
     use: {
-        baseURL: 'http://127.0.0.1:1421',
+        baseURL: 'http://127.0.0.1:1421/tests/ui/index.html',
         viewport: { width: 1200, height: 800 },
         locale: 'en-US',
         timezoneId: 'UTC',
@@ -28,7 +28,7 @@ export default defineConfig({
     webServer: {
         command: 'pnpm exec vite --mode test-ui',
         env: { VITE_UI_TEST_PLATFORM: process.platform },
-        url: 'http://127.0.0.1:1421',
+        url: 'http://127.0.0.1:1421/tests/ui/index.html',
         reuseExistingServer: false,
         timeout: 60000,
     },
