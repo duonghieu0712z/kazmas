@@ -31,8 +31,11 @@ const { separation, orientation } = injectResizableContext();
         <template v-if="props.withHandle">
             <div class="z-10">
                 <slot>
-                    <GripVerticalIcon v-if="separation === 'divider'" class="size-3 stroke-ring" />
-                    <EllipsisVerticalIcon v-else class="size-3 stroke-ring" />
+                    <GripVerticalIcon
+                        v-if="separation === 'divider'"
+                        class="size-3 stroke-ring/50"
+                    />
+                    <EllipsisVerticalIcon v-else class="size-3 stroke-ring/50" />
                 </slot>
             </div>
         </template>

@@ -33,6 +33,7 @@ export { default as SidebarProvider } from './SidebarProvider.vue';
 export { default as SidebarRail } from './SidebarRail.vue';
 export { default as SidebarSeparator } from './SidebarSeparator.vue';
 export { default as SidebarTrigger } from './SidebarTrigger.vue';
+export { sidebarPreferences } from './storage';
 export { useSidebar } from './utils';
 
 export const sidebarGapVariants = cva(

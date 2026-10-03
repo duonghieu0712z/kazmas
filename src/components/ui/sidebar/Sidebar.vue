@@ -3,10 +3,13 @@ import type { SidebarProps } from '.';
 
 import { computed } from 'vue';
 
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import SheetDescription from '@/components/ui/sheet/SheetDescription.vue';
-import SheetHeader from '@/components/ui/sheet/SheetHeader.vue';
-import SheetTitle from '@/components/ui/sheet/SheetTitle.vue';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 import { sidebarContainerVariants, sidebarGapVariants } from '.';
