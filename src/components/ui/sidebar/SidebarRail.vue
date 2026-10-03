@@ -3,13 +3,15 @@ import type { HTMLAttributes } from 'vue';
 
 import { cn } from '@/lib/utils';
 
-import { useSidebar } from './utils';
+import { sidebarRailVariants } from '.';
+import { useSidebar, useSidebarLayout } from './utils';
 
 const props = defineProps<{
     class?: HTMLAttributes['class'];
 }>();
 
-const { toggleSidebar } = useSidebar();
+const { state, toggleSidebar } = useSidebar();
+const layout = useSidebarLayout(null);
 </script>
 
 <template>
@@ -17,14 +19,11 @@ const { toggleSidebar } = useSidebar();
         aria-label="Toggle Sidebar"
         :class="
             cn(
-                'absolute inset-y-0 z-30 hidden w-4 -translate-x-1/2 transition-all ease-linear sm:flex',
-                'group-data-[side=left]:-right-4 group-data-[side=right]:left-0',
-                'after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 hover:after:bg-border',
-                'in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize',
-                '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
-                'group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full hover:group-data-[collapsible=offcanvas]:bg-background',
-                '[[data-side=left][data-collapsible=offcanvas]_&]:-right-2',
-                '[[data-side=right][data-collapsible=offcanvas]_&]:-left-2',
+                sidebarRailVariants({
+                    side: layout?.side.value,
+                    collapsible: layout?.collapsible.value,
+                    state,
+                }),
                 props.class,
             )
         "

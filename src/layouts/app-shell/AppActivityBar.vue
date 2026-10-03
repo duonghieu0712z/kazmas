@@ -47,7 +47,6 @@ const { open, setOpen } = useSidebar();
 
 function selectItem(item: ItemType) {
     if (open.value && props.modelValue === item.name) {
-        emit('update:modelValue', null);
         setOpen(false);
         return;
     }
@@ -61,17 +60,12 @@ onMounted(() => {
         emit('update:modelValue', ITEMS[0]!.name);
     }
 });
-
-watch(open, (val) => {
-    if (!val) {
-        emit('update:modelValue', null);
-    }
-});
 </script>
 
 <template>
     <Sidebar
-        class="w-(--sidebar-width-icon) items-center border-r bg-background text-foreground"
+        class="w-[calc(var(--sidebar-width-icon)+1px)] border-y border-r bg-background text-foreground"
+        :class="open ? 'border-y-transparent' : 'border-transparent'"
         collapsible="none"
     >
         <SidebarContent>
@@ -79,7 +73,7 @@ watch(open, (val) => {
                 <SidebarMenuItem
                     v-for="item in ITEMS"
                     :key="item.name"
-                    class="flex size-(--sidebar-width-icon) items-center justify-center"
+                    class="flex h-(--sidebar-width-icon) w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip
@@ -87,7 +81,7 @@ watch(open, (val) => {
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
                             '[&>svg]:stroke-ring hover:[&>svg]:stroke-interactive-foreground active:[&>svg]:stroke-interactive-foreground data-[active=true]:[&>svg]:stroke-interactive-foreground',
                         ]"
-                        :is-active="modelValue === item.name"
+                        :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
                     >
@@ -103,7 +97,7 @@ watch(open, (val) => {
                 <SidebarMenuItem
                     v-for="item in FOOTERS"
                     :key="item.name"
-                    class="flex size-(--sidebar-width-icon) items-center justify-center"
+                    class="flex h-(--sidebar-width-icon) w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip

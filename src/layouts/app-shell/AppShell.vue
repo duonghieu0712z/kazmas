@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { TITLE_BAR_HEIGHT } from '@/generated/bindings';
 
-import AppContent from './AppContent.vue';
-import AppSidebar from './AppSidebar.vue';
 import AppStatusBar from './AppStatusBar.vue';
 import AppTitleBar from './AppTitleBar.vue';
+import AppWorkspace from './AppWorkspace.vue';
 
 const STATUS_BAR_HEIGHT = '1.5rem';
 </script>
@@ -18,12 +17,7 @@ const STATUS_BAR_HEIGHT = '1.5rem';
         }"
     >
         <AppTitleBar />
-
-        <div class="flex min-h-0 min-w-0 flex-1 overflow-hidden">
-            <AppSidebar />
-            <AppContent />
-        </div>
-
+        <AppWorkspace />
         <AppStatusBar />
     </SidebarProvider>
 </template>
