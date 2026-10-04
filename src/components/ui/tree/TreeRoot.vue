@@ -68,7 +68,7 @@ provideTreeContext({
     <TreeRoot
         v-slot="item"
         v-bind="forwarded"
-        :class="cn('h-full space-y-px', props.class)"
+        :class="cn('h-full', props.class)"
         data-slot="tree-root"
         :get-key="getKey"
     >

@@ -58,13 +58,14 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-xs pe-2 text-xs text-muted-foreground transition-colors outline-none',
+                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs text-muted-foreground transition-colors outline-none',
                     'hover:bg-interactive focus-visible:bg-interactive data-selected:bg-interactive data-selected:text-foreground',
                     'data-disabled:pointer-events-none data-disabled:opacity-50',
                     // Indent guide
                     indentGuide && [
                         `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
-                        'before:bg-[repeating-linear-gradient(to_right,var(--border)_0,var(--border)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
+                        '[--tree-item-guide-color:color-mix(in_oklab,var(--border)_75%,var(--ring)_25%)]',
+                        'before:bg-[repeating-linear-gradient(to_right,var(--tree-item-guide-color)_0,var(--tree-item-guide-color)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
                     ],
                 ],
                 props.class,
