@@ -29,6 +29,7 @@ Object.defineProperty(window, 'matchMedia', {
 afterEach(() => {
     vi.useRealTimers();
     localStorage.clear();
+    sessionStorage.clear();
     document.body.innerHTML = '';
 });
 

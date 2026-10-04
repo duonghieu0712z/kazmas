@@ -1,6 +1,7 @@
 import type { NodeTreeDto } from '@/stores/nodes';
 
-import { computed, nextTick, ref, shallowRef, watch } from 'vue';
+import { useSessionStorage } from '@vueuse/core';
+import { computed, nextTick, ref, watch } from 'vue';
 
 import { commands } from '@/generated/bindings';
 import { useNodeStore } from '@/stores/nodes';
@@ -8,14 +9,47 @@ import { useWorldStore } from '@/stores/world';
 
 export type NodeTreeSection = 'Manuscript' | 'Wiki';
 
+interface NodeTreeState {
+    query: string;
+    expanded: string[];
+    filteredExpanded: string[];
+    selectedId: string | null;
+}
+
 export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSection }) {
     const nodes = useNodeStore();
     const world = useWorldStore();
 
-    const query = ref('');
-    const expanded = ref<string[]>([]);
-    const filteredExpanded = ref<string[]>([]);
-    const selected = shallowRef<NodeTreeDto>();
+    const preferences = useSessionStorage<Record<string, NodeTreeState>>(
+        `node_tree_state:${props.section}`,
+        {},
+    );
+    const emptyState = ref(createTreeState());
+    const state = computed(() => {
+        const worldId = world.manifest?.id;
+
+        return worldId ? (preferences.value[worldId] ?? emptyState.value) : emptyState.value;
+    });
+
+    const query = computed({
+        get: () => state.value.query,
+        set: (value: string) => {
+            state.value.query = value;
+            state.value.filteredExpanded = collectBranches(
+                filterTree(props.tree, value.trim().toLocaleLowerCase()),
+            );
+        },
+    });
+    const selected = computed({
+        get: () => {
+            const id = state.value.selectedId;
+
+            return id ? findNode(props.tree, id) : undefined;
+        },
+        set: (node: NodeTreeDto | undefined) => {
+            state.value.selectedId = node?.id ?? null;
+        },
+    });
 
     const creating = ref(false);
     const createError = ref('');
@@ -25,12 +59,12 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
     const hasBranches = computed(() => filteredTree.value.some((node) => node.children.length > 0));
 
     const visibleExpanded = computed({
-        get: () => (search.value ? filteredExpanded.value : expanded.value),
+        get: () => (search.value ? state.value.filteredExpanded : state.value.expanded),
         set: (value: string[]) => {
             if (search.value) {
-                filteredExpanded.value = value;
+                state.value.filteredExpanded = value;
             } else {
-                expanded.value = value;
+                state.value.expanded = value;
             }
         },
     });
@@ -38,18 +72,16 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
     const createLabel = computed(() => `New ${props.section.toLowerCase()} entry`);
     const canCreate = computed(() => world.hasWorld && !creating.value);
 
-    watch(filteredTree, (tree) => {
-        filteredExpanded.value = collectBranches(tree);
-    });
-
     watch(
         () => world.manifest?.id,
-        () => {
-            query.value = '';
-            expanded.value = [];
-            selected.value = undefined;
+        (worldId) => {
+            if (worldId && !preferences.value[worldId]) {
+                preferences.value[worldId] = createTreeState();
+            }
+
             createError.value = '';
         },
+        { immediate: true, flush: 'sync' },
     );
 
     const createNode = async (kind: 'entry' | 'folder') => {
@@ -131,6 +163,10 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
             visibleExpanded.value = [];
         },
     };
+}
+
+function createTreeState(): NodeTreeState {
+    return { query: '', expanded: [], filteredExpanded: [], selectedId: null };
 }
 
 function filterTree(tree: NodeTreeDto[], term: string): NodeTreeDto[] {

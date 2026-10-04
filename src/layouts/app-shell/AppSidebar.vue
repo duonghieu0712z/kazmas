@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import type { ActivityBarItemName } from './AppActivityBar.vue';
 
+import { useSessionStorage } from '@vueuse/core';
+
 import { useSidebar } from '@/components/ui/sidebar';
 import { NodeTreeSidebar } from '@/features/node-tree';
 import { useNodeStore } from '@/stores/nodes';
 
 import AppActivityBar from './AppActivityBar.vue';
 
-const activeActivity = ref<ActivityBarItemName | null>(null);
+const activeActivity = useSessionStorage<ActivityBarItemName | null>('node_view_activity', null);
 const nodes = useNodeStore();
 const { open } = useSidebar();
 </script>

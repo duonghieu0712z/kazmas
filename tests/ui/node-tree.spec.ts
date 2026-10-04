@@ -1,5 +1,50 @@
 import { expect, test } from './fixtures';
 
+test('reload restores each tree state and the active activity', async ({ page, workspace }) => {
+    await workspace.open('tree-state');
+
+    await page
+        .getByRole('treeitem', { name: 'Draft', exact: true })
+        .locator('.tree-chevron-icon')
+        .click();
+    await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Filter manuscript' }).fill('Chapter A');
+    await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
+
+    await page.getByRole('button', { name: 'Wiki', exact: true }).click();
+    await page
+        .getByRole('treeitem', { name: 'Characters', exact: true })
+        .locator('.tree-chevron-icon')
+        .click();
+    await page.getByRole('treeitem', { name: 'Character', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Filter wiki' }).fill('Character');
+
+    await page.reload();
+    await expect(page.getByRole('textbox', { name: 'Filter wiki' })).toHaveValue('Character');
+    await expect(page.getByRole('treeitem', { name: 'Character', exact: true })).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
+
+    await page.getByRole('button', { name: 'Manuscript', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: 'Filter manuscript' })).toHaveValue('Chapter A');
+    await expect(page.getByRole('treeitem')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Clear filter', exact: true }).click();
+    await expect(page.getByRole('treeitem', { name: 'Draft', exact: true })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+    );
+    await expect(page.getByRole('treeitem', { name: 'Archive', exact: true })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+    );
+    await expect(page.getByRole('treeitem', { name: 'Chapter A', exact: true })).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
+});
+
 test('header actions show tooltips including disabled expansion controls', async ({
     page,
     workspace,

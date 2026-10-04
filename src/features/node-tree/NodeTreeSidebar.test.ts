@@ -26,6 +26,54 @@ function mountTree(tree: NodeTreeDto[]) {
 }
 
 describe('node tree interactions', () => {
+    it('restores filtering, selection and both expansion states after remounting a world', async () => {
+        setActivePinia(createPinia());
+
+        const world = useWorldStore();
+        world.setManifest(manifest());
+        await flushPromises();
+
+        const tree: NodeTreeDto[] = [
+            {
+                ...node({ id: 'open-folder', kind: 'folder', name: 'Draft' }),
+                children: [{ ...node({ name: 'Chapter A' }), children: [] }],
+            },
+            {
+                ...node({ id: 'closed-folder', kind: 'folder', name: 'Archive' }),
+                children: [{ ...node({ id: 'entry-b', name: 'Chapter B' }), children: [] }],
+            },
+        ];
+        const first = mountTree(tree);
+
+        await first.findAll('.tree-chevron-icon')[0]!.trigger('click');
+        await first.findAll('[role="treeitem"]')[1]!.trigger('click');
+        await first.get('input').setValue('Chapter A');
+        await first.get('[aria-label="Collapse all"]').trigger('click');
+        await flushPromises();
+        first.unmount();
+
+        setActivePinia(createPinia());
+        useWorldStore().setManifest(manifest());
+        await flushPromises();
+
+        const restored = mountTree(structuredClone(tree));
+        expect(restored.get('input').element.value).toBe('Chapter A');
+        expect(restored.findAll('[role="treeitem"]')).toHaveLength(1);
+
+        await restored.get('[aria-label="Clear filter"]').trigger('click');
+        const items = restored.findAll('[role="treeitem"]');
+        expect(items).toHaveLength(3);
+        expect(items[0]!.attributes('aria-expanded')).toBe('true');
+        expect(items[1]!.attributes('aria-selected')).toBe('true');
+        expect(items[2]!.attributes('aria-expanded')).toBe('false');
+
+        useWorldStore().setManifest(manifest('other-world'));
+        await flushPromises();
+        expect(restored.get('input').element.value).toBe('');
+        expect(restored.findAll('[role="treeitem"]')).toHaveLength(2);
+        expect(restored.find('[aria-selected="true"]').exists()).toBe(false);
+    });
+
     it('expands and collapses every level while keeping filtered expansion separate', async () => {
         setActivePinia(createPinia());
 

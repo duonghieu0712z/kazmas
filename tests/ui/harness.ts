@@ -15,6 +15,20 @@ const entries = [
     node({ id: 'entry-long', name: longName }),
 ];
 const wikiEntries = [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+
+if (scenario === 'tree-state') {
+    entries.splice(
+        0,
+        entries.length,
+        node({ id: 'draft-folder', kind: 'folder', name: 'Draft' }),
+        node({ parentId: 'draft-folder' }),
+        node({ id: 'archive-folder', kind: 'folder', name: 'Archive' }),
+        node({ id: 'entry-b', parentId: 'archive-folder', name: 'Chapter B' }),
+    );
+    wikiEntries.unshift(node({ id: 'wiki-folder', kind: 'folder', name: 'Characters' }));
+    wikiEntries[1]!.parentId = 'wiki-folder';
+}
+
 const documents = new Map(
     entries.map((entry) => [
         entry.id,
