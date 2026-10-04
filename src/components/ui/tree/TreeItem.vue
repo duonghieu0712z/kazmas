@@ -58,8 +58,8 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 text-accent-foreground transition-colors outline-none',
-                    'hover:bg-interactive hover:text-interactive-foreground focus-visible:bg-interactive focus-visible:text-interactive-foreground data-selected:bg-interactive data-selected:text-interactive-foreground',
+                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-xs pe-2 text-xs text-muted-foreground transition-colors outline-none',
+                    'hover:bg-interactive focus-visible:bg-interactive data-selected:bg-interactive data-selected:text-foreground',
                     'data-disabled:pointer-events-none data-disabled:opacity-50',
                     // Indent guide
                     indentGuide && [

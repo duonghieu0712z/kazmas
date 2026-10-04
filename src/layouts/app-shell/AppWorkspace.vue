@@ -144,7 +144,7 @@ watch(open, (value) => {
     <ResizablePanelGroup
         ref="workspace"
         v-slot="{ layout }"
-        class="h-auto min-h-0 min-w-0 flex-1 overflow-hidden p-1"
+        class="h-auto min-h-0 min-w-0 flex-1 overflow-hidden p-1 pt-px"
         direction="horizontal"
         separation="gap"
     >

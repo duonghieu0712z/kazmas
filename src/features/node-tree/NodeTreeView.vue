@@ -27,10 +27,13 @@ function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
 
 <template>
     <SidebarContent>
-        <ScrollArea class="h-full min-w-0 flex-1">
+        <ScrollArea
+            class="h-full min-w-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:grid-cols-1"
+        >
             <TreeRoot
                 v-slot="{ flattenItems }"
                 chevron
+                class="p-1"
                 expand-on-chevron-only
                 :get-key="getKey"
                 indent-guide
@@ -46,11 +49,11 @@ function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">
                         <template v-if="item.value.kind === 'folder'">
-                            <FolderOpenIcon v-if="isExpanded" class="size-4 shrink-0" />
-                            <FolderIcon v-else class="size-4 shrink-0" />
+                            <FolderOpenIcon v-if="isExpanded" class="size-3.5 shrink-0" />
+                            <FolderIcon v-else class="size-3.5 shrink-0" />
                         </template>
-                        <FileIcon v-else class="size-4 shrink-0" />
-                        <span class="truncate">{{ item.value.name }}</span>
+                        <FileIcon v-else class="size-3.5 shrink-0" />
+                        <span class="min-w-0 flex-1 truncate">{{ item.value.name }}</span>
                     </span>
                 </TreeItem>
             </TreeRoot>
