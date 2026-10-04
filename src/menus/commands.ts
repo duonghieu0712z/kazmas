@@ -30,7 +30,7 @@ const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
 };
 
 async function createFolder() {
-    await commands.createFolder(null, null);
+    await commands.createFolder(null, null, 'manuscript');
 }
 
 async function createManuscriptEntry() {

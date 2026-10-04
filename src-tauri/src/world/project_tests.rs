@@ -5,6 +5,29 @@ use super::*;
 use crate::test_support::{TestResult, temp_dir};
 
 #[tokio::test]
+async fn creates_folders_in_empty_sections_and_under_explicit_parents() -> TestResult {
+    let dir = temp_dir()?;
+    let mut world = WorldProject::create_world("Folders", dir.path(), dir.path()).await?;
+
+    for section in [NodeKind::Manuscript, NodeKind::Wiki] {
+        let id = world.create_folder(None, None, section).await?;
+        let nodes = world.get_node_descendants_by_kind(section).await?;
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].id, id);
+        assert!(matches!(nodes[0].kind, NodeKind::Folder));
+
+        let child = world
+            .create_folder(Some("Child"), Some(id), section)
+            .await?;
+        assert_eq!(world.get_node(child).await?.parent_id, Some(id));
+    }
+
+    assert!(world.is_dirty());
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn saves_and_reopens_document_metadata_and_assets() -> TestResult {
     let dir = temp_dir()?;
     let mut world = WorldProject::create_world("Test World", dir.path(), dir.path()).await?;
