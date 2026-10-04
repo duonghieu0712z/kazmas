@@ -88,7 +88,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('button[aria-label="Bold"]').click();
         await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
         if (process.platform === 'darwin') {
-            await browser.keys(['Meta', 's']);
+            await browser.execute(() => {
+                void window.__kazmasDesktopTest.close();
+            });
+            await $('[role="alertdialog"]').waitForDisplayed();
+            await $('button=Save').click();
+            await $('.tiptap').waitForExist({ reverse: true });
         } else {
             await $('//*[@role="menuitem"][normalize-space(.)="File"]').click();
             await browser.keys('ArrowDown');
@@ -103,7 +108,9 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
                 !(await browser.execute(() => window.__kazmasDesktopTest.isDirty()))
             );
         });
-        await browser.execute(() => window.__kazmasDesktopTest.close());
+        if (process.platform !== 'darwin') {
+            await browser.execute(() => window.__kazmasDesktopTest.close());
+        }
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await openChapterA();
         await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
