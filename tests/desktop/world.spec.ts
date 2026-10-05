@@ -6,6 +6,14 @@ import { browser, $, expect } from '@wdio/globals';
 
 import '@wdio/tauri-service';
 
+async function closeTestWindow(handle: string) {
+    await browser.switchToWindow(handle);
+    await browser.closeWindow();
+    await browser.waitUntil(async () => !(await browser.getWindowHandles()).includes(handle), {
+        timeoutMsg: `Window ${handle} did not close.`,
+    });
+}
+
 async function openChapterA() {
     const entry = $('//*[@role="treeitem"][contains(., "Chapter A")]');
     await entry.waitForDisplayed();
@@ -55,8 +63,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         const handles = await browser.getWindowHandles();
         for (const handle of handles.filter((handle) => handle !== owner)) {
             try {
-                await browser.switchToWindow(handle);
-                await browser.closeWindow();
+                await closeTestWindow(handle);
             } catch (error) {
                 errors.push(error);
             }
@@ -68,7 +75,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             errors.push(error);
         }
         if (errors.length) {
-            throw new AggregateError(errors, 'Desktop test cleanup failed.');
+            const details = errors
+                .map((error) =>
+                    error instanceof Error ? (error.stack ?? error.message) : String(error),
+                )
+                .join('\n');
+            throw new AggregateError(errors, `Desktop test cleanup failed.\n${details}`);
         }
     });
 
@@ -248,8 +260,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
                 name,
             );
         } finally {
-            await browser.switchToWindow(other);
-            await browser.closeWindow();
+            await closeTestWindow(other);
             await browser.switchToWindow(owner);
         }
     });
