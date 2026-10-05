@@ -18,7 +18,7 @@ test('mounts only visible rows and navigates to distant items by keyboard', asyn
         'Chapter 19999',
     );
     expect(await tree.getByRole('treeitem').count()).toBeLessThan(100);
-    await expect(page.locator('.tiptap')).toBeVisible();
+    await expect(page.locator('.tiptap')).toBeFocused();
     await last.focus();
     await page.keyboard.press('Home');
     await expect(tree.getByRole('treeitem', { name: 'Chapter 00000', exact: true })).toBeFocused();
