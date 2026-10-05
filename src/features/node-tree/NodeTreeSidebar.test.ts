@@ -486,6 +486,35 @@ describe('node tree interactions', () => {
         expect(tauri.createManuscriptEntry).not.toHaveBeenCalled();
     });
 
+    it('ignores composing Enter and submits on ordinary Enter', async () => {
+        const { wrapper, nodes } = await mountStoredTree();
+        await wrapper.get('[aria-label="New manuscript entry"]').trigger('click');
+        const input = wrapper.get<HTMLInputElement>('[aria-label="New item name"]');
+        await input.setValue('Composed name');
+        const composing = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            isComposing: true,
+            bubbles: true,
+            cancelable: true,
+        });
+        input.element.dispatchEvent(composing);
+        await flushPromises();
+        expect(composing.defaultPrevented).toBe(false);
+        expect(tauri.createManuscriptEntry).not.toHaveBeenCalled();
+        expect(wrapper.find('[aria-label="New item name"]').exists()).toBe(true);
+        expect(input.element.value).toBe('Composed name');
+        expect(input.attributes('disabled')).toBeUndefined();
+
+        const created = node({ id: 'created', name: 'Composed name' });
+        tauri.createManuscriptEntry.mockResolvedValue({ status: 'ok', data: created.id });
+        tauri.getManuscripts.mockResolvedValue({ status: 'ok', data: [created] });
+        await input.trigger('keydown', { key: 'Enter', isComposing: false });
+        await flushPromises();
+        expect(tauri.createManuscriptEntry).toHaveBeenCalledExactlyOnceWith('Composed name', null);
+        expect(wrapper.find('[aria-label="New item name"]').exists()).toBe(false);
+        expect(nodes.openedNodeId).toBe(created.id);
+    });
+
     it('prevents duplicate requests and retains the name for retry after an error', async () => {
         const { wrapper, nodes } = await mountStoredTree();
         const pending = deferred<{ status: 'error'; error: { code: string } }>();

@@ -84,7 +84,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
 
     watch(
         () => world.manifest?.id,
-        (worldId) => {
+        async (worldId) => {
             updateSearch.cancel();
             if (worldId && !preferences.value[worldId]) {
                 preferences.value[worldId] = createTreeState();
@@ -92,7 +92,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
             const term = state.value.query.trim().toLocaleLowerCase();
             search.value = state.value.filteredQuery ?? term;
             if (search.value !== term) {
-                void updateSearch(term);
+                await updateSearch(term);
             }
         },
         { immediate: true, flush: 'sync' },

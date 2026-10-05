@@ -19,10 +19,12 @@ export function createDocumentSaveQueue(
     const pending = new Map<string, string>();
     let running: Promise<void> | undefined;
     const { start, stop } = useTimeoutFn(
-        () => {
-            void flush().catch((error: unknown) =>
-                onError(error instanceof Error ? error : new Error(String(error))),
-            );
+        async () => {
+            try {
+                await flush();
+            } catch (error) {
+                onError(error instanceof Error ? error : new Error(String(error)));
+            }
         },
         delay,
         { immediate: false },
@@ -45,11 +47,17 @@ export function createDocumentSaveQueue(
         }
     };
 
+    const run = async () => {
+        try {
+            await drain();
+        } finally {
+            running = undefined;
+        }
+    };
+
     const flush = (): Promise<void> => {
         stop();
-        running ??= drain().finally(() => {
-            running = undefined;
-        });
+        running ??= run();
         return running;
     };
 

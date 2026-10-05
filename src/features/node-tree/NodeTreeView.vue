@@ -29,25 +29,32 @@ async function createNode() {
     }
 }
 
-function finishName() {
+async function enterName(event: KeyboardEvent) {
+    if (event.isComposing) {
+        return;
+    }
+    event.preventDefault();
+    await createNode();
+}
+
+async function finishName() {
     if (createName.value.trim()) {
-        void createNode();
+        await createNode();
     } else {
         cancelName();
     }
 }
 
-function blurName(event?: FocusEvent) {
+async function blurName(event?: FocusEvent) {
     if (!event) {
-        finishName();
+        await finishName();
         return;
     }
     const input = event.target;
-    nextTick(() => {
-        if (input instanceof HTMLInputElement && input.isConnected) {
-            finishName();
-        }
-    });
+    await nextTick();
+    if (input instanceof HTMLInputElement && input.isConnected) {
+        await finishName();
+    }
 }
 
 const selected = defineModel<NodeTreeDto>();
@@ -56,9 +63,9 @@ const nodes = useNodeStore();
 let nameInput: HTMLInputElement | null = null;
 let focusedDraft: NodeDraft | null = null;
 
-useEventListener(document, 'pointerdown', (event) => {
+useEventListener(document, 'pointerdown', async (event) => {
     if (draft.value && !(event.target instanceof Node && nameInput?.contains(event.target))) {
-        blurName();
+        await blurName();
     }
 });
 
@@ -166,7 +173,7 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                             placeholder="Untitled"
                             @blur="blurName"
                             @click.stop
-                            @keydown.enter.prevent="createNode"
+                            @keydown.enter="enterName"
                             @keydown.esc.prevent="cancelName"
                             @keydown.stop
                         />
