@@ -1,9 +1,7 @@
 import type { NodeTreeDto } from '@/stores/nodes';
 
-import { useSessionStorage } from '@vueuse/core';
-import { computed, nextTick, ref, watch } from 'vue';
+import { useDebounceFn, useSessionStorage } from '@vueuse/core';
 
-import { commands } from '@/generated/bindings';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
@@ -11,6 +9,7 @@ export type NodeTreeSection = 'Manuscript' | 'Wiki';
 
 interface NodeTreeState {
     query: string;
+    filteredQuery: string;
     expanded: string[];
     filteredExpanded: string[];
     selectedId: string | null;
@@ -31,15 +30,6 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         return worldId ? (preferences.value[worldId] ?? emptyState.value) : emptyState.value;
     });
 
-    const query = computed({
-        get: () => state.value.query,
-        set: (value: string) => {
-            state.value.query = value;
-            state.value.filteredExpanded = collectBranches(
-                filterTree(props.tree, value.trim().toLocaleLowerCase()),
-            );
-        },
-    });
     const selected = computed({
         get: () => {
             const id = state.value.selectedId;
@@ -51,12 +41,35 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         },
     });
 
-    const creating = ref(false);
-    const createError = ref('');
-
-    const search = computed(() => query.value.trim().toLocaleLowerCase());
+    const search = ref('');
     const filteredTree = computed(() => filterTree(props.tree, search.value));
     const hasBranches = computed(() => filteredTree.value.some((node) => node.children.length > 0));
+
+    const applySearch = (term: string) => {
+        if (search.value !== term) {
+            search.value = term;
+            if (term) {
+                state.value.filteredExpanded = collectBranches(filteredTree.value);
+            }
+        }
+        state.value.filteredQuery = term;
+    };
+    const updateSearch = useDebounceFn(applySearch, 150);
+    onScopeDispose(updateSearch.cancel);
+
+    const query = computed({
+        get: () => state.value.query,
+        set: (value: string) => {
+            state.value.query = value;
+            updateSearch.cancel();
+            const term = value.trim().toLocaleLowerCase();
+            if (term) {
+                void updateSearch(term);
+            } else {
+                applySearch('');
+            }
+        },
+    });
 
     const visibleExpanded = computed({
         get: () => (search.value ? state.value.filteredExpanded : state.value.expanded),
@@ -69,79 +82,32 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         },
     });
 
-    const createLabel = computed(() => `New ${props.section.toLowerCase()} entry`);
-    const canCreate = computed(() => world.hasWorld && !creating.value);
-
     watch(
         () => world.manifest?.id,
         (worldId) => {
+            updateSearch.cancel();
             if (worldId && !preferences.value[worldId]) {
                 preferences.value[worldId] = createTreeState();
             }
-
-            createError.value = '';
+            const term = state.value.query.trim().toLocaleLowerCase();
+            search.value = state.value.filteredQuery ?? term;
+            if (search.value !== term) {
+                void updateSearch(term);
+            }
         },
         { immediate: true, flush: 'sync' },
     );
 
-    const createNode = async (kind: 'entry' | 'folder') => {
-        const worldId = world.manifest?.id;
-
-        if (!worldId || creating.value) {
-            return;
+    const revealAncestors = (parentId: string | null) => {
+        let parent = parentId ? findNode(props.tree, parentId) : undefined;
+        const expanded = new Set(state.value.expanded);
+        const visited = new Set<string>();
+        while (parent && !visited.has(parent.id)) {
+            visited.add(parent.id);
+            expanded.add(parent.id);
+            parent = parent.parentId ? findNode(props.tree, parent.parentId) : undefined;
         }
-
-        creating.value = true;
-        createError.value = '';
-
-        const label = kind === 'folder' ? 'Folder' : 'Entry';
-
-        try {
-            let result;
-
-            if (kind === 'folder') {
-                const section = props.section === 'Wiki' ? 'wiki' : 'manuscript';
-                result = await commands.createFolder(null, null, section);
-            } else if (props.section === 'Manuscript') {
-                result = await commands.createManuscriptEntry(null, null);
-            } else {
-                result = await commands.createWikiEntry(null, null);
-            }
-
-            if (world.manifest?.id !== worldId) {
-                return;
-            }
-
-            if (result.status !== 'ok' || !result.data) {
-                createError.value = `${label} could not be created.`;
-                return;
-            }
-
-            world.markDirty();
-            await nodes.reloadNodes();
-            await nextTick();
-
-            if (world.manifest?.id !== worldId) {
-                return;
-            }
-
-            const node = findNode(props.tree, result.data);
-
-            if (node) {
-                query.value = '';
-                selected.value = node;
-                nodes.selectNode(node);
-                nodes.openNode(node);
-            } else {
-                createError.value = `${label} was created, but the tree could not be refreshed.`;
-            }
-        } catch {
-            if (world.manifest?.id === worldId) {
-                createError.value = `${label} could not be created.`;
-            }
-        } finally {
-            creating.value = false;
-        }
+        state.value.expanded = [...expanded];
     };
 
     return {
@@ -151,11 +117,22 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         filteredTree,
         hasBranches,
         visibleExpanded,
-        canCreate,
-        createLabel,
-        createError,
-        createEntry: () => createNode('entry'),
-        createFolder: () => createNode('folder'),
+        revealChildren: (parentId: string | null) => {
+            query.value = '';
+            revealAncestors(parentId);
+        },
+        revealNode: (nodeId: string) => {
+            const node = findNode(props.tree, nodeId);
+            if (!node) {
+                return false;
+            }
+            query.value = '';
+            revealAncestors(node.parentId);
+            selected.value = node;
+            nodes.selectNode(node);
+            nodes.openNode(node);
+            return true;
+        },
         expandAll: () => {
             visibleExpanded.value = collectBranches(filteredTree.value);
         },
@@ -166,7 +143,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
 }
 
 function createTreeState(): NodeTreeState {
-    return { query: '', expanded: [], filteredExpanded: [], selectedId: null };
+    return { query: '', filteredQuery: '', expanded: [], filteredExpanded: [], selectedId: null };
 }
 
 function filterTree(tree: NodeTreeDto[], term: string): NodeTreeDto[] {

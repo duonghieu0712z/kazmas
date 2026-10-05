@@ -1,7 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { expect, it } from 'vitest';
-import { nextTick } from 'vue';
 
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useNodeStore } from '@/stores/nodes';

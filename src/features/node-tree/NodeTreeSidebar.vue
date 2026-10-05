@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import type { NodeDraft } from './use-create-node';
 import type { NodeTreeSection } from './use-node-tree';
 import type { NodeTreeDto } from '@/stores/nodes';
+
+import { useWorldStore } from '@/stores/world';
 
 import NodeTreeHeader from './NodeTreeHeader.vue';
 import NodeTreeView from './NodeTreeView.vue';
@@ -16,17 +19,29 @@ const {
     query,
     search,
     selected,
-    filteredTree,
     hasBranches,
     visibleExpanded,
-    canCreate,
-    createLabel,
-    createError,
-    createEntry,
-    createFolder,
+    filteredTree,
+    revealChildren,
+    revealNode,
     expandAll,
     collapseAll,
 } = useNodeTree(props);
+
+const world = useWorldStore();
+const draft = ref<NodeDraft | null>(null);
+const creating = ref(false);
+const canCreate = computed(() => world.hasWorld && !draft.value && !creating.value);
+
+function startNode(type: NodeDraft['type']) {
+    if (!canCreate.value) {
+        return;
+    }
+    const node = selected.value;
+    const parentId = node?.kind === 'folder' ? node.id : (node?.parentId ?? null);
+    draft.value = { id: 'node-tree-draft', kind: 'draft', type, parentId };
+    revealChildren(parentId);
+}
 </script>
 
 <template>
@@ -34,14 +49,12 @@ const {
         v-show="active"
         v-model="query"
         :can-create="canCreate"
-        :create-error="createError"
-        :create-label="createLabel"
-        :has-branches="hasBranches"
+        :has-branches="hasBranches && !draft"
         :section="section"
-        @collapse-all="collapseAll"
-        @create-entry="createEntry"
-        @create-folder="createFolder"
-        @expand-all="expandAll"
+        @collapse:tree="collapseAll"
+        @create:entry="startNode('entry')"
+        @create:folder="startNode('folder')"
+        @expand:tree="expandAll"
     />
 
     <SidebarContent v-show="active" class="overflow-hidden">
@@ -49,7 +62,7 @@ const {
             class="min-h-0 min-w-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:grid-cols-1"
         >
             <div
-                v-if="!filteredTree.length"
+                v-if="!filteredTree.length && !draft"
                 class="px-3 py-2 text-xs text-muted-foreground"
                 role="status"
             >
@@ -58,9 +71,12 @@ const {
 
             <NodeTreeView
                 v-model="selected"
+                v-model:creating="creating"
+                v-model:draft="draft"
                 v-model:expanded="visibleExpanded"
-                :aria-label="section"
+                :section="section"
                 :tree="filteredTree"
+                @create:node="revealNode"
             />
         </ScrollArea>
     </SidebarContent>

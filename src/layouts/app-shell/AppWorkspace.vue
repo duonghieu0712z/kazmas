@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { ComponentPublicInstance } from 'vue';
-
 import { useResizeObserver } from '@vueuse/core';
 
 import { sidebarPreferences, useSidebar } from '@/components/ui/sidebar';

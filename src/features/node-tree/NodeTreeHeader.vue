@@ -14,15 +14,13 @@ const props = defineProps<{
     section: NodeTreeSection;
     canCreate: boolean;
     hasBranches: boolean;
-    createLabel: string;
-    createError: string;
 }>();
 
-const emit = defineEmits<{
-    createEntry: [];
-    createFolder: [];
-    expandAll: [];
-    collapseAll: [];
+const emits = defineEmits<{
+    'create:entry': [];
+    'create:folder': [];
+    'expand:tree': [];
+    'collapse:tree': [];
 }>();
 
 const query = defineModel<string>({ default: '' });
@@ -30,31 +28,31 @@ const query = defineModel<string>({ default: '' });
 const actions = computed(() => [
     {
         id: 'createEntry',
-        label: props.createLabel,
+        label: `New ${props.section.toLowerCase()} entry`,
         icon: FilePlusIcon,
         disabled: !props.canCreate,
-        onClick: () => emit('createEntry'),
+        onClick: () => emits('create:entry'),
     },
     {
         id: 'createFolder',
         label: 'New folder',
         icon: FolderPlusIcon,
         disabled: !props.canCreate,
-        onClick: () => emit('createFolder'),
+        onClick: () => emits('create:folder'),
     },
     {
         id: 'expandAll',
         label: 'Expand all',
         icon: ChevronsUpDownIcon,
         disabled: !props.hasBranches,
-        onClick: () => emit('expandAll'),
+        onClick: () => emits('expand:tree'),
     },
     {
         id: 'collapseAll',
         label: 'Collapse all',
         icon: ChevronsDownUpIcon,
         disabled: !props.hasBranches,
-        onClick: () => emit('collapseAll'),
+        onClick: () => emits('collapse:tree'),
     },
 ]);
 </script>
@@ -114,10 +112,6 @@ const actions = computed(() => [
                     </Tooltip>
                 </InputGroupAddon>
             </InputGroup>
-        </div>
-
-        <div v-if="createError" class="px-3 pb-2 text-xs text-destructive" role="alert">
-            {{ createError }}
         </div>
     </SidebarHeader>
 </template>

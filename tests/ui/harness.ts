@@ -79,7 +79,12 @@ mockIPC(
                 const target = wiki ? wikiEntries : entries;
                 const id = `${wiki ? 'wiki' : 'entry'}-new-${target.length}`;
                 target.push(
-                    node({ id, name: 'Untitled', kind: wiki ? 'wiki_entry' : 'manuscript_entry' }),
+                    node({
+                        id,
+                        name: typeof data.name === 'string' ? data.name : 'Untitled',
+                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        kind: wiki ? 'wiki_entry' : 'manuscript_entry',
+                    }),
                 );
                 documents.set(
                     id,
@@ -90,7 +95,14 @@ mockIPC(
             case 'create_folder': {
                 const target = data.section === 'wiki' ? wikiEntries : entries;
                 const id = `folder-new-${target.length}`;
-                target.push(node({ id, name: 'Untitled', kind: 'folder' }));
+                target.push(
+                    node({
+                        id,
+                        name: typeof data.name === 'string' ? data.name : 'Untitled',
+                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        kind: 'folder',
+                    }),
+                );
                 return id;
             }
             case 'get_document':

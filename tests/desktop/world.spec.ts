@@ -123,6 +123,47 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expectDocumentText('Pending chapter A content');
     });
 
+    it('creates nested sidebar items and preserves their parents after reopening', async () => {
+        const folder = $('//*[@role="treeitem"][contains(., "New folder")]');
+        const entry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
+        const sibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
+        const input = $('input[aria-label="New item name"]');
+
+        await $('button[aria-label="New folder"]').click();
+        await input.setValue('  New folder  ');
+        await browser.keys('Enter');
+        await expect(folder).toHaveAttribute('aria-selected', 'true');
+        await expect(folder).toHaveAttribute('aria-level', '1');
+
+        await $('button[aria-label="New manuscript entry"]').click();
+        await input.setValue('  New chapter  ');
+        await browser.keys('Enter');
+        await expect(entry).toHaveAttribute('aria-selected', 'true');
+        await expect(entry).toHaveAttribute('aria-level', '2');
+        await $('.tiptap').setValue('Nested chapter content');
+
+        await $('button[aria-label="New manuscript entry"]').click();
+        await input.setValue('Sibling chapter');
+        await browser.keys('Enter');
+        await expect(sibling).toHaveAttribute('aria-selected', 'true');
+        await expect(sibling).toHaveAttribute('aria-level', '2');
+
+        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(() => window.__kazmasDesktopTest.close());
+        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
+        const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
+        const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
+        await reopenedFolder.waitForDisplayed();
+        if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
+            await reopenedFolder.$('.tree-chevron-icon').click();
+        }
+        await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
+        await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
+        await reopenedEntry.click();
+        await expectDocumentText('Nested chapter content');
+    });
+
     it('save as preserves the original package and persists the edited copy', async () => {
         const original = await readFile(packagePath);
         await $('.tiptap').setValue('Copy content');

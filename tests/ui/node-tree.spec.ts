@@ -9,6 +9,7 @@ test('reload restores each tree state and the active activity', async ({ page, w
         .click();
     await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
     await page.getByRole('textbox', { name: 'Filter manuscript' }).fill('Chapter A');
+    await expect(page.getByRole('treeitem')).toHaveCount(2);
     await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
 
     await page.getByRole('button', { name: 'Wiki', exact: true }).click();
@@ -114,6 +115,8 @@ for (const section of ['Manuscript', 'Wiki']) {
         }
 
         await page.getByRole('button', { name: 'New folder', exact: true }).click();
+        await expect(page.getByRole('textbox', { name: 'New item name' })).toBeFocused();
+        await page.getByRole('textbox', { name: 'New item name' }).press('Enter');
 
         await expect(page.getByRole('treeitem', { name: 'Untitled', exact: true })).toHaveAttribute(
             'aria-selected',
@@ -127,6 +130,8 @@ for (const section of ['Manuscript', 'Wiki']) {
             await page.getByRole('button', { name: 'Wiki', exact: true }).click();
         }
         await page.getByRole('button', { name: `New ${section.toLowerCase()} entry` }).click();
+        await expect(page.getByRole('textbox', { name: 'New item name' })).toBeFocused();
+        await page.getByRole('textbox', { name: 'New item name' }).press('Enter');
         await expect(page.getByRole('treeitem', { name: 'Untitled', exact: true })).toHaveAttribute(
             'aria-selected',
             'true',
@@ -137,3 +142,140 @@ for (const section of ['Manuscript', 'Wiki']) {
         await expect(page.locator('.tiptap')).toBeVisible();
     });
 }
+
+for (const kind of ['folder', 'entry']) {
+    test(`clicking outside discards a blank ${kind} and creates a named one`, async ({
+        page,
+        workspace,
+    }) => {
+        await workspace.open();
+        const create = page.getByRole('button', {
+            name: kind === 'folder' ? 'New folder' : 'New manuscript entry',
+            exact: true,
+        });
+        const input = page.getByRole('textbox', { name: 'New item name' });
+        const outside = page.getByRole('textbox', { name: 'Filter manuscript' });
+        const initialCount = await page.getByRole('treeitem').count();
+        for (const name of ['', '   ']) {
+            await create.click();
+            await input.fill(name);
+            await outside.click();
+            await expect(input).toHaveCount(0);
+            await expect(page.getByRole('treeitem')).toHaveCount(initialCount);
+        }
+        await create.click();
+        await input.fill('  New item  ');
+        await outside.click();
+        await expect(input).toHaveCount(0);
+        await expect(page.getByRole('treeitem', { name: 'New item', exact: true })).toBeVisible();
+        await expect(page.getByRole('treeitem')).toHaveCount(initialCount + 1);
+    });
+}
+
+test('Escape discards a named draft', async ({ page, workspace }) => {
+    await workspace.open();
+    const initialCount = await page.getByRole('treeitem').count();
+    await page.getByRole('button', { name: 'New folder', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'New item name' });
+    await input.fill('Cancelled');
+    await input.press('Escape');
+    await expect(input).toHaveCount(0);
+    await expect(page.getByRole('treeitem')).toHaveCount(initialCount);
+});
+
+for (const section of ['Manuscript', 'Wiki'] as const) {
+    for (const type of ['entry', 'folder'] as const) {
+        for (const selectFolder of [true, false]) {
+            test(`creates a ${type} from a selected ${selectFolder ? 'folder' : 'file'} in ${section}`, async ({
+                page,
+                workspace,
+            }) => {
+                await workspace.open('tree-state');
+                if (section === 'Wiki') {
+                    await page.getByRole('button', { name: 'Wiki', exact: true }).click();
+                }
+                const folderName = section === 'Wiki' ? 'Characters' : 'Draft';
+                const folderId = section === 'Wiki' ? 'wiki-folder' : 'draft-folder';
+                const folder = page.getByRole('treeitem', { name: folderName, exact: true });
+                if (selectFolder) {
+                    await folder.click();
+                } else {
+                    await folder.locator('.tree-chevron-icon').click();
+                    await page
+                        .getByRole('treeitem', {
+                            name: section === 'Wiki' ? 'Character' : 'Chapter A',
+                            exact: true,
+                        })
+                        .click();
+                }
+                await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
+                await page
+                    .getByRole('button', {
+                        name:
+                            type === 'folder' ? 'New folder' : `New ${section.toLowerCase()} entry`,
+                        exact: true,
+                    })
+                    .click();
+                const input = page.getByRole('textbox', { name: 'New item name' });
+                await expect(input).toBeFocused();
+                await expect(page.getByRole('treeitem').filter({ has: input })).toHaveAttribute(
+                    'aria-level',
+                    '2',
+                );
+                expect(
+                    await input.evaluate((element) => element.getBoundingClientRect().height),
+                ).toBe(16);
+                await input.fill('  New child  ');
+                await input.press('Enter');
+                await expect(input).toHaveCount(0);
+                const created = page.getByRole('treeitem', { name: 'New child', exact: true });
+                await expect(created).toHaveAttribute('aria-level', '2');
+                await expect(created).toHaveAttribute('aria-selected', 'true');
+                const command =
+                    type === 'folder'
+                        ? 'create_folder'
+                        : section === 'Wiki'
+                          ? 'create_wiki_entry'
+                          : 'create_manuscript_entry';
+                const calls = await page.evaluate(
+                    (command) =>
+                        window.__kazmasTest.calls.filter((call) => call.command === command),
+                    command,
+                );
+                expect(calls).toHaveLength(1);
+                expect(calls[0]!.args).toMatchObject({ name: 'New child', parentId: folderId });
+                if (type === 'folder') {
+                    expect(calls[0]!.args.section).toBe(section.toLowerCase());
+                }
+            });
+        }
+    }
+}
+
+test('creates a child inside an empty folder and keeps draft navigation out of the editor', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open();
+    await page.getByRole('button', { name: 'New folder', exact: true }).click();
+    const input = page.getByRole('textbox', { name: 'New item name' });
+    await input.fill('Empty folder');
+    await input.press('Enter');
+    const folder = page.getByRole('treeitem', { name: 'Empty folder', exact: true });
+    await expect(folder).toHaveAttribute('aria-selected', 'true');
+    await page.getByRole('button', { name: 'New manuscript entry', exact: true }).click();
+    await expect(input).toBeFocused();
+    const draft = page.getByRole('treeitem').filter({ has: input });
+    await expect(draft).toHaveAttribute('aria-level', '2');
+    await expect(draft).toHaveAttribute('aria-selected', 'false');
+    await expect(folder).toHaveAttribute('aria-expanded', 'true');
+    await input.fill('Child');
+    await input.press('Enter');
+    await expect(page.getByRole('treeitem', { name: 'Child', exact: true })).toHaveAttribute(
+        'aria-level',
+        '2',
+    );
+    await expect(page.locator('main').locator('..').getByRole('navigation')).toContainText(
+        'Empty folder',
+    );
+});
