@@ -20,8 +20,8 @@ const forwardedProps = useForwardProps(delegatedProps);
         :class="
             cn(
                 'flex h-6 items-center rounded-sm px-2 text-xs font-medium outline-hidden select-none',
-                'hover:bg-interactive hover:text-interactive-foreground focus:bg-interactive focus:text-interactive-foreground',
-                'data-[state=open]:bg-interactive data-[state=open]:text-interactive-foreground',
+                'hover:bg-hover hover:text-foreground focus:bg-hover focus:text-foreground',
+                'data-[state=open]:bg-active data-[state=open]:text-foreground',
                 props.class,
             )
         "

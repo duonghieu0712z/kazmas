@@ -17,15 +17,16 @@ export const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+                default:
+                    'bg-foreground text-background hover:bg-foreground/90 active:bg-foreground/80',
                 destructive:
-                    'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20',
+                    'bg-destructive text-background hover:bg-destructive/90 focus-visible:ring-destructive/20 active:bg-destructive/80',
                 outline:
-                    'border bg-background shadow-xs hover:bg-interactive hover:text-interactive-foreground',
+                    'border bg-background shadow-xs hover:bg-hover hover:text-foreground active:bg-active',
                 secondary:
-                    'border bg-secondary text-secondary-foreground hover:bg-interactive hover:text-interactive-foreground',
-                ghost: 'hover:bg-interactive hover:text-interactive-foreground',
-                link: 'text-primary underline-offset-4 hover:underline',
+                    'border bg-muted text-foreground hover:bg-hover hover:text-foreground active:bg-active',
+                ghost: 'hover:bg-hover hover:text-foreground active:bg-active',
+                link: 'text-foreground underline-offset-4 hover:underline',
             },
             size: {
                 default: 'h-8 gap-2 px-2',

@@ -8,7 +8,7 @@ export { default as Toggle } from './Toggle.vue';
 
 export const toggleVariants = cva(
     [
-        'inline-flex items-center justify-center rounded-sm text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none hover:bg-interactive hover:text-interactive-foreground data-[state=on]:bg-interactive data-[state=on]:text-interactive-foreground',
+        'inline-flex items-center justify-center rounded-sm text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none hover:bg-hover hover:text-foreground active:bg-active data-[state=on]:bg-active data-[state=on]:text-foreground',
         'focus-visible:border-ring focus-visible:ring-[1.5px] focus-visible:ring-ring/50',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
         'disabled:pointer-events-none disabled:opacity-50',
@@ -19,7 +19,7 @@ export const toggleVariants = cva(
             variant: {
                 default: 'bg-transparent',
                 outline:
-                    'border border-input bg-transparent shadow-xs hover:bg-interactive hover:text-interactive-foreground',
+                    'border border-border bg-transparent shadow-xs hover:bg-hover hover:text-foreground',
             },
             size: {
                 default: 'h-8 gap-2 px-2',

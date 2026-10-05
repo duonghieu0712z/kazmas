@@ -27,7 +27,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         :class="
             cn(
                 'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs outline-hidden select-none',
-                'focus:bg-interactive focus:text-interactive-foreground data-inset:pl-6',
+                'focus:bg-hover focus:text-foreground data-inset:pl-6',
                 'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:text-destructive!',
                 'data-disabled:pointer-events-none data-disabled:opacity-50',
                 `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground`,

@@ -13,7 +13,7 @@ const props = defineProps<{
         :class="
             cn(
                 'pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-sm px-1 text-xs font-medium text-foreground tabular-nums select-none',
-                'peer-hover/menu-button:text-interactive-foreground peer-data-[active=true]/menu-button:text-interactive-foreground',
+                'peer-hover/menu-button:text-foreground peer-data-[active=true]/menu-button:text-foreground',
                 'peer-data-[size=sm]/menu-button:top-1',
                 'peer-data-[size=default]/menu-button:top-1.5',
                 'peer-data-[size=lg]/menu-button:top-2.5',

@@ -99,7 +99,7 @@ function handleCloseAutoFocus(event: Event) {
                 :key="type"
                 :class="
                     activeType === type
-                        ? 'bg-primary/10 text-primary focus:bg-primary/15 focus:text-primary'
+                        ? 'bg-active text-foreground focus:bg-active focus:text-foreground'
                         : undefined
                 "
                 :disabled="!canToggleType(type)"

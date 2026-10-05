@@ -58,7 +58,7 @@ const actions = computed(() => [
 </script>
 
 <template>
-    <SidebarHeader class="shrink-0 gap-0 border-b bg-secondary p-0">
+    <SidebarHeader class="shrink-0 gap-0 border-b bg-muted p-0">
         <div class="flex h-7 items-center justify-between gap-2 px-2">
             <span class="truncate text-xs font-medium text-foreground">{{ section }}</span>
 
@@ -83,7 +83,7 @@ const actions = computed(() => [
         </div>
 
         <div class="px-2 pb-1">
-            <InputGroup class="h-6 bg-secondary/50 shadow-none">
+            <InputGroup class="h-6 bg-muted/50 shadow-none">
                 <InputGroupAddon>
                     <SearchIcon class="size-3" />
                 </InputGroupAddon>

@@ -23,7 +23,7 @@ async function copyCode() {
     <TooltipWrapper class="flex size-6 items-center justify-center">
         <Button
             :aria-label="copied ? 'Copied' : 'Copy code'"
-            class="size-6 bg-transparent text-muted-foreground shadow-none hover:text-interactive-foreground"
+            class="size-6 bg-transparent text-muted-foreground shadow-none hover:text-foreground"
             size="icon"
             type="button"
             variant="ghost"

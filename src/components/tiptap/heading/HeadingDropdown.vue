@@ -100,7 +100,7 @@ function handleCloseAutoFocus(event: Event) {
                 :key="level"
                 :class="
                     activeLevel === level
-                        ? 'bg-primary/10 text-primary focus:bg-primary/15 focus:text-primary'
+                        ? 'bg-active text-foreground focus:bg-active focus:text-foreground'
                         : undefined
                 "
                 :disabled="!canSetLevel(level)"

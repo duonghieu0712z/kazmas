@@ -28,13 +28,13 @@ const props = withDefaults(
         :class="
             cn(
                 'flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-sm px-2 text-foreground ring-ring outline-hidden focus-visible:ring-2 [&>span:last-child]:truncate',
-                'data-[active=true]:bg-interactive data-[active=true]:text-interactive-foreground',
-                'hover:bg-interactive hover:text-interactive-foreground active:bg-interactive active:text-interactive-foreground',
+                'data-[active=true]:bg-active data-[active=true]:text-foreground',
+                'hover:bg-hover hover:text-foreground active:bg-active active:text-foreground',
                 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
                 size === 'sm' && 'text-xs',
                 size === 'md' && 'text-sm',
                 'group-data-[collapsible=icon]:hidden',
-                `[&>svg]:shrink-0 [&>svg]:text-accent-foreground [&>svg:not([class*='size-'])]:size-4`,
+                `[&>svg]:shrink-0 [&>svg]:text-foreground [&>svg:not([class*='size-'])]:size-4`,
                 props.class,
             )
         "

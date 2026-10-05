@@ -59,8 +59,8 @@ const selectedLabel = computed(
                 <Button
                     aria-label="Code block language"
                     :class="[
-                        'h-6 gap-1 bg-transparent px-1.5 font-code text-xs text-muted-foreground shadow-none hover:text-interactive-foreground',
-                        open && 'bg-interactive text-interactive-foreground',
+                        'h-6 gap-1 bg-transparent px-1.5 font-code text-xs text-muted-foreground shadow-none hover:text-foreground',
+                        open && 'bg-active text-foreground hover:bg-active',
                     ]"
                     :disabled="disabled"
                     size="default"
@@ -69,10 +69,7 @@ const selectedLabel = computed(
                 >
                     <span>{{ selectedLabel }}</span>
                     <ChevronsUpDownIcon
-                        :class="[
-                            'size-3',
-                            open ? 'text-interactive-foreground' : 'text-muted-foreground',
-                        ]"
+                        :class="['size-3', open ? 'text-foreground' : 'text-muted-foreground']"
                     />
                 </Button>
             </ComboboxTrigger>
