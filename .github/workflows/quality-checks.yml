@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: .artifacts/coverage
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload UI results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-ui-results-${{ matrix.os }}
           path: |
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload desktop results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-results-${{ matrix.os }}
           path: .artifacts/desktop
