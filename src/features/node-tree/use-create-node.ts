@@ -20,6 +20,7 @@ export function useCreateNode(
     const world = useWorldStore();
     const createError = ref('');
     const createName = ref('');
+    const createdId = ref<string | null>(null);
 
     let worldRevision = 0;
 
@@ -30,6 +31,7 @@ export function useCreateNode(
             draft.value = null;
             createName.value = '';
             createError.value = '';
+            createdId.value = null;
         },
         { flush: 'sync' },
     );
@@ -40,7 +42,7 @@ export function useCreateNode(
     });
 
     const cancelName = () => {
-        if (!creating.value) {
+        if (!creating.value && !createdId.value) {
             draft.value = null;
             createError.value = '';
         }
@@ -62,39 +64,55 @@ export function useCreateNode(
         const label = type === 'folder' ? 'Folder' : 'Entry';
 
         try {
-            let result;
+            if (!createdId.value) {
+                let result;
 
-            if (type === 'folder') {
-                const section = props.section === 'Wiki' ? 'wiki' : 'manuscript';
-                result = await commands.createFolder(name, parentId, section);
-            } else if (props.section === 'Manuscript') {
-                result = await commands.createManuscriptEntry(name, parentId);
-            } else {
-                result = await commands.createWikiEntry(name, parentId);
+                if (type === 'folder') {
+                    const section = props.section === 'Wiki' ? 'wiki' : 'manuscript';
+                    result = await commands.createFolder(name, parentId, section);
+                } else if (props.section === 'Manuscript') {
+                    result = await commands.createManuscriptEntry(name, parentId);
+                } else {
+                    result = await commands.createWikiEntry(name, parentId);
+                }
+
+                if (worldRevision !== revision) {
+                    return;
+                }
+
+                if (result.status !== 'ok' || !result.data) {
+                    createError.value = `${label} could not be created.`;
+                    return;
+                }
+
+                createdId.value = result.data;
+                world.markDirty();
             }
 
-            if (worldRevision !== revision) {
-                return;
-            }
-
-            if (result.status !== 'ok' || !result.data) {
-                createError.value = `${label} could not be created.`;
-                return;
-            }
-
-            world.markDirty();
-            draft.value = null;
-            await nodes.reloadNodes();
+            const refreshed =
+                props.section === 'Manuscript'
+                    ? await nodes.loadManuscripts()
+                    : await nodes.loadWikis();
             await nextTick();
 
             if (worldRevision !== revision) {
                 return;
             }
 
-            return result.data;
+            if (!refreshed || !refreshed.some((node) => node.id === createdId.value)) {
+                createError.value = `${label} was created, but the tree could not be refreshed.`;
+                return;
+            }
+
+            const id = createdId.value;
+            createdId.value = null;
+            draft.value = null;
+            return id ?? undefined;
         } catch {
             if (worldRevision === revision) {
-                createError.value = `${label} could not be created.`;
+                createError.value = createdId.value
+                    ? `${label} was created, but the tree could not be refreshed.`
+                    : `${label} could not be created.`;
             }
         } finally {
             creating.value = false;
@@ -104,7 +122,8 @@ export function useCreateNode(
     return {
         createName,
         createError,
+        createdId,
         cancelName,
-        submitName: createNode,
+        submitName: () => world.trackCreation(createNode()),
     };
 }

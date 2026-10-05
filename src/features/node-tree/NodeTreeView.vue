@@ -20,7 +20,11 @@ const emits = defineEmits<{
 }>();
 const draft = defineModel<NodeDraft | null>('draft', { default: null });
 const creating = defineModel<boolean>('creating', { default: false });
-const { createName, createError, cancelName, submitName } = useCreateNode(props, draft, creating);
+const { createName, createError, createdId, cancelName, submitName } = useCreateNode(
+    props,
+    draft,
+    creating,
+);
 
 async function createNode() {
     const id = await submitName();
@@ -64,7 +68,11 @@ let nameInput: HTMLInputElement | null = null;
 let focusedDraft: NodeDraft | null = null;
 
 useEventListener(document, 'pointerdown', async (event) => {
-    if (draft.value && !(event.target instanceof Node && nameInput?.contains(event.target))) {
+    if (
+        draft.value &&
+        !createdId.value &&
+        !(event.target instanceof Node && nameInput?.contains(event.target))
+    ) {
         await blurName();
     }
 });
@@ -169,7 +177,7 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                             v-model="createName"
                             aria-label="New item name"
                             class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
-                            :disabled="creating"
+                            :disabled="creating || !!createdId"
                             placeholder="Untitled"
                             @blur="blurName"
                             @click.stop
@@ -185,5 +193,14 @@ function focusName(element: Element | ComponentPublicInstance | null) {
     </ScrollArea>
     <div v-if="createError" class="px-3 py-2 text-xs text-destructive" role="alert">
         {{ createError }}
+        <Button
+            v-if="createdId"
+            class="h-5 px-2 text-xs"
+            :disabled="creating"
+            variant="ghost"
+            @click="createNode"
+        >
+            Retry refresh
+        </Button>
     </div>
 </template>

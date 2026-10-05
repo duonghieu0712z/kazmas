@@ -559,6 +559,72 @@ describe('node tree interactions', () => {
         expect(wrapper.find('[aria-label="New item name"]').exists()).toBe(false);
     });
 
+    it.each(['rejection', 'error status', 'missing node'] as const)(
+        'retries only the tree read after committed creation and a refresh %s',
+        async (failure) => {
+            const { wrapper, nodes, world } = await mountStoredTree();
+            const created = node({ id: 'created', name: 'New entry' });
+            tauri.createManuscriptEntry.mockResolvedValue({ status: 'ok', data: created.id });
+            if (failure === 'rejection') {
+                tauri.getManuscripts.mockRejectedValueOnce(new Error('Read failed'));
+            } else if (failure === 'error status') {
+                tauri.getManuscripts.mockResolvedValueOnce({
+                    status: 'error',
+                    error: { code: 'SQLITE' },
+                });
+            } else {
+                tauri.getManuscripts.mockResolvedValueOnce({ status: 'ok', data: [] });
+            }
+            await wrapper.get('[aria-label="New manuscript entry"]').trigger('click');
+            await submitName(wrapper, 'New entry');
+
+            expect(wrapper.get('[role="alert"]').text()).toContain(
+                'Entry was created, but the tree could not be refreshed.',
+            );
+            expect(world.isDirty).toBe(true);
+            expect(
+                wrapper.get('[aria-label="New item name"]').attributes('disabled'),
+            ).toBeDefined();
+            expect(
+                wrapper.get('[aria-label="New manuscript entry"]').attributes('disabled'),
+            ).toBeDefined();
+            tauri.getManuscripts.mockResolvedValue({ status: 'ok', data: [created] });
+            await wrapper.get('button').trigger('pointerdown');
+            expect(tauri.createManuscriptEntry).toHaveBeenCalledTimes(1);
+            await wrapper
+                .findAll('button')
+                .find((button) => button.text() === 'Retry refresh')!
+                .trigger('click');
+            await flushPromises();
+
+            expect(tauri.createManuscriptEntry).toHaveBeenCalledExactlyOnceWith('New entry', null);
+            expect(wrapper.find('[aria-label="New item name"]').exists()).toBe(false);
+            expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+            expect(nodes.openedNodeId).toBe(created.id);
+        },
+    );
+
+    it('tracks outside-click creation until the mutation and refresh finish', async () => {
+        const { wrapper, world } = await mountStoredTree();
+        const pending = deferred<{ status: 'ok'; data: string }>();
+        const created = node({ id: 'created', name: 'New entry' });
+        tauri.createManuscriptEntry.mockReturnValueOnce(pending.promise);
+        tauri.getManuscripts.mockResolvedValue({ status: 'ok', data: [created] });
+        await wrapper.get('[aria-label="New manuscript entry"]').trigger('click');
+        await wrapper.get('[aria-label="New item name"]').setValue('New entry');
+        await wrapper.get('[aria-label="Filter manuscript"]').trigger('pointerdown');
+        let finished = false;
+        const waiting = world.waitForCreations().then(() => {
+            finished = true;
+        });
+        await flushPromises();
+        expect(finished).toBe(false);
+        expect(world.isDirty).toBe(false);
+        pending.resolve({ status: 'ok', data: created.id });
+        await waiting;
+        expect(world.isDirty).toBe(true);
+    });
+
     it('selects a folder without opening it and opens an entry after expanding', async () => {
         setActivePinia(createPinia());
 
