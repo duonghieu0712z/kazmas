@@ -1,9 +1,22 @@
-import { enableAutoUnmount } from '@vue/test-utils';
+import { config, enableAutoUnmount } from '@vue/test-utils';
+import { injectTreeRootContext } from 'reka-ui';
 import { afterEach, beforeEach, vi } from 'vitest';
 
 import { resetTauri } from './tauri';
 
 beforeEach(resetTauri);
+
+config.global.stubs.TreeVirtualizer = defineComponent({
+    setup(_props, { slots, attrs }) {
+        const tree = injectTreeRootContext();
+        return () =>
+            h(
+                'div',
+                attrs,
+                tree.expandedItems.value.flatMap((item) => slots.default?.({ item }) ?? []),
+            );
+    },
+});
 
 class ResizeObserverMock {
     observe() {}

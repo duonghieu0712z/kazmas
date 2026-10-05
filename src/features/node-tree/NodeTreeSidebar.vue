@@ -58,26 +58,22 @@ function startNode(type: NodeDraft['type']) {
     />
 
     <SidebarContent v-show="active" class="overflow-hidden">
-        <ScrollArea
-            class="min-h-0 min-w-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:grid-cols-1"
+        <div
+            v-if="!filteredTree.length && !draft"
+            class="px-3 py-2 text-xs text-muted-foreground"
+            role="status"
         >
-            <div
-                v-if="!filteredTree.length && !draft"
-                class="px-3 py-2 text-xs text-muted-foreground"
-                role="status"
-            >
-                {{ search ? 'No matching items.' : 'No items yet.' }}
-            </div>
+            {{ search ? 'No matching items.' : 'No items yet.' }}
+        </div>
 
-            <NodeTreeView
-                v-model="selected"
-                v-model:creating="creating"
-                v-model:draft="draft"
-                v-model:expanded="visibleExpanded"
-                :section="section"
-                :tree="filteredTree"
-                @create:node="revealNode"
-            />
-        </ScrollArea>
+        <NodeTreeView
+            v-model="selected"
+            v-model:creating="creating"
+            v-model:draft="draft"
+            v-model:expanded="visibleExpanded"
+            :section="section"
+            :tree="filteredTree"
+            @create:node="revealNode"
+        />
     </SidebarContent>
 </template>

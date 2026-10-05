@@ -29,6 +29,15 @@ if (scenario === 'tree-state') {
     wikiEntries[1]!.parentId = 'wiki-folder';
 }
 
+if (scenario === 'large-tree') {
+    entries.splice(0, entries.length);
+    for (let index = 0; index < 20000; index++) {
+        entries.push(
+            node({ id: `large-${index}`, name: `Chapter ${String(index).padStart(5, '0')}` }),
+        );
+    }
+}
+
 const documents = new Map(
     entries.map((entry) => [
         entry.id,

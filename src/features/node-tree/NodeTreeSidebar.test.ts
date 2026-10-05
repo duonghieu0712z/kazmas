@@ -21,6 +21,7 @@ async function submitName(wrapper: ReturnType<typeof mount>, name = '') {
 
 function mountTree(tree: NodeTreeDto[]) {
     return mount(TooltipProvider, {
+        attachTo: document.body,
         slots: { default: () => h(NodeTreeSidebar, { tree, section: 'Manuscript', active: true }) },
         global: {
             stubs: {

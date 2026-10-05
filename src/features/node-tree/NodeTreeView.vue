@@ -5,6 +5,7 @@ import type { NodeTreeDto } from '@/stores/nodes';
 import type { TreeItemSelectEvent } from 'reka-ui';
 
 import { FileIcon, FolderIcon, FolderOpenIcon } from '@lucide/vue';
+import { useEventListener } from '@vueuse/core';
 
 import { useNodeStore } from '@/stores/nodes';
 
@@ -28,7 +29,7 @@ async function createNode() {
     }
 }
 
-function blurName() {
+function finishName() {
     if (createName.value.trim()) {
         void createNode();
     } else {
@@ -36,9 +37,30 @@ function blurName() {
     }
 }
 
+function blurName(event?: FocusEvent) {
+    if (!event) {
+        finishName();
+        return;
+    }
+    const input = event.target;
+    nextTick(() => {
+        if (input instanceof HTMLInputElement && input.isConnected) {
+            finishName();
+        }
+    });
+}
+
 const selected = defineModel<NodeTreeDto>();
 const expanded = defineModel<string[]>('expanded', { default: () => [] });
 const nodes = useNodeStore();
+let nameInput: HTMLInputElement | null = null;
+let focusedDraft: NodeDraft | null = null;
+
+useEventListener(document, 'pointerdown', (event) => {
+    if (draft.value && !(event.target instanceof Node && nameInput?.contains(event.target))) {
+        blurName();
+    }
+});
 
 const items = computed<TreeNode[]>(() => {
     const pending = draft.value;
@@ -74,8 +96,15 @@ function selectNode(event: TreeItemSelectEvent<TreeNode>) {
 
 function focusName(element: Element | ComponentPublicInstance | null) {
     const input = element instanceof Element ? element : element?.$el;
+    nameInput = input instanceof HTMLInputElement ? input : null;
     nextTick(() => {
-        if (input instanceof HTMLInputElement && input.isConnected && !creating.value) {
+        if (
+            input instanceof HTMLInputElement &&
+            input.isConnected &&
+            !creating.value &&
+            draft.value !== focusedDraft
+        ) {
+            focusedDraft = draft.value;
             input.focus();
             input.scrollIntoView?.({ block: 'nearest' });
         }
@@ -84,57 +113,69 @@ function focusName(element: Element | ComponentPublicInstance | null) {
 </script>
 
 <template>
-    <TreeRoot
-        v-slot="{ flattenItems }"
-        v-model="selected"
-        v-model:expanded="expanded"
-        :aria-label="section"
-        chevron
-        class="p-1"
-        expand-on-chevron-only
-        :get-children="getChildren"
-        :get-key="getKey"
-        indent-guide
-        :items="items"
-        selection-behavior="replace"
+    <ScrollArea
+        class="min-h-0 min-w-0 flex-1 **:data-[slot=scroll-area-viewport]:p-1"
+        viewport-as-child
     >
-        <TreeItem
-            v-for="item in flattenItems"
-            v-bind="item.bind"
-            :key="item._id"
-            v-slot="{ isExpanded }"
-            @select="selectNode"
+        <TreeRoot
+            v-model="selected"
+            v-model:expanded="expanded"
+            :aria-label="section"
+            as-child
+            chevron
+            class="h-auto"
+            expand-on-chevron-only
+            :get-children="getChildren"
+            :get-key="getKey"
+            indent-guide
+            :items="items"
+            selection-behavior="replace"
         >
-            <span class="inline-flex min-w-0 flex-1 items-center gap-2">
-                <template
-                    v-if="
-                        item.value.kind === 'folder' ||
-                        (item.value.kind === 'draft' && item.value.type === 'folder')
-                    "
+            <TreeVirtualizer
+                v-slot="{ item }"
+                :estimate-size="20"
+                :overscan="8"
+                :scroll-to-key="draft?.id ?? selected?.id"
+                :text-content="(node: TreeNode) => (node.kind === 'draft' ? createName : node.name)"
+            >
+                <TreeItem
+                    v-bind="item.bind"
+                    :key="item._id"
+                    v-slot="{ isExpanded }"
+                    @select="selectNode"
                 >
-                    <FolderOpenIcon v-if="isExpanded" class="size-3.5 shrink-0" />
-                    <FolderIcon v-else class="size-3.5 shrink-0" />
-                </template>
-                <FileIcon v-else class="size-3.5 shrink-0" />
+                    <span class="inline-flex min-w-0 flex-1 items-center gap-2">
+                        <template
+                            v-if="
+                                item.value.kind === 'folder' ||
+                                (item.value.kind === 'draft' && item.value.type === 'folder')
+                            "
+                        >
+                            <FolderOpenIcon v-if="isExpanded" class="size-3.5 shrink-0" />
+                            <FolderIcon v-else class="size-3.5 shrink-0" />
+                        </template>
+                        <FileIcon v-else class="size-3.5 shrink-0" />
 
-                <Input
-                    v-if="item.value.kind === 'draft'"
-                    :ref="focusName"
-                    v-model="createName"
-                    aria-label="New item name"
-                    class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
-                    :disabled="creating"
-                    placeholder="Untitled"
-                    @blur="blurName"
-                    @click.stop
-                    @keydown.enter.prevent="createNode"
-                    @keydown.esc.prevent="cancelName"
-                    @keydown.stop
-                />
-                <NodeTreeLabel v-else :name="item.value.name" />
-            </span>
-        </TreeItem>
-    </TreeRoot>
+                        <Input
+                            v-if="item.value.kind === 'draft'"
+                            :ref="focusName"
+                            v-model="createName"
+                            aria-label="New item name"
+                            class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
+                            :disabled="creating"
+                            placeholder="Untitled"
+                            @blur="blurName"
+                            @click.stop
+                            @keydown.enter.prevent="createNode"
+                            @keydown.esc.prevent="cancelName"
+                            @keydown.stop
+                        />
+                        <NodeTreeLabel v-else :name="item.value.name" />
+                    </span>
+                </TreeItem>
+            </TreeVirtualizer>
+        </TreeRoot>
+    </ScrollArea>
     <div v-if="createError" class="px-3 py-2 text-xs text-destructive" role="alert">
         {{ createError }}
     </div>
