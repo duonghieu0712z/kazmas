@@ -191,6 +191,12 @@ impl WorldProject {
         parent_id: Option<Uuid>,
         parent_kind: NodeKind,
     ) -> KazmasResult<Uuid> {
+        if !matches!(parent_kind, NodeKind::Manuscript | NodeKind::Wiki) {
+            return Err(KazmasError::Invalid(
+                "folder section must be manuscript or wiki".into(),
+            ));
+        }
+
         let mut tx = self.conn.begin().await?;
 
         let parent_id = match parent_id {

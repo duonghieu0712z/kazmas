@@ -28,6 +28,41 @@ async fn creates_folders_in_empty_sections_and_under_explicit_parents() -> TestR
 }
 
 #[tokio::test]
+async fn rejects_invalid_folder_sections_without_changing_world() -> TestResult {
+    let dir = temp_dir()?;
+    let mut world = WorldProject::create_world("Invalid folders", dir.path(), dir.path()).await?;
+    let parent = store::get_node_by_kind(&mut world.conn, NodeKind::Manuscript)
+        .await?
+        .id;
+
+    for kind in [
+        NodeKind::World,
+        NodeKind::Folder,
+        NodeKind::ManuscriptEntry,
+        NodeKind::WikiEntry,
+    ] {
+        for parent_id in [None, Some(parent)] {
+            assert!(matches!(
+                world.create_folder(Some("Rejected"), parent_id, kind).await,
+                Err(KazmasError::Invalid(_))
+            ));
+        }
+    }
+
+    assert!(!world.is_dirty());
+    let nodes: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM nodes")
+        .fetch_one(&mut world.conn)
+        .await?;
+    let metadata: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM node_metadata")
+        .fetch_one(&mut world.conn)
+        .await?;
+    assert_eq!(nodes, 3);
+    assert_eq!(metadata, 3);
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn saves_and_reopens_document_metadata_and_assets() -> TestResult {
     let dir = temp_dir()?;
     let mut world = WorldProject::create_world("Test World", dir.path(), dir.path()).await?;
