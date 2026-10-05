@@ -57,7 +57,9 @@ export const useNodeStore = defineStore('nodes', () => {
         const result = await commands.getManuscripts();
         if (currentRevision === revision && result.status === 'ok') {
             manuscriptNodes.value = result.data ?? [];
+            return manuscriptNodes.value;
         }
+        return false;
     };
 
     const loadWikis = async () => {
@@ -65,7 +67,9 @@ export const useNodeStore = defineStore('nodes', () => {
         const result = await commands.getWikis();
         if (currentRevision === revision && result.status === 'ok') {
             wikiNodes.value = result.data ?? [];
+            return wikiNodes.value;
         }
+        return false;
     };
 
     const reloadNodes = async () => {

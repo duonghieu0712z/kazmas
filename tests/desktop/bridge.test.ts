@@ -38,7 +38,7 @@ describe('desktop bridge world loading', () => {
             const pending =
                 action === 'create' ? bridge.create('World', '/test') : bridge.open('/test.kazmas');
             let completed = false;
-            void pending.then(() => {
+            const completion = pending.then(() => {
                 completed = true;
             });
             await flushPromises();
@@ -50,7 +50,7 @@ describe('desktop bridge world loading', () => {
             await flushPromises();
             expect(completed).toBe(false);
             wikis.resolve({ status: 'ok', data: [node({ id: 'wiki-a', kind: 'wiki_entry' })] });
-            await pending;
+            await completion;
             expect(nodes.manuscripts[0]?.id).toBe('entry-a');
             expect(nodes.wikis[0]?.id).toBe('wiki-a');
             expect(completed).toBe(true);

@@ -1,12 +1,13 @@
 import type * as DialogModule from '@/providers/dialog';
 
+import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AlertDialogButtons, AlertDialogKind, AlertDialogResult } from '@/providers/dialog';
 import { useWorldStore } from '@/stores/world';
 
-import { manifest } from '../../tests/support/fixtures';
+import { deferred, manifest } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
 import { closeWorld, newWorld, openWorld } from './world';
 
@@ -47,6 +48,31 @@ describe('world actions', () => {
         expect(dialogs.save).toHaveBeenCalledWith('world-a');
         expect(tauri.closeWorld).not.toHaveBeenCalled();
     });
+
+    it.each([newWorld, openWorld, closeWorld])(
+        'waits for creation before %s checks dirty state',
+        async (action) => {
+            const store = useWorldStore();
+            store.setManifest(manifest());
+            const pending = deferred<void>();
+            const creation = store.trackCreation(pending.promise.then(() => store.markDirty()));
+            dialogs.save.mockResolvedValue(AlertDialogResult.Cancel);
+
+            const transition = action();
+            await flushPromises();
+            expect(dialogs.flush).not.toHaveBeenCalled();
+            expect(dialogs.save).not.toHaveBeenCalled();
+            expect(tauri.closeWorld).not.toHaveBeenCalled();
+
+            pending.resolve();
+            await creation;
+            await transition;
+            expect(dialogs.save).toHaveBeenCalledWith('world-a');
+            expect(tauri.closeWorld).not.toHaveBeenCalled();
+            expect(tauri.open).not.toHaveBeenCalled();
+            expect(dialogs.create).not.toHaveBeenCalled();
+        },
+    );
 
     it.each([AlertDialogResult.Yes, AlertDialogResult.No, AlertDialogResult.Cancel])(
         'handles the unsaved changes choice %s',

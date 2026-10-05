@@ -189,9 +189,20 @@ impl WorldProject {
         &mut self,
         name: Option<&str>,
         parent_id: Option<Uuid>,
+        parent_kind: NodeKind,
     ) -> KazmasResult<Uuid> {
+        if !matches!(parent_kind, NodeKind::Manuscript | NodeKind::Wiki) {
+            return Err(KazmasError::Invalid(
+                "folder section must be manuscript or wiki".into(),
+            ));
+        }
+
         let mut tx = self.conn.begin().await?;
 
+        let parent_id = match parent_id {
+            Some(parent_id) => Some(parent_id),
+            None => Some(store::get_node_by_kind(&mut tx, parent_kind).await?.id),
+        };
         let node = Node::new(NodeKind::Folder, name, parent_id);
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;

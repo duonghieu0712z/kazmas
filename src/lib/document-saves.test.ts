@@ -47,6 +47,7 @@ describe('document saves', () => {
         const { queue } = createQueue(save);
         queue.schedule('a', 'old');
         const flushing = queue.flush();
+        expect(queue.flush()).toBe(flushing);
         queue.schedule('a', 'new');
         pending.resolve({ status: 'ok', data: true });
         await flushing;
@@ -54,6 +55,14 @@ describe('document saves', () => {
             ['a', 'old'],
             ['a', 'new'],
         ]);
+    });
+
+    it('writes later edits after flushing an empty queue', async () => {
+        const { queue, save } = createQueue();
+        await queue.flush();
+        queue.schedule('a', 'content');
+        await queue.flush();
+        expect(save).toHaveBeenCalledExactlyOnceWith('a', 'content');
     });
 
     it.each([

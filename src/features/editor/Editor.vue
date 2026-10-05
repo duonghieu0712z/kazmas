@@ -76,8 +76,12 @@ watch(
     { immediate: true },
 );
 
-onBeforeUnmount(() => {
-    void saves.dispose().catch(reportSaveError);
+onBeforeUnmount(async () => {
+    try {
+        await saves.dispose();
+    } catch (error) {
+        reportSaveError(error instanceof Error ? error : new Error(String(error)));
+    }
 });
 </script>
 

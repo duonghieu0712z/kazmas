@@ -1,4 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
+import { flushPromises } from '@vue/test-utils';
+import { createPinia, setActivePinia } from 'pinia';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { useWorldStore } from '@/stores/world';
 
 import { deferred } from '../../tests/support/fixtures';
 import { tauri } from '../../tests/unit/tauri';
@@ -20,6 +24,8 @@ vi.mock('@/actions/world', () => ({
 vi.mock('@/dialogs', () => ({ openAboutDialog: handlers.about }));
 
 describe('menu command ordering', () => {
+    beforeEach(() => setActivePinia(createPinia()));
+
     it.each(['save', 'save-as', 'close-window', 'quit'] as const)(
         'waits for pending writes before %s',
         async (command) => {
@@ -38,6 +44,21 @@ describe('menu command ordering', () => {
         await expect(executeMenuCommand('save')).rejects.toThrow('Write failed');
         expect(tauri.executeMenuCommand).not.toHaveBeenCalled();
     });
+
+    it.each(['save', 'save-as', 'close-window', 'quit'] as const)(
+        'waits for pending creation before %s',
+        async (command) => {
+            const pending = deferred<void>();
+            const creation = useWorldStore().trackCreation(pending.promise);
+            const execution = executeMenuCommand(command);
+            await flushPromises();
+            expect(tauri.executeMenuCommand).not.toHaveBeenCalled();
+            pending.resolve();
+            await creation;
+            await execution;
+            expect(tauri.executeMenuCommand).toHaveBeenCalledExactlyOnceWith(command);
+        },
+    );
 
     it('dispatches world commands to the frontend action', async () => {
         await executeMenuCommand('new-world');
