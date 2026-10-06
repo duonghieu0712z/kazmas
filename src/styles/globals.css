@@ -63,10 +63,10 @@
 .dark {
     --background: oklch(0.276848 0 0);
     --foreground: oklch(0.934025 0 0);
-    --muted: oklch(0.28908 0 0);
+    --muted: oklch(0.32 0 0);
     --muted-foreground: oklch(0.725157 0 0);
-    --hover: oklch(0.31 0 0);
-    --active: oklch(0.34 0 0);
+    --hover: oklch(0.36 0 0);
+    --active: oklch(0.4 0 0);
     --destructive: oklch(0.659729 0.216849 23.809);
     --border: oklch(0.37 0 0);
     --ring: oklch(0.556 0 0);

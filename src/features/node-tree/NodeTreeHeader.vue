@@ -101,7 +101,7 @@ const actions = computed(() => [
                         <TooltipTrigger>
                             <InputGroupButton
                                 aria-label="Clear filter"
-                                class="size-5"
+                                class="size-5 text-muted-foreground"
                                 size="icon"
                                 @click="query = ''"
                             >

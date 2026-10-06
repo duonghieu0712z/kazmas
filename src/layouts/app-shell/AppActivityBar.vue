@@ -69,18 +69,15 @@ onMounted(() => {
         collapsible="none"
     >
         <SidebarContent>
-            <SidebarMenu class="gap-0">
+            <SidebarMenu class="p-1">
                 <SidebarMenuItem
                     v-for="item in ITEMS"
                     :key="item.name"
-                    class="flex h-(--sidebar-width-icon) w-full items-center justify-center"
+                    class="flex w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        :class="[
-                            'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-hover-foreground active:[&>svg]:stroke-active-foreground data-[active=true]:[&>svg]:stroke-active-foreground',
-                        ]"
+                        class="size-8 justify-center p-0 text-muted-foreground"
                         :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
@@ -93,18 +90,15 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter class="gap-0 p-0">
-            <SidebarMenu class="gap-0">
+            <SidebarMenu class="p-1">
                 <SidebarMenuItem
                     v-for="item in FOOTERS"
                     :key="item.name"
-                    class="flex h-(--sidebar-width-icon) w-full items-center justify-center"
+                    class="flex w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        :class="[
-                            'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-hover-foreground active:[&>svg]:stroke-active-foreground data-[active=true]:[&>svg]:stroke-active-foreground',
-                        ]"
+                        class="size-8 justify-center p-0 text-muted-foreground"
                         :tooltip="item.name"
                     >
                         <component :is="item.icon" />
