@@ -75,6 +75,8 @@ declare module 'vue' {
     EditorProvider: typeof import('./../components/tiptap/editor/EditorProvider.vue')['default']
     FindAndReplaceButton: typeof import('./../components/tiptap/find-and-replace/FindAndReplaceButton.vue')['default']
     FindAndReplacePanel: typeof import('./../components/tiptap/find-and-replace/FindAndReplacePanel.vue')['default']
+    FindAndReplacePanelButton: typeof import('./../components/tiptap/find-and-replace/FindAndReplacePanelButton.vue')['default']
+    FindAndReplacePanelToggle: typeof import('./../components/tiptap/find-and-replace/FindAndReplacePanelToggle.vue')['default']
     FloatingMenu: typeof import('./../components/tiptap/menu/FloatingMenu.vue')['default']
     HeadingButton: typeof import('./../components/tiptap/heading/HeadingButton.vue')['default']
     HeadingDropdown: typeof import('./../components/tiptap/heading/HeadingDropdown.vue')['default']
