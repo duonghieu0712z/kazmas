@@ -31,7 +31,7 @@ const props = withDefaults(
                 'data-[active=true]:bg-selected data-[active=true]:text-selected-foreground',
                 'hover:bg-hover hover:text-hover-foreground',
                 'active:bg-active active:text-active-foreground',
-                'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
+                'disabled:pointer-events-none disabled:text-disabled-foreground! aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! aria-disabled:[&_svg]:text-disabled-foreground!',
                 size === 'sm' && 'text-xs',
                 size === 'md' && 'text-sm',
                 'group-data-[collapsible=icon]:hidden',

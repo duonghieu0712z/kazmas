@@ -30,7 +30,7 @@ const modelValue = useVModel(props, 'modelValue', emits, {
                 'file:inline-flex file:h-7.5 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
                 'focus-visible:border-focus-ring focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50',
                 'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
-                'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+                'disabled:pointer-events-none disabled:cursor-not-allowed disabled:text-disabled-foreground! md:text-sm disabled:[&_svg]:text-disabled-foreground!',
                 props.class,
             )
         "

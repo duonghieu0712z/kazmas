@@ -63,7 +63,7 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
                     'focus-visible:bg-tree-item-hover focus-visible:text-tree-item-hover-foreground',
                     'active:bg-active active:text-active-foreground',
                     'data-selected:bg-tree-item-selected data-selected:text-tree-item-selected-foreground',
-                    'data-disabled:pointer-events-none data-disabled:opacity-50',
+                    'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
                     // Indent guide
                     indentGuide && [
                         `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,

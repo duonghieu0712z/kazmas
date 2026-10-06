@@ -13,7 +13,7 @@ export const buttonVariants = cva(
         'active:bg-active active:text-active-foreground',
         'focus-visible:border-focus-ring focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
-        'disabled:pointer-events-none disabled:opacity-50',
+        'disabled:pointer-events-none disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground!',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     ],
     {

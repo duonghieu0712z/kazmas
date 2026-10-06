@@ -203,7 +203,7 @@ export const sidebarMenuButtonVariants = cva(
     [
         'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-focus-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
         'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
-        'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
+        'disabled:pointer-events-none disabled:text-disabled-foreground! aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! aria-disabled:[&_svg]:text-disabled-foreground!',
         'data-[active=true]:bg-selected data-[active=true]:font-medium data-[active=true]:text-selected-foreground',
         'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',

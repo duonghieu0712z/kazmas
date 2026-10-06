@@ -40,6 +40,7 @@
     --color-selected: var(--active);
     --color-selected-foreground: var(--foreground);
     --color-focus-ring: var(--ring);
+    --color-disabled-foreground: var(--disabled-foreground);
 
     /* Button variants */
     --color-primary: var(--foreground);
@@ -84,7 +85,7 @@
     --color-editor-background: var(--editor);
     --color-editor-foreground: var(--editor-foreground);
     --color-editor-border: var(--border);
-    --color-editor-placeholder: var(--muted-foreground);
+    --color-editor-placeholder: var(--disabled-foreground);
     --color-editor-active-mark: var(--active);
 
     /* Editor toolbar */
@@ -123,7 +124,7 @@
 
     /* Input */
     --color-input-border: var(--border);
-    --color-input-placeholder: var(--muted-foreground);
+    --color-input-placeholder: var(--disabled-foreground);
     --color-input-selection: var(--foreground);
     --color-input-selection-foreground: var(--background);
 
@@ -140,6 +141,7 @@
     --foreground: oklch(0.527796 0 0);
     --muted: oklch(0.949119 0 0);
     --muted-foreground: oklch(0.62 0 0);
+    --disabled-foreground: oklch(0.8 0 0);
     --hover: oklch(0.935 0 0);
     --active: oklch(0.91887 0 0);
     --destructive: oklch(0.611467 0.216934 20.84);
@@ -158,6 +160,7 @@
     --foreground: oklch(0.934025 0 0);
     --muted: oklch(0.32 0 0);
     --muted-foreground: oklch(0.725157 0 0);
+    --disabled-foreground: oklch(0.5 0 0);
     --hover: oklch(0.36 0 0);
     --active: oklch(0.4 0 0);
     --destructive: oklch(0.659729 0.216849 23.809);
