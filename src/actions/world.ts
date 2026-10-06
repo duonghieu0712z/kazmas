@@ -80,6 +80,7 @@ export async function closeWorld() {
 
 async function confirmWorldTransition() {
     const world = useWorldStore();
+    await world.waitForCreations();
     try {
         await flushDocumentSaves();
     } catch (error) {

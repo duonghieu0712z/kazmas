@@ -9,6 +9,7 @@ import { useNodeStore } from '@/stores/nodes';
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
     const dirty = shallowRef(false);
+    const pendingCreations = new Set<Promise<unknown>>();
 
     let initialization: Promise<void> | undefined;
     let stopListening: (() => void) | undefined;
@@ -86,6 +87,18 @@ export const useWorldStore = defineStore('world', () => {
         dirty.value = true;
     };
 
+    const trackCreation = <T>(creation: Promise<T>): Promise<T> => {
+        const pending = creation.finally(() => pendingCreations.delete(pending));
+        pendingCreations.add(pending);
+        return pending;
+    };
+
+    const waitForCreations = async () => {
+        while (pendingCreations.size) {
+            await Promise.allSettled([...pendingCreations]);
+        }
+    };
+
     return {
         manifest,
         isDirty,
@@ -96,5 +109,7 @@ export const useWorldStore = defineStore('world', () => {
         clearManifest,
         waitForNodes,
         markDirty,
+        trackCreation,
+        waitForCreations,
     };
 });

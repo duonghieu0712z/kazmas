@@ -14,6 +14,30 @@ const entries = [
     node({ id: 'entry-b', name: 'Chapter B' }),
     node({ id: 'entry-long', name: longName }),
 ];
+const wikiEntries = [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+
+if (scenario === 'tree-state') {
+    entries.splice(
+        0,
+        entries.length,
+        node({ id: 'draft-folder', kind: 'folder', name: 'Draft' }),
+        node({ parentId: 'draft-folder' }),
+        node({ id: 'archive-folder', kind: 'folder', name: 'Archive' }),
+        node({ id: 'entry-b', parentId: 'archive-folder', name: 'Chapter B' }),
+    );
+    wikiEntries.unshift(node({ id: 'wiki-folder', kind: 'folder', name: 'Characters' }));
+    wikiEntries[1]!.parentId = 'wiki-folder';
+}
+
+if (scenario === 'large-tree') {
+    entries.splice(0, entries.length);
+    for (let index = 0; index < 20000; index++) {
+        entries.push(
+            node({ id: `large-${index}`, name: `Chapter ${String(index).padStart(5, '0')}` }),
+        );
+    }
+}
+
 const documents = new Map(
     entries.map((entry) => [
         entry.id,
@@ -55,9 +79,41 @@ mockIPC(
             case 'get_world':
                 return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
             case 'get_manuscripts':
-                return entries;
+                return [...entries];
             case 'get_wikis':
-                return [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+                return [...wikiEntries];
+            case 'create_manuscript_entry':
+            case 'create_wiki_entry': {
+                const wiki = command === 'create_wiki_entry';
+                const target = wiki ? wikiEntries : entries;
+                const id = `${wiki ? 'wiki' : 'entry'}-new-${target.length}`;
+                target.push(
+                    node({
+                        id,
+                        name: typeof data.name === 'string' ? data.name : 'Untitled',
+                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        kind: wiki ? 'wiki_entry' : 'manuscript_entry',
+                    }),
+                );
+                documents.set(
+                    id,
+                    JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }),
+                );
+                return id;
+            }
+            case 'create_folder': {
+                const target = data.section === 'wiki' ? wikiEntries : entries;
+                const id = `folder-new-${target.length}`;
+                target.push(
+                    node({
+                        id,
+                        name: typeof data.name === 'string' ? data.name : 'Untitled',
+                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        kind: 'folder',
+                    }),
+                );
+                return id;
+            }
             case 'get_document':
                 if (scenario === 'load-error') {
                     return Promise.reject({ code: 'IO', message: 'Document read failed.' });

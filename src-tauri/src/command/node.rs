@@ -141,6 +141,7 @@ pub(super) async fn create_folder(
     window: WebviewWindow,
     name: Option<&str>,
     parent_id: Option<Uuid>,
+    section: NodeKind,
 ) -> CommandResult<Option<Uuid>> {
     let Some(project_id) = current_project_id(&state, &window).await? else {
         return Ok(None);
@@ -148,7 +149,7 @@ pub(super) async fn create_folder(
 
     let project_manager = state.project_manager();
     let id = project_manager
-        .create_folder(project_id, name, parent_id)
+        .create_folder(project_id, name, parent_id, section)
         .await?;
     if id.is_some() {
         emit_world_changed(&window, project_manager.project_dirty(project_id).await)?;

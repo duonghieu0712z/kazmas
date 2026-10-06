@@ -1,1 +1,1 @@
-export { default as NodeTreeView } from './NodeTreeView.vue';
+export { default as NodeTreeSidebar } from './NodeTreeSidebar.vue';

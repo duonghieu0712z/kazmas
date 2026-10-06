@@ -13,10 +13,11 @@ const props = defineProps<
     ScrollAreaRootProps & {
         class?: HTMLAttributes['class'];
         horizontal?: boolean;
+        viewportAsChild?: boolean;
     }
 >();
 
-const delegatedProps = reactiveOmit(props, 'class', 'horizontal');
+const delegatedProps = reactiveOmit(props, 'class', 'horizontal', 'viewportAsChild');
 </script>
 
 <template>
@@ -26,6 +27,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'horizontal');
         data-slot="scroll-area"
     >
         <ScrollAreaViewport
+            :as-child="viewportAsChild"
             :class="[
                 'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
                 'focus-visible:ring-[1.5px] focus-visible:ring-ring/50 focus-visible:outline-1',
