@@ -29,7 +29,7 @@ test('code placeholder aligns with content', async ({ page, workspace }) => {
             lineHeight: [pseudo.lineHeight, content.lineHeight],
         };
     });
-    expect(result.placeholder).toBeTruthy();
+    expect(result.placeholder).toBe('Write something...');
     expect(result.content).toBe(JSON.stringify(result.placeholder));
     expect(result.top).toBe(result.codeTop);
     expect(result.left).toBe(result.codeLeft);
