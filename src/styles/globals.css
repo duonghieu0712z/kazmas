@@ -131,16 +131,10 @@
     --color-tooltip-background: var(--muted);
     --color-tooltip-foreground: var(--muted-foreground);
     --color-tooltip-border: var(--border);
-
-    /* Border radius */
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-    --radius: 0.625rem;
+    --radius: 0.5rem;
 
     --background: oklch(0.973146 0 0);
     --foreground: oklch(0.527796 0 0);

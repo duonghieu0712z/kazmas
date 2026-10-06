@@ -90,7 +90,7 @@ provideSidebarLayoutContext({
             <div
                 :class="[
                     'flex h-full w-full flex-col bg-sidebar-background',
-                    'group-data-[variant=floating]:rounded-sm group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-xs',
+                    'group-data-[variant=floating]:rounded-md group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-xs',
                 ]"
                 data-sidebar="sidebar"
             >
