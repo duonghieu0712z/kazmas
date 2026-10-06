@@ -127,7 +127,7 @@ export function createEditorExtensions() {
             visible: false,
         }),
         Placeholder.configure({
-            placeholder: 'Write something …',
+            placeholder: 'Write something...',
             emptyEditorClass: cn(
                 'before:pointer-events-none before:float-left before:h-0 before:text-ring before:content-[attr(data-placeholder)]',
             ),
