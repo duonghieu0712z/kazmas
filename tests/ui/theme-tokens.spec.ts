@@ -37,7 +37,6 @@ for (const theme of ['light', 'dark'] as const) {
                 (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
             const background = getComputedStyle(editor).backgroundColor;
             const probe = document.createElement('span');
-            probe.style.color = 'var(--highlight-foreground)';
             editor.append(probe);
             const textRatios = [
                 '',
@@ -45,6 +44,7 @@ for (const theme of ['light', 'dark'] as const) {
                 'find-and-replace-result-current',
             ].map((className) => {
                 probe.className = className;
+                probe.style.color = className ? '' : 'var(--highlight-foreground)';
                 probe.style.backgroundColor = className ? '' : 'var(--highlight)';
                 return contrast(
                     luminance(getComputedStyle(probe).color),
