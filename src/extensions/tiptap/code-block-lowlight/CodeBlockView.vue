@@ -17,7 +17,7 @@ const codeBlockAttributes = computed(() => ({
     class: cn(
         props.extension.options.HTMLAttributes.class,
         props.HTMLAttributes.class,
-        'my-0 px-2 pt-8 pb-1',
+        'my-0 px-2 pt-8 pb-2',
     ),
 }));
 
@@ -41,7 +41,7 @@ function selectLanguage(language: string) {
 <template>
     <NodeViewWrapper
         as="div"
-        class="group relative my-6 before:absolute before:top-11 before:left-4"
+        class="group relative my-6 before:absolute before:top-[33px] before:left-[9px] before:font-code before:text-sm before:leading-6"
     >
         <div class="absolute top-1 right-2 z-10 flex items-center gap-1" contenteditable="false">
             <LanguageSelect
