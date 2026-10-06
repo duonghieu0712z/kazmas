@@ -74,7 +74,7 @@ const selectedLabel = computed(
             </ComboboxTrigger>
         </ComboboxAnchor>
 
-        <ComboboxList align="end" class="z-30 w-56 p-1 font-code">
+        <ComboboxList align="end" class="z-30 w-56 font-code">
             <ComboboxInput
                 aria-label="Search code block languages"
                 autocomplete="off"
@@ -86,7 +86,7 @@ const selectedLabel = computed(
 
             <ScrollArea
                 :class="[
-                    'mt-1 h-72',
+                    'mt-1 h-72 pl-1',
                     '[&_[data-slot=scroll-area-viewport]>div]:min-h-0',
                     '[&_[data-slot=scroll-area-viewport]>div]:content-start',
                     '[&_[data-slot=scroll-area-viewport]>div]:gap-0.5',
