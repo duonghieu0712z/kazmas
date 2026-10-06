@@ -30,7 +30,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...$attrs, ...forwarded }"
             :class="
                 cn(
-                    'z-50 min-w-32 origin-(--reka-menubar-content-transform-origin) overflow-hidden rounded-md border bg-background p-1 text-foreground shadow-xs',
+                    'z-50 min-w-32 origin-(--reka-menubar-content-transform-origin) overflow-hidden rounded-md border border-popup-border bg-popup-background p-1 text-popup-foreground shadow-xs',
                     'data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
                     'data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',

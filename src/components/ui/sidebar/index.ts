@@ -201,20 +201,20 @@ export const sidebarRailVariants = cva(
 
 export const sidebarMenuButtonVariants = cva(
     [
-        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
-        'hover:bg-interactive hover:text-interactive-foreground active:bg-interactive active:text-interactive-foreground',
-        'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
-        'data-[active=true]:bg-interactive data-[active=true]:font-medium data-[active=true]:text-interactive-foreground',
-        'data-[state=open]:hover:bg-interactive data-[state=open]:hover:text-interactive-foreground',
+        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-focus-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
+        'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
+        'disabled:pointer-events-none disabled:text-disabled-foreground! aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! aria-disabled:[&_svg]:text-disabled-foreground!',
+        'data-[active=true]:bg-selected data-[active=true]:font-medium data-[active=true]:text-selected-foreground',
+        'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',
         `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
     ],
     {
         variants: {
             variant: {
-                default: 'hover:bg-interactive hover:text-interactive-foreground',
+                default: 'hover:bg-hover hover:text-hover-foreground',
                 outline:
-                    'bg-background shadow-[0_0_0_1px_var(--border)] hover:bg-interactive hover:text-interactive-foreground hover:shadow-[0_0_0_1px_var(--interactive)]',
+                    'bg-background shadow-[0_0_0_1px_var(--border)] hover:bg-hover hover:text-hover-foreground',
             },
             size: {
                 default: 'h-8',

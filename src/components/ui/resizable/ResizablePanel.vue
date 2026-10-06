@@ -17,7 +17,7 @@ const { separation } = injectResizableContext();
     <SplitterPanel
         :ref="forwardRef"
         v-slot="slotProps"
-        class="data-[separation=gap]:not-has-data-[slot=resizable-panel]:rounded-sm data-[separation=gap]:not-has-data-[slot=resizable-panel]:border"
+        class="data-[separation=gap]:not-has-data-[slot=resizable-panel]:rounded-md data-[separation=gap]:not-has-data-[slot=resizable-panel]:border"
         :data-separation="separation"
         data-slot="resizable-panel"
         v-bind="forwarded"
