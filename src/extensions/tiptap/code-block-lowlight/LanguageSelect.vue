@@ -59,8 +59,9 @@ const selectedLabel = computed(
                 <Button
                     aria-label="Code block language"
                     :class="[
-                        'h-6 gap-1 bg-transparent px-1.5 font-code text-xs text-muted-foreground shadow-none hover:text-interactive-foreground',
-                        open && 'bg-interactive text-interactive-foreground',
+                        'h-6 gap-1 px-1.5 font-code text-xs text-editor-toolbar-foreground',
+                        open &&
+                            'bg-selected text-selected-foreground hover:bg-selected hover:text-selected-foreground',
                     ]"
                     :disabled="disabled"
                     size="default"
@@ -68,17 +69,12 @@ const selectedLabel = computed(
                     variant="ghost"
                 >
                     <span>{{ selectedLabel }}</span>
-                    <ChevronsUpDownIcon
-                        :class="[
-                            'size-3',
-                            open ? 'text-interactive-foreground' : 'text-muted-foreground',
-                        ]"
-                    />
+                    <ChevronsUpDownIcon class="size-3" />
                 </Button>
             </ComboboxTrigger>
         </ComboboxAnchor>
 
-        <ComboboxList align="end" class="z-30 w-56 py-1 pl-1 font-code">
+        <ComboboxList align="end" class="z-30 w-56 font-code">
             <ComboboxInput
                 aria-label="Search code block languages"
                 autocomplete="off"
@@ -90,21 +86,24 @@ const selectedLabel = computed(
 
             <ScrollArea
                 :class="[
-                    'mt-1 h-72',
+                    'mt-1 h-72 pl-1',
                     '[&_[data-slot=scroll-area-viewport]>div]:min-h-0',
                     '[&_[data-slot=scroll-area-viewport]>div]:content-start',
                     '[&_[data-slot=scroll-area-viewport]>div]:gap-0.5',
                     '[&_[data-slot=scroll-area-viewport]>div]:pr-2',
                 ]"
             >
-                <ComboboxEmpty class="px-2 py-6 text-muted-foreground">
+                <ComboboxEmpty class="px-2 py-6 text-editor-toolbar-foreground">
                     No languages found
                 </ComboboxEmpty>
 
                 <ComboboxItem
                     v-for="language in languages"
                     :key="language.value"
-                    class="h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap"
+                    :class="[
+                        'h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap',
+                        'text-editor-toolbar-foreground data-highlighted:text-hover-foreground data-[state=checked]:text-menu-item-selected-foreground',
+                    ]"
                     :text-value="`${language.label} ${language.value}`"
                     :value="language.value"
                 >

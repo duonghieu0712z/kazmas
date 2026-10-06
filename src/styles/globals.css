@@ -27,13 +27,6 @@
     --color-border: var(--border);
     --color-ring: var(--ring);
 
-    /* Compatibility aliases until all controls use semantic tokens */
-    --color-accent: var(--muted);
-    --color-accent-foreground: var(--foreground);
-    --color-interactive: var(--active);
-    --color-interactive-foreground: var(--muted-foreground);
-    --color-input: var(--border);
-
     /* Highlight */
     --color-highlight: var(--highlight);
     --color-highlight-foreground: var(--highlight-foreground);

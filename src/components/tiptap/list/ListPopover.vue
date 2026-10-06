@@ -55,14 +55,14 @@ function handleCloseAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
-                    class="gap-0.5"
+                    class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="!canToggle"
                     :model-value="Boolean(activeType) || open"
                     size="default"
                 >
                     <slot>
                         <component :is="icon" />
-                        <ChevronDownIcon class="size-3 text-muted-foreground" />
+                        <ChevronDownIcon class="size-3" />
                     </slot>
                 </Toggle>
 

@@ -46,6 +46,7 @@ const delegatedProps = reactiveOmit(
         :show-tooltip="showTooltip"
     >
         <Toggle
+            class="text-editor-toolbar-foreground"
             v-bind="delegatedProps"
             :disabled="!canAlign"
             :model-value="isActive"

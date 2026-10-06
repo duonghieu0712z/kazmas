@@ -1,6 +1,43 @@
 import { expect, test } from './fixtures';
 
 for (const theme of ['light', 'dark'] as const) {
+    test(`semantic colors follow the palette in ${theme} mode`, async ({ page, workspace }) => {
+        await page.addInitScript(
+            (value) => localStorage.setItem('vueuse-color-scheme', value),
+            theme,
+        );
+        await workspace.open();
+        const treeItem = page.getByRole('treeitem', { name: 'Chapter A', exact: true });
+        await treeItem.click();
+        await page.mouse.move(1190, 790);
+        const bold = page.getByRole('button', { name: 'Bold', exact: true });
+        const editor = page.locator('.tiptap');
+        const editorColor = await editor.evaluate((element) => getComputedStyle(element).color);
+        const editorBackground = await editor.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
+        );
+
+        await page.evaluate(() => {
+            const themeRoot =
+                document.querySelector<HTMLElement>('.dark') ?? document.documentElement;
+            themeRoot.style.setProperty('--foreground', 'rgb(210, 220, 230)');
+            themeRoot.style.setProperty('--muted-foreground', 'rgb(110, 120, 130)');
+            themeRoot.style.setProperty('--active', 'rgb(30, 40, 50)');
+        });
+        await expect(treeItem).toHaveCSS('background-color', 'rgb(30, 40, 50)');
+        await expect(treeItem).toHaveCSS('color', 'rgb(210, 220, 230)');
+        await expect(bold).toHaveCSS('color', 'rgb(110, 120, 130)');
+        await expect(editor).toHaveCSS('color', editorColor);
+        await expect(editor).toHaveCSS('background-color', editorBackground);
+
+        await bold.hover();
+        await page.mouse.down();
+        await expect(bold).toHaveCSS('background-color', 'rgb(30, 40, 50)');
+        await page.mouse.up();
+    });
+}
+
+for (const theme of ['light', 'dark'] as const) {
     test(`editor highlight text and border remain readable in ${theme} mode`, async ({
         page,
         workspace,
@@ -66,6 +103,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(ratios.borderRatio).toBeGreaterThanOrEqual(3);
     });
 }
+
 for (const theme of ['light', 'dark'] as const) {
     test(`dialog overlay uses the ${theme} palette`, async ({ page, workspace }) => {
         await page.addInitScript(

@@ -58,6 +58,7 @@ function handleOpenChange(open: boolean) {
         <Toggle
             v-bind="delegatedProps"
             :aria-label="FIND_AND_REPLACE_LABEL"
+            class="text-editor-toolbar-foreground"
             :disabled="!isAvailable"
             :model-value="open"
             :size="showLabel ? 'default' : 'icon'"

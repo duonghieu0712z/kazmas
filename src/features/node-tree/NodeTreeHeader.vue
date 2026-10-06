@@ -58,9 +58,13 @@ const actions = computed(() => [
 </script>
 
 <template>
-    <SidebarHeader class="shrink-0 gap-0 border-b bg-secondary p-0">
+    <SidebarHeader
+        class="shrink-0 gap-0 border-b border-sidebar-border bg-tree-header-background p-0"
+    >
         <div class="flex h-7 items-center justify-between gap-2 px-2">
-            <span class="truncate text-xs font-medium text-foreground">{{ section }}</span>
+            <span class="truncate text-xs font-medium text-tree-header-foreground">{{
+                section
+            }}</span>
 
             <ButtonGroup aria-label="Tree actions" class="shrink-0" spacing="spaced">
                 <Tooltip v-for="action in actions" :key="action.id">
@@ -83,7 +87,7 @@ const actions = computed(() => [
         </div>
 
         <div class="px-2 pb-1">
-            <InputGroup class="h-6 bg-secondary/50 shadow-none">
+            <InputGroup class="h-6 bg-muted/50 shadow-none">
                 <InputGroupAddon>
                     <SearchIcon class="size-3" />
                 </InputGroupAddon>
@@ -101,7 +105,7 @@ const actions = computed(() => [
                         <TooltipTrigger>
                             <InputGroupButton
                                 aria-label="Clear filter"
-                                class="size-5"
+                                class="size-5 text-muted-foreground"
                                 size="icon"
                                 @click="query = ''"
                             >
