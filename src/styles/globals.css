@@ -80,6 +80,15 @@
     --color-tree-item-selected-foreground: var(--foreground);
     --color-tree-indent-guide: var(--border);
 
+    /* Tabs */
+    --color-tabs-list-background: var(--muted);
+    --color-tabs-list-foreground: var(--muted-foreground);
+    --color-tabs-trigger-foreground: var(--muted-foreground);
+    --color-tabs-trigger-hover: var(--hover);
+    --color-tabs-trigger-hover-foreground: var(--muted-foreground);
+    --color-tabs-trigger-selected: var(--active);
+    --color-tabs-trigger-selected-foreground: var(--foreground);
+
     /* Editor */
     --color-editor: var(--editor);
     --color-editor-background: var(--editor);
