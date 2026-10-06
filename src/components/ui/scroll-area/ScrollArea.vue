@@ -30,7 +30,7 @@ const delegatedProps = reactiveOmit(props, 'class', 'horizontal', 'viewportAsChi
             :as-child="viewportAsChild"
             :class="[
                 'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
-                'focus-visible:ring-[1.5px] focus-visible:ring-ring/50 focus-visible:outline-1',
+                'focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50 focus-visible:outline-1',
                 '[&>div]:grid [&>div]:min-h-full',
             ]"
             data-slot="scroll-area-viewport"

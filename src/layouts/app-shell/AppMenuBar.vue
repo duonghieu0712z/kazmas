@@ -7,7 +7,7 @@ const { menu, executeMenuCommand } = useAppMenu();
 </script>
 
 <template>
-    <Menubar>
+    <Menubar class="bg-title-bar-background">
         <MenubarMenu v-for="section in menu" :key="section.id">
             <MenubarTrigger>{{ section.text }}</MenubarTrigger>
             <MenubarContent>

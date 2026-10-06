@@ -191,7 +191,7 @@ useResizeObserver(navigationContent, updateNavigation);
 <template>
     <ScrollArea
         v-if="overflow === 'scroll'"
-        :class="cn('relative z-40 w-full shrink-0 bg-background', props.class)"
+        :class="cn('relative z-40 w-full shrink-0 bg-editor-toolbar-background', props.class)"
         data-slot="toolbar"
         horizontal
     >
@@ -208,13 +208,18 @@ useResizeObserver(navigationContent, updateNavigation);
 
     <div
         v-else
-        :class="cn('relative z-40 flex w-full shrink-0 border-b bg-background', props.class)"
+        :class="
+            cn(
+                'relative z-40 flex w-full shrink-0 border-b border-editor-toolbar-border bg-editor-toolbar-background',
+                props.class,
+            )
+        "
         data-slot="toolbar"
     >
         <Button
             v-if="canGoBackward"
             aria-label="Previous toolbar controls"
-            class="my-1 ml-2 text-muted-foreground"
+            class="my-1 ml-2 text-editor-toolbar-foreground"
             size="icon"
             type="button"
             variant="ghost"
@@ -249,7 +254,7 @@ useResizeObserver(navigationContent, updateNavigation);
         <Button
             v-if="canGoForward"
             aria-label="Next toolbar controls"
-            class="my-1 mr-2 text-muted-foreground"
+            class="my-1 mr-2 text-editor-toolbar-foreground"
             size="icon"
             type="button"
             variant="ghost"

@@ -201,7 +201,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
         aria-label="Find and replace"
         :class="
             cn(
-                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
+                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-sm border border-popup-border bg-popup-background p-1.5 text-popup-foreground shadow-md',
                 props.class,
             )
         "
@@ -213,7 +213,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <Button
                     :aria-expanded="replaceExpanded"
                     aria-label="Toggle replace"
-                    class="size-7 text-muted-foreground"
+                    class="size-7 text-editor-toolbar-foreground"
                     size="icon"
                     type="button"
                     variant="ghost"
@@ -246,7 +246,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Match case"
-                            class="size-6 text-muted-foreground"
+                            class="size-6 text-editor-toolbar-foreground"
                             :disabled="!isAvailable"
                             :model-value="caseSensitive"
                             size="icon"
@@ -261,7 +261,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Match whole word"
-                            class="size-6 text-muted-foreground"
+                            class="size-6 text-editor-toolbar-foreground"
                             :disabled="!isAvailable"
                             :model-value="wholeWord"
                             size="icon"
@@ -276,7 +276,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Use regular expression"
-                            class="size-6 text-muted-foreground"
+                            class="size-6 text-editor-toolbar-foreground"
                             :disabled="!isAvailable"
                             :model-value="useRegex"
                             size="icon"
@@ -301,7 +301,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Previous match"
-                        class="size-7 text-muted-foreground"
+                        class="size-7 text-editor-toolbar-foreground"
                         :disabled="!canNavigate"
                         size="icon"
                         type="button"
@@ -317,7 +317,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Next match"
-                        class="size-7 text-muted-foreground"
+                        class="size-7 text-editor-toolbar-foreground"
                         :disabled="!canNavigate"
                         size="icon"
                         type="button"
@@ -333,7 +333,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Close find and replace"
-                        class="size-7 text-muted-foreground"
+                        class="size-7 text-editor-toolbar-foreground"
                         size="icon"
                         type="button"
                         variant="ghost"
@@ -369,7 +369,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Replace current match"
-                        class="size-7 text-muted-foreground"
+                        class="size-7 text-editor-toolbar-foreground"
                         :disabled="!canReplace"
                         size="icon"
                         type="button"
@@ -385,7 +385,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Replace all matches"
-                        class="size-7 text-muted-foreground"
+                        class="size-7 text-editor-toolbar-foreground"
                         :disabled="!canReplaceAll"
                         size="icon"
                         type="button"

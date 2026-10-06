@@ -19,9 +19,9 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'flex h-6 items-center rounded-sm px-2 text-xs font-medium outline-hidden select-none',
-                'hover:bg-hover hover:text-foreground focus:bg-hover focus:text-foreground',
-                'data-[state=open]:bg-active data-[state=open]:text-foreground',
+                'flex h-6 items-center rounded-sm px-2 text-xs font-medium text-menu-item-foreground outline-hidden select-none',
+                'hover:bg-menu-item-hover hover:text-menu-item-hover-foreground focus:bg-menu-item-hover focus:text-menu-item-hover-foreground',
+                'data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
                 props.class,
             )
         "

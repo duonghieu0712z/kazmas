@@ -6,10 +6,12 @@ const nodes = useNodeStore();
 
 <template>
     <Breadcrumb v-if="nodes.openedNodePath.length" class="min-w-0">
-        <BreadcrumbList class="flex-nowrap text-xs">
+        <BreadcrumbList class="flex-nowrap text-xs text-content-header-muted-foreground">
             <template v-for="(item, index) in nodes.openedNodePath" :key="item.id">
                 <BreadcrumbItem class="min-w-0">
-                    <BreadcrumbPage class="truncate">{{ item.name }}</BreadcrumbPage>
+                    <BreadcrumbPage class="truncate text-content-header-foreground">{{
+                        item.name
+                    }}</BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator v-if="index < nodes.openedNodePath.length - 1" />
             </template>

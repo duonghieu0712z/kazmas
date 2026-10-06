@@ -64,7 +64,7 @@ onMounted(() => {
 
 <template>
     <Sidebar
-        class="w-[calc(var(--sidebar-width-icon)+1px)] border-y border-r bg-background text-foreground"
+        class="w-[calc(var(--sidebar-width-icon)+1px)] border-y border-r border-sidebar-border bg-activity-bar-background text-sidebar-foreground"
         :class="open ? 'border-y-transparent' : 'border-transparent'"
         collapsible="none"
     >
@@ -77,7 +77,7 @@ onMounted(() => {
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        class="size-8 justify-center p-0 text-muted-foreground"
+                        class="size-8 justify-center p-0 text-activity-bar-foreground"
                         :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
@@ -98,7 +98,7 @@ onMounted(() => {
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        class="size-8 justify-center p-0 text-muted-foreground"
+                        class="size-8 justify-center p-0 text-activity-bar-foreground"
                         :tooltip="item.name"
                     >
                         <component :is="item.icon" />

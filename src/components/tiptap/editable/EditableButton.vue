@@ -31,7 +31,7 @@ const delegatedProps = reactiveOmit(props, 'editor', 'showLabel', 'showTooltip')
         <Toggle
             v-bind="delegatedProps"
             :aria-label="showLabel ? undefined : label"
-            class="text-muted-foreground"
+            class="text-editor-toolbar-foreground"
             :disabled="!canToggle"
             :model-value="isEditable"
             :size="showLabel ? 'default' : 'icon'"

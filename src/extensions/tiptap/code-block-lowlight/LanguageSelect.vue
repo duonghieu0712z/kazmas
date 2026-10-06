@@ -59,9 +59,9 @@ const selectedLabel = computed(
                 <Button
                     aria-label="Code block language"
                     :class="[
-                        'h-6 gap-1 px-1.5 font-code text-xs text-muted-foreground',
+                        'h-6 gap-1 px-1.5 font-code text-xs text-editor-toolbar-foreground',
                         open &&
-                            'bg-active text-active-foreground hover:bg-active hover:text-active-foreground',
+                            'bg-selected text-selected-foreground hover:bg-selected hover:text-selected-foreground',
                     ]"
                     :disabled="disabled"
                     size="default"
@@ -93,7 +93,7 @@ const selectedLabel = computed(
                     '[&_[data-slot=scroll-area-viewport]>div]:pr-2',
                 ]"
             >
-                <ComboboxEmpty class="px-2 py-6 text-muted-foreground">
+                <ComboboxEmpty class="px-2 py-6 text-editor-toolbar-foreground">
                     No languages found
                 </ComboboxEmpty>
 
@@ -102,7 +102,7 @@ const selectedLabel = computed(
                     :key="language.value"
                     :class="[
                         'h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap',
-                        'text-muted-foreground data-highlighted:text-hover-foreground data-[state=checked]:text-active-foreground',
+                        'text-editor-toolbar-foreground data-highlighted:text-hover-foreground data-[state=checked]:text-menu-item-selected-foreground',
                     ]"
                     :text-value="`${language.label} ${language.value}`"
                     :value="language.value"

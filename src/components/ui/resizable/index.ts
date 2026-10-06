@@ -10,7 +10,7 @@ export { default as ResizablePanelGroup } from './ResizablePanelGroup.vue';
 export const resizableHandleVariants = cva(
     [
         'relative flex shrink-0 items-center justify-center border-ring',
-        'focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-hidden',
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:ring-offset-1 focus-visible:outline-hidden',
     ],
     {
         variants: {

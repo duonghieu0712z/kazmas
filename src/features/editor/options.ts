@@ -28,7 +28,7 @@ export function createEditorExtensions() {
             code: {
                 HTMLAttributes: {
                     class: cn(
-                        'rounded-sm border bg-background px-[0.2em] py-[0.1em] font-code',
+                        'rounded-sm border border-inline-code-border bg-inline-code-background px-[0.2em] py-[0.1em] font-code',
                         'before:content-none after:content-none',
                     ),
                 },
@@ -51,7 +51,7 @@ export function createEditorExtensions() {
         }),
         ActiveMark.configure({
             HTMLAttributes: {
-                class: cn('bg-active'),
+                class: cn('bg-editor-active-mark'),
             },
             types: ['link', 'rubyText'],
         }),
@@ -116,7 +116,9 @@ export function createEditorExtensions() {
             lowlight,
             defaultLanguage: 'plaintext',
             HTMLAttributes: {
-                class: cn('rounded-sm border bg-background font-code'),
+                class: cn(
+                    'rounded-sm border border-code-block-border bg-code-block-background font-code text-code-block-foreground',
+                ),
             },
             enableTabIndentation: true,
         }),
@@ -129,10 +131,10 @@ export function createEditorExtensions() {
         Placeholder.configure({
             placeholder: 'Write something...',
             emptyEditorClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-editor-placeholder before:content-[attr(data-placeholder)]',
             ),
             emptyNodeClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-muted-foreground before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-editor-placeholder before:content-[attr(data-placeholder)]',
             ),
         }),
         RubyText.configure({

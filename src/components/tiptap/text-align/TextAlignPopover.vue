@@ -55,7 +55,7 @@ function handleCloseAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
-                    class="gap-0.5 text-muted-foreground"
+                    class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="!canAlign"
                     :model-value="open"
                     size="default"

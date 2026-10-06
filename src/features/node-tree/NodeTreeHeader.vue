@@ -58,9 +58,13 @@ const actions = computed(() => [
 </script>
 
 <template>
-    <SidebarHeader class="shrink-0 gap-0 border-b bg-muted p-0">
+    <SidebarHeader
+        class="shrink-0 gap-0 border-b border-sidebar-border bg-tree-header-background p-0"
+    >
         <div class="flex h-7 items-center justify-between gap-2 px-2">
-            <span class="truncate text-xs font-medium text-foreground">{{ section }}</span>
+            <span class="truncate text-xs font-medium text-tree-header-foreground">{{
+                section
+            }}</span>
 
             <ButtonGroup aria-label="Tree actions" class="shrink-0" spacing="spaced">
                 <Tooltip v-for="action in actions" :key="action.id">

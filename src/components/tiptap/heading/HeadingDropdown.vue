@@ -78,7 +78,7 @@ function handleCloseAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
-                    class="gap-0.5 text-muted-foreground"
+                    class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="!canSet"
                     :model-value="(activeLevel !== undefined && activeLevel !== 0) || open"
                     size="default"
@@ -100,8 +100,8 @@ function handleCloseAutoFocus(event: Event) {
                 :key="level"
                 :class="
                     activeLevel === level
-                        ? 'bg-active text-active-foreground focus:bg-active focus:text-active-foreground'
-                        : 'text-muted-foreground focus:text-hover-foreground'
+                        ? 'bg-menu-item-selected text-menu-item-selected-foreground focus:bg-menu-item-selected focus:text-menu-item-selected-foreground'
+                        : 'text-editor-toolbar-foreground focus:text-hover-foreground'
                 "
                 :disabled="!canSetLevel(level)"
                 @select="changeLevel(level)"

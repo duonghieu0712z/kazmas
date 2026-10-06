@@ -11,7 +11,7 @@ export const buttonVariants = cva(
         'inline-flex shrink-0 items-center justify-center rounded-sm text-sm font-medium whitespace-nowrap transition-all outline-none',
         'hover:bg-hover hover:text-hover-foreground',
         'active:bg-active active:text-active-foreground',
-        'focus-visible:border-ring focus-visible:ring-[1.5px] focus-visible:ring-ring/50',
+        'focus-visible:border-focus-ring focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
         'disabled:pointer-events-none disabled:opacity-50',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

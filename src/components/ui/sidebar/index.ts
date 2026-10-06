@@ -201,11 +201,11 @@ export const sidebarRailVariants = cva(
 
 export const sidebarMenuButtonVariants = cva(
     [
-        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
+        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-focus-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
         'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
-        'data-[active=true]:bg-active data-[active=true]:font-medium data-[active=true]:text-active-foreground',
-        'data-[state=open]:bg-active data-[state=open]:text-active-foreground',
+        'data-[active=true]:bg-selected data-[active=true]:font-medium data-[active=true]:text-selected-foreground',
+        'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',
         `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
     ],
