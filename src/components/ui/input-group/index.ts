@@ -38,7 +38,7 @@ export type InputGroupVariants = VariantProps<typeof inputGroupAddonVariants>;
 export const inputGroupButtonVariants = cva('shadow-none', {
     variants: {
         size: {
-            default: 'h-6 gap-2 px-2',
+            default: 'h-6',
             icon: 'size-6',
         },
     },

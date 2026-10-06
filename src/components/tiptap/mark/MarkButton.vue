@@ -50,6 +50,7 @@ const delegatedProps = reactiveOmit(
         <Toggle
             v-bind="delegatedProps"
             :aria-label="label"
+            class="text-muted-foreground"
             :disabled="!canToggle"
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"

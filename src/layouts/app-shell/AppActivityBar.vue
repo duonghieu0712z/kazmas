@@ -79,7 +79,7 @@ onMounted(() => {
                         always-show-tooltip
                         :class="[
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-foreground active:[&>svg]:stroke-foreground data-[active=true]:[&>svg]:stroke-foreground',
+                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-hover-foreground active:[&>svg]:stroke-active-foreground data-[active=true]:[&>svg]:stroke-active-foreground',
                         ]"
                         :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
@@ -103,7 +103,7 @@ onMounted(() => {
                         always-show-tooltip
                         :class="[
                             'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-foreground active:[&>svg]:stroke-foreground data-[active=true]:[&>svg]:stroke-foreground',
+                            '[&>svg]:stroke-muted-foreground hover:[&>svg]:stroke-hover-foreground active:[&>svg]:stroke-active-foreground data-[active=true]:[&>svg]:stroke-active-foreground',
                         ]"
                         :tooltip="item.name"
                     >

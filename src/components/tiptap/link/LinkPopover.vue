@@ -82,6 +82,7 @@ function handleOpenAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
+                    class="text-muted-foreground"
                     :disabled="!canSet"
                     :model-value="isActive || open"
                     size="icon"
@@ -112,6 +113,7 @@ function handleOpenAutoFocus(event: Event) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Apply link"
+                        class="text-muted-foreground"
                         :disabled="!url"
                         size="icon"
                         type="button"
@@ -129,6 +131,7 @@ function handleOpenAutoFocus(event: Event) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Open link"
+                        class="text-muted-foreground"
                         :disabled="!url"
                         size="icon"
                         type="button"
@@ -144,6 +147,7 @@ function handleOpenAutoFocus(event: Event) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Remove link"
+                        class="text-muted-foreground"
                         :disabled="!isActive"
                         size="icon"
                         type="button"

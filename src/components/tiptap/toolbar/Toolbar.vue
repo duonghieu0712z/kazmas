@@ -214,7 +214,7 @@ useResizeObserver(navigationContent, updateNavigation);
         <Button
             v-if="canGoBackward"
             aria-label="Previous toolbar controls"
-            class="my-1 ml-2"
+            class="my-1 ml-2 text-muted-foreground"
             size="icon"
             type="button"
             variant="ghost"
@@ -249,7 +249,7 @@ useResizeObserver(navigationContent, updateNavigation);
         <Button
             v-if="canGoForward"
             aria-label="Next toolbar controls"
-            class="my-1 mr-2"
+            class="my-1 mr-2 text-muted-foreground"
             size="icon"
             type="button"
             variant="ghost"

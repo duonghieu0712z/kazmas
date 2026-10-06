@@ -213,7 +213,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <Button
                     :aria-expanded="replaceExpanded"
                     aria-label="Toggle replace"
-                    class="size-7"
+                    class="size-7 text-muted-foreground"
                     size="icon"
                     type="button"
                     variant="ghost"
@@ -246,7 +246,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Match case"
-                            class="size-6"
+                            class="size-6 text-muted-foreground"
                             :disabled="!isAvailable"
                             :model-value="caseSensitive"
                             size="icon"
@@ -261,7 +261,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Match whole word"
-                            class="size-6"
+                            class="size-6 text-muted-foreground"
                             :disabled="!isAvailable"
                             :model-value="wholeWord"
                             size="icon"
@@ -276,7 +276,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                     <TooltipWrapper>
                         <Toggle
                             aria-label="Use regular expression"
-                            class="size-6"
+                            class="size-6 text-muted-foreground"
                             :disabled="!isAvailable"
                             :model-value="useRegex"
                             size="icon"
@@ -301,7 +301,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Previous match"
-                        class="size-7"
+                        class="size-7 text-muted-foreground"
                         :disabled="!canNavigate"
                         size="icon"
                         type="button"
@@ -317,7 +317,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Next match"
-                        class="size-7"
+                        class="size-7 text-muted-foreground"
                         :disabled="!canNavigate"
                         size="icon"
                         type="button"
@@ -333,7 +333,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Close find and replace"
-                        class="size-7"
+                        class="size-7 text-muted-foreground"
                         size="icon"
                         type="button"
                         variant="ghost"
@@ -369,7 +369,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Replace current match"
-                        class="size-7"
+                        class="size-7 text-muted-foreground"
                         :disabled="!canReplace"
                         size="icon"
                         type="button"
@@ -385,7 +385,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Replace all matches"
-                        class="size-7"
+                        class="size-7 text-muted-foreground"
                         :disabled="!canReplaceAll"
                         size="icon"
                         type="button"

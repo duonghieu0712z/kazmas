@@ -77,7 +77,7 @@ function handleCloseAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
-                    class="gap-0.5"
+                    class="gap-0.5 text-muted-foreground"
                     :disabled="!canToggle"
                     :model-value="Boolean(activeType) || open"
                     size="default"
@@ -85,7 +85,7 @@ function handleCloseAutoFocus(event: Event) {
                     <slot>
                         <component :is="icon" />
                         <span v-if="showLabel">{{ label }}</span>
-                        <ChevronDownIcon class="size-3 text-muted-foreground" />
+                        <ChevronDownIcon class="size-3" />
                     </slot>
                 </Toggle>
 
@@ -99,13 +99,13 @@ function handleCloseAutoFocus(event: Event) {
                 :key="type"
                 :class="
                     activeType === type
-                        ? 'bg-active text-foreground focus:bg-active focus:text-foreground'
-                        : undefined
+                        ? 'bg-active text-active-foreground focus:bg-active focus:text-active-foreground'
+                        : 'text-muted-foreground focus:text-hover-foreground'
                 "
                 :disabled="!canToggleType(type)"
                 @select="toggleType(type)"
             >
-                <component :is="getIcon(type)" />
+                <component :is="getIcon(type)" class="text-inherit" />
                 <span>{{ getLabel(type) }}</span>
                 <KbdGroup v-if="showShortcut" class="ml-auto">
                     <Kbd v-for="key in getShortcutKeys(type)" :key="key">{{ key }}</Kbd>

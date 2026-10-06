@@ -74,6 +74,7 @@ function handleOpenAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
+                    class="text-muted-foreground"
                     :disabled="!canSet"
                     :model-value="isActive || open"
                     size="icon"
@@ -103,6 +104,7 @@ function handleOpenAutoFocus(event: Event) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Apply ruby text"
+                        class="text-muted-foreground"
                         :disabled="!annotation"
                         size="icon"
                         type="button"
@@ -120,6 +122,7 @@ function handleOpenAutoFocus(event: Event) {
                 <TooltipWrapper>
                     <Button
                         aria-label="Remove ruby text"
+                        class="text-muted-foreground"
                         :disabled="!isActive"
                         size="icon"
                         type="button"

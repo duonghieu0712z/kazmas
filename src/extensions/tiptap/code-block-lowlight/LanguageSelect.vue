@@ -59,8 +59,9 @@ const selectedLabel = computed(
                 <Button
                     aria-label="Code block language"
                     :class="[
-                        'h-6 gap-1 bg-transparent px-1.5 font-code text-xs text-muted-foreground shadow-none hover:text-foreground',
-                        open && 'bg-active text-foreground hover:bg-active',
+                        'h-6 gap-1 px-1.5 font-code text-xs text-muted-foreground',
+                        open &&
+                            'bg-active text-active-foreground hover:bg-active hover:text-active-foreground',
                     ]"
                     :disabled="disabled"
                     size="default"
@@ -68,14 +69,12 @@ const selectedLabel = computed(
                     variant="ghost"
                 >
                     <span>{{ selectedLabel }}</span>
-                    <ChevronsUpDownIcon
-                        :class="['size-3', open ? 'text-foreground' : 'text-muted-foreground']"
-                    />
+                    <ChevronsUpDownIcon class="size-3" />
                 </Button>
             </ComboboxTrigger>
         </ComboboxAnchor>
 
-        <ComboboxList align="end" class="z-30 w-56 py-1 pl-1 font-code">
+        <ComboboxList align="end" class="z-30 w-56 p-1 font-code">
             <ComboboxInput
                 aria-label="Search code block languages"
                 autocomplete="off"
@@ -101,7 +100,10 @@ const selectedLabel = computed(
                 <ComboboxItem
                     v-for="language in languages"
                     :key="language.value"
-                    class="h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap"
+                    :class="[
+                        'h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap',
+                        'text-muted-foreground data-highlighted:text-hover-foreground data-[state=checked]:text-active-foreground',
+                    ]"
                     :text-value="`${language.label} ${language.value}`"
                     :value="language.value"
                 >

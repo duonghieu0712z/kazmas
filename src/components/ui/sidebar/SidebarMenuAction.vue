@@ -26,8 +26,8 @@ const props = withDefaults(
         :class="
             cn(
                 'absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-sm p-0 text-foreground ring-ring outline-hidden transition-transform focus-visible:ring-2',
-                'peer-hover/menu-button:text-foreground peer-data-[active=true]/menu-button:text-foreground',
-                'hover:bg-hover hover:text-foreground',
+                'peer-hover/menu-button:text-hover-foreground peer-data-[active=true]/menu-button:text-active-foreground',
+                'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
                 'after:absolute after:-inset-2 md:after:hidden',
                 'peer-data-[size=sm]/menu-button:top-1',
                 'peer-data-[size=default]/menu-button:top-1.5',

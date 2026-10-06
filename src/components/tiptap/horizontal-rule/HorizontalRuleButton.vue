@@ -37,6 +37,7 @@ const delegatedProps = reactiveOmit(
 <template>
     <TooltipWrapper v-if="isVisible" :show-tooltip="showTooltip">
         <Button
+            class="text-muted-foreground"
             v-bind="delegatedProps"
             :disabled="!canInsert"
             :size="showLabel ? 'default' : 'icon'"

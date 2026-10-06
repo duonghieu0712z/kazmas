@@ -48,6 +48,7 @@ const delegatedProps = reactiveOmit(
         :show-tooltip="showTooltip"
     >
         <Button
+            class="text-muted-foreground"
             v-bind="delegatedProps"
             :disabled="!canToggle"
             :size="showLabel ? 'default' : 'icon'"
