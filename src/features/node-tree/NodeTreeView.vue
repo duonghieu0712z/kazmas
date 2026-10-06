@@ -195,7 +195,7 @@ function focusName(element: Element | ComponentPublicInstance | null) {
         {{ createError }}
         <Button
             v-if="createdId"
-            class="h-5 px-2 text-xs"
+            class="h-5 text-xs"
             :disabled="creating"
             variant="ghost"
             @click="createNode"

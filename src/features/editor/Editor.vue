@@ -95,7 +95,9 @@ onBeforeUnmount(async () => {
 
             <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
                 <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
-                    <EditorContent class="w-3xl shrink-0 cursor-text self-stretch border" />
+                    <EditorContent
+                        class="w-3xl shrink-0 cursor-text self-stretch border border-editor-border"
+                    />
                 </div>
             </ScrollArea>
 
