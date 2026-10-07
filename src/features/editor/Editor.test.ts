@@ -124,6 +124,26 @@ describe('editor persistence', () => {
         );
     });
 
+    it('reports an inactive save failure to the workspace and retains the write for retry', async () => {
+        const wrapper = createEditor();
+        await flushPromises();
+        edit(wrapper, 'failed inactive save');
+        tauri.updateDocument.mockResolvedValueOnce({ status: 'error', error: 'disk full' });
+
+        await wrapper.setProps({ active: false });
+        await flushPromises();
+
+        expect(wrapper.emitted('error:save')).toHaveLength(1);
+        expect(wrapper.get('[role="alert"]').text()).toBe('Document could not be saved.');
+        await wrapper.setProps({ active: true });
+        await wrapper.setProps({ active: false });
+        await flushPromises();
+
+        expect(tauri.updateDocument).toHaveBeenCalledTimes(2);
+        expect(tauri.updateDocument.mock.calls[1]).toEqual(tauri.updateDocument.mock.calls[0]);
+        expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    });
+
     it('rejects closing after a failed save and allows a successful retry', async () => {
         const wrapper = createEditor();
         await flushPromises();

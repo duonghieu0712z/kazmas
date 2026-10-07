@@ -11,9 +11,15 @@ import EditorToolbar from './EditorToolbar.vue';
 import { createEditorExtensions } from './options';
 
 const props = withDefaults(defineProps<{ nodeId?: string; active?: boolean }>(), { active: true });
+
+const emits = defineEmits<{
+    'error:save': [];
+}>();
+
+const world = useWorldStore();
 const nodes = useNodeStore();
 const openedNodeId = computed(() => props.nodeId ?? nodes.openedNodeId);
-const world = useWorldStore();
+
 const saveError = shallowRef<string>();
 const document = shallowRef<{ nodeId: string; content: Content }>();
 const emptyDocument: Content = { type: 'doc' };
@@ -22,11 +28,15 @@ const saves = createDocumentSaveQueue(commands.updateDocument, reportSaveError);
 
 function reportSaveError(error: Error) {
     saveError.value = error.message;
+    if (!props.active) {
+        emits('error:save');
+    }
 }
 
 async function flushDocumentSave() {
     try {
         await saves.flush();
+        saveError.value = undefined;
     } catch (error) {
         reportSaveError(error instanceof Error ? error : new Error(String(error)));
     }

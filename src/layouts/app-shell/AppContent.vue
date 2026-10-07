@@ -29,7 +29,14 @@ const tabs = computed<ContentTab[]>(() =>
             icon: getNodeIcon(node?.kind),
             breadcrumbs: nodes.getNodePath(tab.nodeId),
             component: Editor,
-            props: { nodeId: tab.nodeId },
+            props: {
+                nodeId: tab.nodeId,
+                'onError:save': () => {
+                    if (workspace.tabs.includes(tab)) {
+                        workspace.activeTab = tab.id;
+                    }
+                },
+            },
         };
     }),
 );

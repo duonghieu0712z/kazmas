@@ -109,6 +109,20 @@ describe('workspace content', () => {
         expect(unmounted).toHaveBeenCalledWith('entry-a');
     });
 
+    it('reveals an inactive tab when its editor reports a save failure', async () => {
+        const { wrapper, nodes, workspace } = await createContent();
+        nodes.openNode(node());
+        nodes.openNode(node({ id: 'entry-b' }));
+        await flushPromises();
+
+        const editor = wrapper.findAllComponents({ name: 'Editor' })[0]!;
+        editor.vm.$emit('error:save');
+        await flushPromises();
+
+        expect(workspace.activeDocumentId).toBe('entry-a');
+        expect(editor.props('active')).toBe(true);
+    });
+
     it('refreshes tab labels and breadcrumbs when node metadata changes', async () => {
         const { wrapper, nodes } = await createContent();
         nodes.openNode(node());
