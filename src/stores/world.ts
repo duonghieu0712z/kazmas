@@ -5,6 +5,7 @@ import { defineStore } from 'pinia';
 
 import { commands, events } from '@/generated/bindings';
 import { useNodeStore } from '@/stores/nodes';
+import { useWorkspaceStore } from '@/stores/workspace';
 
 export const useWorldStore = defineStore('world', () => {
     const manifest = shallowRef<WorldManifestDto | null>(null);
@@ -20,15 +21,23 @@ export const useWorldStore = defineStore('world', () => {
     const worldName = computed(() => manifest.value?.name ?? null);
 
     const nodes = useNodeStore();
+    const workspace = useWorkspaceStore();
     let nodeReload = Promise.resolve();
 
     watch(
         () => manifest.value?.id,
         async (value) => {
             nodes.clearNodes();
-            nodeReload = value ? nodes.reloadNodes() : Promise.resolve();
+            const reload = value ? nodes.reloadNodes() : Promise.resolve();
+            nodeReload = reload;
             if (value) {
-                await nodeReload;
+                await reload;
+                if (nodeReload === reload && manifest.value?.id === value) {
+                    workspace.restoreWorld(value, (nodeId) => {
+                        const kind = nodes.getNode(nodeId)?.kind;
+                        return kind === 'manuscript_entry' || kind === 'wiki_entry';
+                    });
+                }
                 return;
             }
         },

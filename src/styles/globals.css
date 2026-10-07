@@ -80,6 +80,21 @@
     --color-tree-item-selected-foreground: var(--foreground);
     --color-tree-indent-guide: var(--border);
 
+    /* Tabs */
+    --color-tabs-empty-background: var(--background);
+    --color-tabs-list-background: var(--muted);
+    --color-tabs-list-foreground: var(--muted-foreground);
+    --color-tabs-trigger-border: var(--border);
+    --color-tabs-trigger-foreground: var(--muted-foreground);
+    --color-tabs-trigger-icon-foreground: var(--muted-foreground);
+    --color-tabs-trigger-hover: var(--hover);
+    --color-tabs-trigger-hover-foreground: var(--muted-foreground);
+    --color-tabs-trigger-selected: var(--background);
+    --color-tabs-trigger-selected-foreground: var(--foreground);
+    --color-tabs-close-foreground: var(--muted-foreground);
+    --color-tabs-close-hover: var(--active);
+    --color-tabs-close-hover-foreground: var(--muted-foreground);
+
     /* Editor */
     --color-editor: var(--editor);
     --color-editor-background: var(--editor);
