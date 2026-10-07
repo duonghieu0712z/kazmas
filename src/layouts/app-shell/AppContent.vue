@@ -4,6 +4,7 @@ import type { ContentTab } from './content-tab';
 import { storeToRefs } from 'pinia';
 
 import { Editor } from '@/features/editor';
+import { NodeBreadcrumb } from '@/features/node-breadcrumb';
 import { WorkspaceTabs } from '@/features/workspace-tabs';
 import { getNodeIcon } from '@/lib/node-icons';
 import { useNodeStore } from '@/stores/nodes';
@@ -73,20 +74,7 @@ async function closeTab(id: string) {
                     v-if="tab.breadcrumbs.length"
                     class="relative z-40 flex h-5 shrink-0 items-center border-b border-content-header-border bg-content-header-background px-2 text-content-header-foreground"
                 >
-                    <Breadcrumb class="min-w-0">
-                        <BreadcrumbList
-                            class="flex-nowrap text-xs text-content-header-muted-foreground"
-                        >
-                            <template v-for="(item, index) in tab.breadcrumbs" :key="item.id">
-                                <BreadcrumbItem class="min-w-0">
-                                    <BreadcrumbPage class="truncate text-content-header-foreground">
-                                        {{ item.name }}
-                                    </BreadcrumbPage>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator v-if="index < tab.breadcrumbs.length - 1" />
-                            </template>
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                    <NodeBreadcrumb :path="tab.breadcrumbs" />
                 </header>
 
                 <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
