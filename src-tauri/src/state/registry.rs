@@ -59,6 +59,27 @@ impl WindowRegistry {
         inner.focused_window = window_id;
     }
 
+    pub(crate) async fn claim_empty_window(
+        &self,
+        window_id: WindowId,
+        project_id: ProjectId,
+    ) -> KazmasResult<bool> {
+        let mut inner = self.inner.lock().await;
+        if inner.by_windows.get(&window_id) != Some(&None) {
+            return Ok(false);
+        }
+
+        if let Some(opened_window_id) = inner.by_projects.get(&project_id) {
+            return Err(KazmasError::AlreadyExists(format!(
+                "world {project_id} is already opened in window {opened_window_id}"
+            )));
+        }
+
+        inner.by_windows.insert(window_id, Some(project_id));
+        inner.by_projects.insert(project_id, window_id);
+        Ok(true)
+    }
+
     pub(crate) async fn register_window(
         &self,
         window_id: WindowId,

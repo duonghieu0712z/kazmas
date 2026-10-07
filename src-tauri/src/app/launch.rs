@@ -134,8 +134,12 @@ async fn open_world_path(app: &AppHandle, file: impl AsRef<Path>) -> KazmasResul
     let temp_dir = app_temp_dir(app).await?;
     let project = WorldProject::open_world(&file, &temp_dir).await?;
     let project_id = project.id();
-    let empty_window_id = state.registry().empty_window().await;
-    if let Some(window) = current_window(app, empty_window_id) {
+    let registry = state.registry();
+    let empty_window_id = registry.empty_window().await;
+    if let Some(window_id) = empty_window_id
+        && let Some(window) = current_window(app, Some(window_id))
+        && registry.claim_empty_window(window_id, project_id).await?
+    {
         let name = project.manifest().name;
         open_project_in_window(app, state, empty_window_id, project, false).await?;
         window.set_title(&name)?;

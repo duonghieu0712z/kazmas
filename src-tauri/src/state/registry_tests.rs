@@ -76,6 +76,49 @@ async fn selects_only_empty_windows_and_prefers_the_focused_one() -> TestResult 
 }
 
 #[tokio::test]
+async fn concurrent_claims_preserve_the_winning_project() -> TestResult {
+    let registry = WindowRegistry::default();
+    let window = Uuid::now_v7();
+    let first = Uuid::now_v7();
+    let second = Uuid::now_v7();
+    registry.register_window(window, None).await?;
+
+    let (left, right) = tokio::join!(
+        registry.claim_empty_window(window, first),
+        registry.claim_empty_window(window, second)
+    );
+    let left = left?;
+    let right = right?;
+    assert_ne!(left, right);
+    let (winner, loser) = if left {
+        (first, second)
+    } else {
+        (second, first)
+    };
+    assert_eq!(registry.get_project_id(window).await, Some(winner));
+    assert_eq!(registry.get_window_id(winner).await, Some(window));
+    assert_eq!(registry.get_window_id(loser).await, None);
+    assert_eq!(registry.empty_window().await, None);
+    Ok(())
+}
+
+#[tokio::test]
+async fn claims_reject_missing_windows_and_duplicate_projects() -> TestResult {
+    let registry = WindowRegistry::default();
+    let window = Uuid::now_v7();
+    let owner = Uuid::now_v7();
+    let project = Uuid::now_v7();
+    assert!(!registry.claim_empty_window(window, project).await?);
+    registry.register_window(window, None).await?;
+    registry.register_window(owner, Some(project)).await?;
+    assert!(registry.claim_empty_window(window, project).await.is_err());
+    assert_eq!(registry.get_project_id(window).await, None);
+    assert_eq!(registry.get_window_id(project).await, Some(owner));
+    assert_eq!(registry.empty_window().await, Some(window));
+    Ok(())
+}
+
+#[tokio::test]
 async fn concurrent_registration_allows_only_one_owner() -> TestResult {
     let registry = WindowRegistry::default();
     let project = Uuid::now_v7();
