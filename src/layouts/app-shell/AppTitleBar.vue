@@ -41,9 +41,6 @@ onMounted(async () => {
             />
         </div>
 
-        <div class="col-start-3 flex h-full items-center justify-self-end">
-            <div id="app-title-bar-actions" class="flex items-center px-1"></div>
-            <AppWindowControls v-if="!mac" />
-        </div>
+        <AppWindowControls v-if="!mac" class="justify-self-end" />
     </div>
 </template>

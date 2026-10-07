@@ -139,7 +139,7 @@ for (const section of ['Manuscript', 'Wiki']) {
         await expect(page.locator('main').locator('..').getByRole('navigation')).toContainText(
             'Untitled',
         );
-        await expect(page.locator('.tiptap')).toBeVisible();
+        await expect(page.locator('.tiptap:visible')).toBeVisible();
     });
 }
 

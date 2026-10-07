@@ -8,7 +8,7 @@ test('tree selection opens the correct document and updates breadcrumbs', async 
 }) => {
     await workspace.open();
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
     await expect(page.locator('main').locator('..').getByRole('navigation')).toContainText(
         'Chapter B',
     );
@@ -20,7 +20,7 @@ test('keyboard navigation opens a document from the tree', async ({ page, worksp
     await first.focus();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
 });
 
 test('toolbar bold changes the document and reflects its active state', async ({
@@ -28,10 +28,10 @@ test('toolbar bold changes the document and reflects its active state', async ({
     workspace,
 }) => {
     await workspace.open();
-    await page.locator('.tiptap').click();
-    await page.locator('.tiptap').press('ControlOrMeta+a');
+    await page.locator('.tiptap:visible').click();
+    await page.locator('.tiptap:visible').press('ControlOrMeta+a');
     await page.getByRole('button', { name: 'Bold', exact: true }).click();
-    await expect(page.locator('.tiptap strong')).toContainText('A sample manuscript');
+    await expect(page.locator('.tiptap:visible strong')).toContainText('A sample manuscript');
     await expect(page.getByRole('button', { name: 'Bold', exact: true })).toHaveAttribute(
         'aria-pressed',
         'true',
@@ -40,11 +40,11 @@ test('toolbar bold changes the document and reflects its active state', async ({
 
 test('switching documents immediately preserves the pending edit', async ({ page, workspace }) => {
     await workspace.open();
-    await page.locator('.tiptap').fill('Saved before switching');
+    await page.locator('.tiptap:visible').fill('Saved before switching');
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
     await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Saved before switching');
+    await expect(page.locator('.tiptap:visible')).toContainText('Saved before switching');
 });
 
 test('document read errors are visible without mounting an empty editor', async ({
@@ -53,21 +53,21 @@ test('document read errors are visible without mounting an empty editor', async 
 }) => {
     await workspace.open('load-error');
     await expect(page.getByRole('alert')).toHaveText('Document could not be loaded.');
-    await expect(page.locator('.tiptap')).toHaveCount(0);
+    await expect(page.locator('.tiptap:visible')).toHaveCount(0);
 });
 
 test('failed document writes remain available for retry', async ({ page, workspace }) => {
     await workspace.open('save-error');
-    await expect(page.locator('.tiptap')).toBeVisible();
-    await page.locator('.tiptap').fill('Retained after write failure');
+    await expect(page.locator('.tiptap:visible')).toBeVisible();
+    await page.locator('.tiptap:visible').fill('Retained after write failure');
     await expect(page.getByRole('alert')).toHaveText('Document could not be saved.');
     await expect
         .poll(() => page.evaluate(() => window.__kazmasTest.documents.get('entry-a')))
         .not.toContain('Retained after write failure');
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
     await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Retained after write failure');
+    await expect(page.locator('.tiptap:visible')).toContainText('Retained after write failure');
 });
 
 test('a delayed document response does not replace the current editor', async ({
@@ -81,25 +81,25 @@ test('a delayed document response does not replace the current editor', async ({
         ),
     );
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
     await page.evaluate(() => window.__kazmasTest.releaseDocument('entry-a'));
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
 });
 
 test('code block language selection persists with the document', async ({ page, workspace }) => {
     await workspace.open();
-    await page.locator('.tiptap').click();
-    await page.locator('.tiptap').press('ControlOrMeta+a');
-    await page.locator('.tiptap').press('ControlOrMeta+Alt+c');
+    await page.locator('.tiptap:visible').click();
+    await page.locator('.tiptap:visible').press('ControlOrMeta+a');
+    await page.locator('.tiptap:visible').press('ControlOrMeta+Alt+c');
     const codeBlock = page
-        .locator('.tiptap [data-node-view-wrapper]')
+        .locator('.tiptap:visible [data-node-view-wrapper]')
         .filter({ hasText: 'A sample manuscript' });
     await codeBlock.getByRole('button', { name: 'Code block language', exact: true }).click();
     await page.getByPlaceholder('Search languages').fill('javascript');
     await page.getByRole('option', { name: /JavaScript/ }).click();
     await expect(codeBlock.locator('pre')).toHaveAttribute('data-language', 'javascript');
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('Second chapter content.');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
     await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
     await expect(codeBlock.locator('pre')).toHaveAttribute('data-language', 'javascript');
     await expect(codeBlock.locator('pre')).toContainText('A sample manuscript');
@@ -153,7 +153,7 @@ test('small workspace keeps controls accessible without document-level overflow'
 }) => {
     await page.setViewportSize({ width: 640, height: 480 });
     await workspace.open();
-    await expect(page.locator('.tiptap')).toBeVisible();
+    await expect(page.locator('.tiptap:visible')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
     );
@@ -162,7 +162,7 @@ test('small workspace keeps controls accessible without document-level overflow'
 test('long document content scrolls inside the editor viewport', async ({ page, workspace }) => {
     await workspace.open();
     await page
-        .locator('.tiptap')
+        .locator('.tiptap:visible')
         .fill(Array.from({ length: 100 }, (_, index) => `Paragraph ${index}`).join('\n'));
     const viewport = page.locator('main [data-reka-scroll-area-viewport]').last();
     await expect
@@ -177,23 +177,23 @@ test('find and replace updates matching text in the document', async ({ page, wo
     await page.getByRole('button', { name: 'Toggle replace', exact: true }).click();
     await page.getByPlaceholder('Replace', { exact: true }).fill('revised');
     await page.getByRole('button', { name: 'Replace all matches', exact: true }).click();
-    await expect(page.locator('.tiptap')).toContainText('A revised manuscript');
+    await expect(page.locator('.tiptap:visible')).toContainText('A revised manuscript');
 });
 
 test('reset formatting removes selected bold marks', async ({ page, workspace }) => {
     await workspace.open();
-    await page.locator('.tiptap').click();
-    await page.locator('.tiptap').press('ControlOrMeta+a');
+    await page.locator('.tiptap:visible').click();
+    await page.locator('.tiptap:visible').press('ControlOrMeta+a');
     await page.getByRole('button', { name: 'Bold', exact: true }).click();
-    await expect(page.locator('.tiptap strong')).toBeVisible();
+    await expect(page.locator('.tiptap:visible strong')).toBeVisible();
     await page.getByRole('button', { name: /Reset.*formatting/i }).click();
-    await expect(page.locator('.tiptap strong')).toHaveCount(0);
-    await expect(page.locator('.tiptap')).toContainText('A sample manuscript');
+    await expect(page.locator('.tiptap:visible strong')).toHaveCount(0);
+    await expect(page.locator('.tiptap:visible')).toContainText('A sample manuscript');
 });
 
 test('clicking below the last block adds one trailing paragraph', async ({ page, workspace }) => {
     await workspace.open();
-    const editor = page.locator('.tiptap');
+    const editor = page.locator('.tiptap:visible');
     const initial = await editor.locator('p').count();
     const box = await editor.boundingBox();
     const last = await editor.locator('p').last().boundingBox();
@@ -219,7 +219,7 @@ for (const scenario of ['empty', 'editor', 'long', 'dialog']) {
             );
             await workspace.open(scenario);
             if (scenario === 'editor' || scenario === 'long') {
-                await expect(page.locator('.tiptap')).toBeVisible();
+                await expect(page.locator('.tiptap:visible')).toBeVisible();
             } else if (scenario === 'dialog') {
                 await expect(page.getByRole('dialog')).toBeVisible();
             } else {

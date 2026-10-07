@@ -110,6 +110,18 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         state.value.expanded = [...expanded];
     };
 
+    watch(
+        () => nodes.openedNodeId,
+        (nodeId) => {
+            const node = nodeId ? findNode(props.tree, nodeId) : undefined;
+            if (node) {
+                selected.value = node;
+                revealAncestors(node.parentId);
+            }
+        },
+        { immediate: true },
+    );
+
     return {
         query,
         search,

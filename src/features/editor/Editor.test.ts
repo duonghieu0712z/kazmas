@@ -108,6 +108,35 @@ describe('editor persistence', () => {
         expect(tauri.updateDocument).toHaveBeenCalledTimes(1);
     });
 
+    it('flushes pending edits when its tab becomes inactive', async () => {
+        const wrapper = createEditor();
+        await flushPromises();
+        edit(wrapper, 'before switching tabs');
+        await wrapper.setProps({ active: false });
+        await flushPromises();
+
+        expect(tauri.updateDocument).toHaveBeenCalledWith(
+            'entry-a',
+            JSON.stringify({
+                type: 'doc',
+                content: [{ type: 'text', text: 'before switching tabs' }],
+            }),
+        );
+    });
+
+    it('rejects closing after a failed save and allows a successful retry', async () => {
+        const wrapper = createEditor();
+        await flushPromises();
+        edit(wrapper, 'before closing tab');
+        tauri.updateDocument.mockResolvedValueOnce({ status: 'error', error: 'disk full' });
+
+        expect(await wrapper.vm.prepareClose()).toBe(false);
+        expect(wrapper.get('[role="alert"]').text()).toBe('Document could not be saved.');
+        expect(await wrapper.vm.prepareClose()).toBe(true);
+        expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+        expect(tauri.updateDocument).toHaveBeenCalledTimes(2);
+    });
+
     it.each([
         { status: 'ok' as const, data: '{broken' },
         { status: 'error' as const, error: 'Read failed' },

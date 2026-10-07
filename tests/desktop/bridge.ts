@@ -6,6 +6,7 @@ import { flushDocumentSaves } from '@/lib/document-saves';
 import { executeMenuCommand } from '@/menus';
 import { useDialogProvider } from '@/providers/dialog';
 import { useNodeStore } from '@/stores/nodes';
+import { useWorkspaceStore } from '@/stores/workspace';
 import { useWorldStore } from '@/stores/world';
 
 const bridge = {
@@ -37,7 +38,7 @@ const bridge = {
             throw new Error('Entry could not be created.');
         }
         await useNodeStore().reloadNodes();
-        useNodeStore().openedNodeId = result.data;
+        useWorkspaceStore().openDocument(result.data);
         return result.data;
     },
     async saveAs(path: string) {

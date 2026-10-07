@@ -10,7 +10,7 @@ import { useWorldStore } from '@/stores/world';
 import EditorToolbar from './EditorToolbar.vue';
 import { createEditorExtensions } from './options';
 
-const props = defineProps<{ nodeId?: string }>();
+const props = withDefaults(defineProps<{ nodeId?: string; active?: boolean }>(), { active: true });
 const nodes = useNodeStore();
 const openedNodeId = computed(() => props.nodeId ?? nodes.openedNodeId);
 const world = useWorldStore();
@@ -32,9 +32,32 @@ async function flushDocumentSave() {
     }
 }
 
+async function prepareClose() {
+    try {
+        await saves.flush();
+        saveError.value = undefined;
+        return true;
+    } catch (error) {
+        reportSaveError(error instanceof Error ? error : new Error(String(error)));
+        return false;
+    }
+}
+
+defineExpose({ prepareClose });
+
+watch(
+    () => props.active,
+    (active) => {
+        if (!active) {
+            void flushDocumentSave();
+        }
+    },
+);
+
 const options = computed(() =>
     createEditorOptions({
         content: document.value?.content,
+        autofocus: props.active ? 'end' : false,
         extensions: createEditorExtensions(),
         onUpdate: ({ editor }) => {
             const nodeId = document.value?.nodeId;
@@ -103,7 +126,7 @@ onBeforeUnmount(async () => {
                 </div>
             </ScrollArea>
 
-            <Teleport defer to="#app-status-bar">
+            <Teleport v-if="active" defer to="#app-status-bar">
                 <CharacterCountIndicator />
             </Teleport>
         </EditorProvider>

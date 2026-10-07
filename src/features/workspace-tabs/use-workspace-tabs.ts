@@ -1,6 +1,4 @@
-import type { WorkspaceTab } from '.';
-
-export function useWorkspaceTabs<T extends WorkspaceTab>(initialTabs: T[] = []) {
+export function useWorkspaceTabs<T extends { id: string }>(initialTabs: T[] = []) {
     const tabs = shallowRef<T[]>([...initialTabs]);
     const activeTab = ref(initialTabs[0]?.id ?? '');
     let recentTabIds: string[] = [];
@@ -34,5 +32,11 @@ export function useWorkspaceTabs<T extends WorkspaceTab>(initialTabs: T[] = []) 
         }
     };
 
-    return { tabs, activeTab, openTab, closeTab };
+    const clearTabs = () => {
+        tabs.value = [];
+        recentTabIds = [];
+        activeTab.value = '';
+    };
+
+    return { tabs, activeTab, openTab, closeTab, clearTabs };
 }

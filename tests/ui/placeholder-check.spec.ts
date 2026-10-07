@@ -2,7 +2,7 @@ import { test, expect } from './fixtures';
 
 test('code placeholder aligns with content', async ({ page, workspace }) => {
     await workspace.open();
-    await page.locator('.tiptap').evaluate((element) => {
+    await page.locator('.tiptap:visible').evaluate((element) => {
         const editor = (
             element as HTMLElement & {
                 editor: {
@@ -12,7 +12,7 @@ test('code placeholder aligns with content', async ({ page, workspace }) => {
         ).editor;
         editor.commands.setContent({ type: 'doc', content: [{ type: 'codeBlock' }] });
     });
-    const code = page.locator('.tiptap code').first();
+    const code = page.locator('.tiptap:visible code').first();
     const result = await code.evaluate((element) => {
         const wrapper = element.closest('[data-node-view-wrapper]')!;
         const pseudo = getComputedStyle(wrapper, '::before');
