@@ -21,6 +21,12 @@ use crate::{
 
 pub(crate) const EXTENSION: &str = "kazmas";
 
+pub(crate) fn is_world_path(path: impl AsRef<Path>) -> bool {
+    path.as_ref()
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case(EXTENSION))
+}
+
 #[derive(Debug)]
 pub(crate) struct WorldProject {
     manifest: WorldManifest,
@@ -85,7 +91,7 @@ impl WorldProject {
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
         let package_path = path.as_ref().to_path_buf();
-        if package_path.extension() != Some(EXTENSION.as_ref()) {
+        if !is_world_path(&package_path) {
             return Err(KazmasError::Invalid(format!(
                 "expected .{EXTENSION} file: {}",
                 package_path.to_string_lossy()

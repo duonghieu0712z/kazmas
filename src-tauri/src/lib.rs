@@ -115,7 +115,10 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
+        .map(|app| {
+            app.run(app::run_event_handler());
+        })
     {
         log::error!("error while running Tauri application: {error}");
         std::process::exit(1);
