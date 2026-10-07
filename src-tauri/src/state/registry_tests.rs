@@ -119,6 +119,50 @@ async fn claims_reject_missing_windows_and_duplicate_projects() -> TestResult {
 }
 
 #[tokio::test]
+async fn releasing_a_claim_makes_the_window_available_again() -> TestResult {
+    let registry = WindowRegistry::default();
+    let window = Uuid::now_v7();
+    let project = Uuid::now_v7();
+    registry.register_window(window, None).await?;
+    registry.set_focus(Some(window)).await;
+    assert!(registry.claim_empty_window(window, project).await?);
+
+    registry.release_window_claim(window, project).await;
+    assert_eq!(registry.get_project_id(window).await, None);
+    assert_eq!(registry.get_window_id(project).await, None);
+    assert_eq!(registry.empty_window().await, Some(window));
+    assert_eq!(registry.focused_window().await, Some(window));
+    assert!(registry.claim_empty_window(window, Uuid::now_v7()).await?);
+    Ok(())
+}
+
+#[tokio::test]
+async fn releasing_a_stale_claim_preserves_the_current_owner() -> TestResult {
+    let registry = WindowRegistry::default();
+    let window = Uuid::now_v7();
+    let other_window = Uuid::now_v7();
+    let project = Uuid::now_v7();
+    let replacement = Uuid::now_v7();
+    registry.register_window(window, None).await?;
+    assert!(registry.claim_empty_window(window, project).await?);
+    registry.replace_project(window, replacement).await?;
+    registry
+        .register_window(other_window, Some(project))
+        .await?;
+
+    registry.release_window_claim(window, project).await;
+    assert_eq!(registry.get_project_id(window).await, Some(replacement));
+    assert_eq!(registry.get_window_id(replacement).await, Some(window));
+    assert_eq!(registry.get_window_id(project).await, Some(other_window));
+
+    registry.unregister_window(window).await;
+    registry.release_window_claim(window, project).await;
+    assert_eq!(registry.get_window_id(project).await, Some(other_window));
+    assert!(registry.replace_project(window, replacement).await.is_err());
+    Ok(())
+}
+
+#[tokio::test]
 async fn concurrent_registration_allows_only_one_owner() -> TestResult {
     let registry = WindowRegistry::default();
     let project = Uuid::now_v7();

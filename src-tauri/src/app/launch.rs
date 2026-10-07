@@ -8,7 +8,7 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 use super::{
     error::KazmasResult,
-    window::{focus_existing_world, focus_window, open_project_in_window, spawn_window},
+    window::{focus_existing_world, focus_window, spawn_window},
 };
 use crate::{
     state::get_state,
@@ -141,7 +141,22 @@ async fn open_world_path(app: &AppHandle, file: impl AsRef<Path>) -> KazmasResul
         && registry.claim_empty_window(window_id, project_id).await?
     {
         let name = project.manifest().name;
-        open_project_in_window(app, state, empty_window_id, project, false).await?;
+        if let Err(error) = project_manager
+            .open_project_or_close(project, async {
+                registry.replace_project(window_id, project_id).await
+            })
+            .await
+        {
+            registry.release_window_claim(window_id, project_id).await;
+            return Err(error);
+        }
+
+        #[cfg(target_os = "macos")]
+        state
+            .menu_manager()
+            .set_project_commands_enabled(true)
+            .await?;
+
         window.set_title(&name)?;
         window.reload()?;
         focus_window(&window)?;

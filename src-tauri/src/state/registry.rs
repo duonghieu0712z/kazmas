@@ -80,6 +80,14 @@ impl WindowRegistry {
         Ok(true)
     }
 
+    pub(crate) async fn release_window_claim(&self, window_id: WindowId, project_id: ProjectId) {
+        let mut inner = self.inner.lock().await;
+        if inner.by_windows.get(&window_id) == Some(&Some(project_id)) {
+            inner.by_windows.insert(window_id, None);
+            inner.by_projects.remove(&project_id);
+        }
+    }
+
     pub(crate) async fn register_window(
         &self,
         window_id: WindowId,
