@@ -10,7 +10,9 @@ import { useWorldStore } from '@/stores/world';
 import EditorToolbar from './EditorToolbar.vue';
 import { createEditorExtensions } from './options';
 
+const props = defineProps<{ nodeId?: string }>();
 const nodes = useNodeStore();
+const openedNodeId = computed(() => props.nodeId ?? nodes.openedNodeId);
 const world = useWorldStore();
 const saveError = shallowRef<string>();
 const document = shallowRef<{ nodeId: string; content: Content }>();
@@ -47,7 +49,7 @@ const options = computed(() =>
 );
 
 watch(
-    () => nodes.openedNodeId,
+    openedNodeId,
     async (nodeId) => {
         const save = flushDocumentSave();
         document.value = undefined;
@@ -61,14 +63,14 @@ watch(
             if (result.status === 'error') {
                 throw new Error('Document could not be loaded.');
             }
-            if (nodes.openedNodeId === nodeId && result.status === 'ok') {
+            if (openedNodeId.value === nodeId && result.status === 'ok') {
                 document.value = {
                     nodeId,
                     content: result.data ? JSON.parse(result.data) : emptyDocument,
                 };
             }
         } catch {
-            if (nodes.openedNodeId === nodeId) {
+            if (openedNodeId.value === nodeId) {
                 saveError.value = 'Document could not be loaded.';
             }
         }
