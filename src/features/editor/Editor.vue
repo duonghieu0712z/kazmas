@@ -93,7 +93,7 @@ onBeforeUnmount(async () => {
         <EditorProvider v-if="document" :key="document.nodeId" :options="options">
             <EditorToolbar />
 
-            <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" horizontal>
+            <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" orientation="both">
                 <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">
                     <EditorContent
                         class="w-3xl shrink-0 cursor-text self-stretch border border-editor-border"

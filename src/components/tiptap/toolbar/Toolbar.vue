@@ -193,7 +193,7 @@ useResizeObserver(navigationContent, updateNavigation);
         v-if="overflow === 'scroll'"
         :class="cn('relative z-40 w-full shrink-0 bg-editor-toolbar-background', props.class)"
         data-slot="toolbar"
-        horizontal
+        orientation="horizontal"
     >
         <ButtonGroup
             :class="[
