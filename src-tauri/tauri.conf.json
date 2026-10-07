@@ -40,7 +40,7 @@
                 "rank": "Owner",
                 "exportedType": {
                     "identifier": "com.kazmas.desktop.world",
-                    "conformsTo": ["public.data"]
+                    "conformsTo": ["public.data", "public.content"]
                 }
             }
         ]
