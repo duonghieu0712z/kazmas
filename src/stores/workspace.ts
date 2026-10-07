@@ -16,7 +16,7 @@ interface WorkspaceSession {
 }
 
 export const useWorkspaceStore = defineStore('workspace', () => {
-    const { tabs, activeTab, recentTabIds, openTab, closeTab, clearTabs, restoreTabs } =
+    const { tabs, activeTab, recentTabIds, openTab, closeTab, moveTab, clearTabs, restoreTabs } =
         useWorkspaceTabs<DocumentTab>();
     const sessions = useLocalStorage<Record<string, WorkspaceSession>>(
         'workspace_tabs',
@@ -76,6 +76,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         activeDocumentId,
         openDocument,
         closeTab,
+        moveTab,
         clearTabs,
         resetWorld,
         restoreWorld,

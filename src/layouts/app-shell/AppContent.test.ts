@@ -67,7 +67,7 @@ describe('workspace content', () => {
         await wrapper.get('input[aria-label="entry-a"]').setValue('Unsaved draft');
         nodes.openNode(node({ id: 'entry-b' }));
         await flushPromises();
-        await wrapper.get('[role="tab"][aria-selected="false"]').trigger('mousedown', {
+        await wrapper.get('[role="tab"][aria-selected="false"]').trigger('click', {
             button: 0,
             ctrlKey: false,
         });

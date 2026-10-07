@@ -66,6 +66,25 @@ describe('workspace tabs', () => {
         expect(workspace.activeDocumentId).toBeNull();
     });
 
+    it('persists reordered tabs without changing selection or activation history', () => {
+        const workspace = useWorkspaceStore();
+        workspace.restoreWorld('world-a', () => true);
+        for (const id of ['a', 'b', 'c', 'd']) {
+            workspace.openDocument(id);
+        }
+        workspace.activeTab = 'node:b';
+        workspace.moveTab('node:a', 3);
+        workspace.moveTab('node:d', 0);
+        expect(workspace.tabs.map((tab) => tab.nodeId)).toEqual(['d', 'b', 'c', 'a']);
+        expect(workspace.activeDocumentId).toBe('b');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-a', () => true);
+        expect(workspace.tabs.map((tab) => tab.nodeId)).toEqual(['d', 'b', 'c', 'a']);
+        expect(workspace.activeDocumentId).toBe('b');
+        workspace.closeTab('node:b');
+        expect(workspace.activeDocumentId).toBe('d');
+    });
+
     it('keeps separate tab sessions when worlds are closed or switched', () => {
         const workspace = useWorkspaceStore();
         workspace.restoreWorld('world-a', () => true);

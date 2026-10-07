@@ -2,6 +2,88 @@ import { expect, test } from './fixtures';
 
 const mac = process.platform === 'darwin';
 
+test('dragging tabs preserves the active editor and persists their new order', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open();
+    await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
+    await page.getByRole('treeitem', { name: /A very long chapter title/ }).click();
+    const tabs = page.getByRole('tab');
+    await tabs.nth(1).click();
+    await page.locator('.tiptap:visible').fill('Draft retained during tab reorder');
+    const titles = await tabs.allTextContents();
+    const first = (await tabs.nth(0).boundingBox())!;
+    const last = (await tabs.nth(2).boundingBox())!;
+    await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(last.x + last.width - 2, last.y + 120, { steps: 10 });
+    const preview = page.locator('[data-slot="tab-drag-preview"]');
+    await expect(preview).toHaveText(titles[0]!);
+    expect((await preview.boundingBox())!.y).toBeGreaterThan(last.y + last.height);
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await page.mouse.up();
+    await expect(preview).toHaveCount(0);
+    await expect(tabs).toHaveText([titles[1]!, titles[2]!, titles[0]!]);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.tiptap:visible')).toHaveText('Draft retained during tab reorder');
+
+    const source = (await tabs.nth(2).boundingBox())!;
+    const destination = (await tabs.nth(0).boundingBox())!;
+    await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(destination.x + 2, destination.y + 140, { steps: 10 });
+    await expect(preview).toHaveText(titles[0]!);
+    await page.keyboard.press('Escape');
+    await expect(preview).toHaveCount(0);
+    await page.mouse.up();
+    await expect(tabs).toHaveText([titles[1]!, titles[2]!, titles[0]!]);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await page.reload();
+    await expect(tabs).toHaveText([titles[1]!, titles[2]!, titles[0]!]);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+});
+
+test('dragging near the tab strip edge scrolls to hidden tabs', async ({ page, workspace }) => {
+    await page.setViewportSize({ width: 600, height: 800 });
+    await workspace.open();
+    await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
+    await page.getByRole('treeitem', { name: /A very long chapter title/ }).click();
+    const tabs = page.getByRole('tab');
+    await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
+    const titles = await tabs.allTextContents();
+    const viewport = page
+        .locator('[data-slot="scroll-area-viewport"]')
+        .filter({ has: page.getByRole('tablist') });
+    await expect.poll(() => viewport.evaluate((element) => element.scrollLeft)).toBe(0);
+    const source = (await tabs.nth(0).boundingBox())!;
+    const bounds = (await viewport.boundingBox())!;
+    await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width - 4, source.y + 80, { steps: 10 });
+    const outsidePositions = await viewport.evaluate(async (element) => {
+        const positions: number[] = [];
+        for (let index = 0; index < 10; index++) {
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+            positions.push(element.scrollLeft);
+        }
+        return positions;
+    });
+    expect(outsidePositions.every((position) => position === 0)).toBe(true);
+    await page.mouse.move(bounds.x + bounds.width - 4, source.y + source.height / 2);
+    await expect.poll(() => viewport.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    await expect
+        .poll(() =>
+            viewport.evaluate(
+                (element) => element.scrollWidth - element.clientWidth - element.scrollLeft,
+            ),
+        )
+        .toBeLessThanOrEqual(1);
+    await page.mouse.up();
+    await expect(tabs).toHaveText([titles[1]!, titles[2]!, titles[0]!]);
+    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+});
+
 test('webview reload restores open tabs and the active document', async ({ page, workspace }) => {
     await workspace.open();
     await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();

@@ -5,7 +5,14 @@ import { XIcon } from '@lucide/vue';
 
 import { TooltipTrigger } from '@/components/ui/tooltip';
 
-defineProps<{ tab: WorkspaceTab; hideLeftCorner?: boolean; hideRightCorner?: boolean }>();
+defineProps<{
+    tab: WorkspaceTab;
+    hideLeftCorner?: boolean;
+    hideRightCorner?: boolean;
+    dragged?: boolean;
+    reordering?: boolean;
+    dropSide?: 'before' | 'after';
+}>();
 
 const tooltipOpen = ref(false);
 const closeHovered = ref(false);
@@ -16,13 +23,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Tooltip :open="tooltipOpen && !closeHovered" @update:open="tooltipOpen = $event">
-        <TooltipTrigger class="flex h-full flex-none">
+    <Tooltip
+        :open="tooltipOpen && !closeHovered && !reordering"
+        @update:open="tooltipOpen = $event"
+    >
+        <TooltipTrigger class="relative flex h-full flex-none">
             <TabsTrigger
                 as="div"
                 :class="[
                     'group/tab relative h-full min-w-36 flex-none justify-start gap-2 rounded-t-md rounded-b-none border-0 border-r border-tabs-trigger-border px-3 pr-9 text-xs font-normal',
                     'aria-selected:z-10 aria-selected:border-r-transparent aria-selected:shadow-none',
+                    dragged && 'text-muted-foreground!',
 
                     // Concave bottom corners.
                     `before:pointer-events-none before:absolute before:bottom-0 before:-left-1.5 before:hidden before:size-1.5 before:content-['']`,
@@ -32,6 +43,7 @@ const emit = defineEmits<{
                     'after:bg-[radial-gradient(circle_at_top_right,transparent_6px,var(--color-tabs-trigger-selected)_6.5px)]',
                     !hideRightCorner && 'aria-selected:after:block',
                 ]"
+                :data-tab-id="tab.id"
                 :value="tab.id"
             >
                 <component
@@ -62,6 +74,12 @@ const emit = defineEmits<{
                     <XIcon class="size-3" />
                 </Button>
             </TabsTrigger>
+            <span
+                v-if="dropSide"
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-focus-ring"
+                :class="dropSide === 'before' ? 'left-0' : 'right-0'"
+            />
         </TooltipTrigger>
 
         <TooltipContent class="max-w-80 wrap-break-word" side="bottom">

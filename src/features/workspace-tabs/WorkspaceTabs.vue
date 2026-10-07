@@ -3,6 +3,7 @@ import type { WorkspaceTab } from '.';
 
 import { useEventListener, useResizeObserver } from '@vueuse/core';
 
+import { useTabReorder } from './use-tab-reorder';
 import WorkspaceTabItem from './WorkspaceTabItem.vue';
 
 const props = defineProps<{ tabs: T[] }>();
@@ -18,7 +19,16 @@ const tabList = computed(() => viewport.value?.querySelector<HTMLElement>('[role
 const lastTabAtRightEdge = ref(false);
 const emit = defineEmits<{
     close: [id: string];
+    move: [id: string, index: number];
 }>();
+const { draggedId, dragPosition, dropTarget } = useTabReorder({
+    tabs: () => props.tabs,
+    list: tabList,
+    viewport,
+    select: (id) => (activeTab.value = id),
+    move: (id, index) => emit('move', id, index),
+});
+const draggedTab = computed(() => props.tabs.find((tab) => tab.id === draggedId.value));
 
 defineSlots<{
     default: (props: { tab: T; active: boolean }) => any;
@@ -87,7 +97,10 @@ onMounted(revealSelectedTab);
     <Tabs
         v-model="activeTab"
         class="h-full min-h-0 min-w-0 gap-0 overflow-hidden"
-        :class="{ 'bg-tabs-empty-background': !tabs.length }"
+        :class="{
+            'bg-tabs-empty-background': !tabs.length,
+            'cursor-grabbing select-none **:cursor-grabbing': !!draggedId,
+        }"
     >
         <ScrollArea
             v-if="tabs.length"
@@ -98,14 +111,18 @@ onMounted(revealSelectedTab);
         >
             <TabsList
                 aria-label="Workspace tabs"
-                class="justify-start gap-0 rounded-none bg-transparent p-0"
+                class="touch-none justify-start gap-0 rounded-none bg-transparent p-0 select-none"
+                :class="{ 'cursor-grabbing': draggedId }"
                 @click="revealSelectedTab"
             >
                 <WorkspaceTabItem
                     v-for="(tab, index) in tabs"
                     :key="tab.id"
+                    :dragged="draggedId === tab.id"
+                    :drop-side="dropTarget?.id === tab.id ? dropTarget.side : undefined"
                     :hide-left-corner="index === 0"
                     :hide-right-corner="index === tabs.length - 1 && lastTabAtRightEdge"
+                    :reordering="!!draggedId"
                     :tab="tab"
                     @close="emit('close', $event)"
                 />
@@ -121,5 +138,22 @@ onMounted(revealSelectedTab);
         >
             <slot :active="activeTab === tab.id" :tab="tab" />
         </TabsContent>
+
+        <Teleport to="body">
+            <div
+                v-if="draggedTab"
+                aria-hidden="true"
+                class="pointer-events-none fixed z-100 flex h-8 max-w-64 items-center gap-2 rounded-md bg-tabs-trigger-selected px-3 text-xs text-tabs-trigger-selected-foreground shadow-lg"
+                data-slot="tab-drag-preview"
+                :style="{ left: `${dragPosition.x + 12}px`, top: `${dragPosition.y + 12}px` }"
+            >
+                <component
+                    :is="draggedTab.icon"
+                    v-if="draggedTab.icon"
+                    class="size-3.5 shrink-0 text-tabs-trigger-icon-foreground"
+                />
+                <span class="truncate">{{ draggedTab.title }}</span>
+            </div>
+        </Teleport>
     </Tabs>
 </template>

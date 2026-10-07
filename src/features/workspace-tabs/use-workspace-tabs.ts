@@ -35,6 +35,21 @@ export function useWorkspaceTabs<T extends { id: string }>(initialTabs: T[] = []
         }
     };
 
+    const moveTab = (id: string, index: number) => {
+        const currentIndex = tabs.value.findIndex((tab) => tab.id === id);
+        if (currentIndex < 0) {
+            return;
+        }
+        const targetIndex = Math.max(0, Math.min(index, tabs.value.length - 1));
+        if (currentIndex === targetIndex) {
+            return;
+        }
+        const reordered = [...tabs.value];
+        const [tab] = reordered.splice(currentIndex, 1);
+        reordered.splice(targetIndex, 0, tab!);
+        tabs.value = reordered;
+    };
+
     const clearTabs = () => {
         tabs.value = [];
         recentTabIds.value = [];
@@ -49,5 +64,5 @@ export function useWorkspaceTabs<T extends { id: string }>(initialTabs: T[] = []
             : (restored[0]?.id ?? '');
     };
 
-    return { tabs, activeTab, recentTabIds, openTab, closeTab, clearTabs, restoreTabs };
+    return { tabs, activeTab, recentTabIds, openTab, closeTab, moveTab, clearTabs, restoreTabs };
 }

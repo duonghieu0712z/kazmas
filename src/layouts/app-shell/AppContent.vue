@@ -68,7 +68,7 @@ async function closeTab(id: string) {
 
 <template>
     <SidebarInset class="h-full min-h-0 min-w-0 overflow-hidden">
-        <WorkspaceTabs v-model="activeTab" :tabs="tabs" @close="closeTab">
+        <WorkspaceTabs v-model="activeTab" :tabs="tabs" @close="closeTab" @move="workspace.moveTab">
             <template #default="{ tab, active }">
                 <header
                     v-if="tab.breadcrumbs.length"
