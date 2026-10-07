@@ -40,6 +40,20 @@ impl WindowRegistry {
         inner.focused_window
     }
 
+    pub(crate) async fn empty_window(&self) -> Option<WindowId> {
+        let inner = self.inner.lock().await;
+        if let Some(window_id) = inner.focused_window
+            && inner.by_windows.get(&window_id) == Some(&None)
+        {
+            return Some(window_id);
+        }
+
+        inner
+            .by_windows
+            .iter()
+            .find_map(|(window_id, project_id)| project_id.is_none().then_some(*window_id))
+    }
+
     pub(crate) async fn set_focus(&self, window_id: Option<WindowId>) {
         let mut inner = self.inner.lock().await;
         inner.focused_window = window_id;

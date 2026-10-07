@@ -48,6 +48,34 @@ async fn replaces_closes_and_unregisters_projects_consistently() -> TestResult {
 }
 
 #[tokio::test]
+async fn selects_only_empty_windows_and_prefers_the_focused_one() -> TestResult {
+    let registry = WindowRegistry::default();
+    assert_eq!(registry.empty_window().await, None);
+
+    let occupied = Uuid::now_v7();
+    registry
+        .register_window(occupied, Some(Uuid::now_v7()))
+        .await?;
+    registry.set_focus(Some(occupied)).await;
+    assert_eq!(registry.empty_window().await, None);
+
+    let first = Uuid::now_v7();
+    registry.register_window(first, None).await?;
+    assert_eq!(registry.empty_window().await, Some(first));
+
+    let second = Uuid::now_v7();
+    registry.register_window(second, None).await?;
+    registry.set_focus(Some(second)).await;
+    assert_eq!(registry.empty_window().await, Some(second));
+
+    registry.replace_project(second, Uuid::now_v7()).await?;
+    assert_eq!(registry.empty_window().await, Some(first));
+    registry.unregister_window(first).await;
+    assert_eq!(registry.empty_window().await, None);
+    Ok(())
+}
+
+#[tokio::test]
 async fn concurrent_registration_allows_only_one_owner() -> TestResult {
     let registry = WindowRegistry::default();
     let project = Uuid::now_v7();
