@@ -170,6 +170,39 @@ test('failed document writes remain available for retry', async ({ page, workspa
     await expect(page.locator('.tiptap:visible')).toContainText('Retained after write failure');
 });
 
+test('a failed save on tab switch reveals the editor and retries the pending write', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open('save-error');
+    await page.locator('.tiptap:visible').fill('Retained after inactive write failure');
+    await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
+
+    await expect(page.getByRole('tab').filter({ hasText: 'Chapter A' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveText('Document could not be saved.');
+    await expect(page.locator('.tiptap:visible')).toHaveText(
+        'Retained after inactive write failure',
+    );
+    await expect
+        .poll(() => page.evaluate(() => window.__kazmasTest.documents.get('entry-a')))
+        .not.toContain('Retained after inactive write failure');
+
+    await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
+    await expect
+        .poll(() => page.evaluate(() => window.__kazmasTest.documents.get('entry-a')))
+        .toContain('Retained after inactive write failure');
+    await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
+    await expect(page.locator('.tiptap:visible')).toHaveText(
+        'Retained after inactive write failure',
+    );
+    await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
 test('a delayed document response does not replace the current editor', async ({
     page,
     workspace,
