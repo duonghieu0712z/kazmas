@@ -2,6 +2,24 @@ import { expect, test } from './fixtures';
 
 const mac = process.platform === 'darwin';
 
+test('webview reload restores open tabs and the active document', async ({ page, workspace }) => {
+    await workspace.open();
+    await page.getByRole('treeitem', { name: 'Chapter B', exact: true }).click();
+    await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
+    const tabs = page.getByRole('tab');
+    await expect(tabs).toHaveText(['Chapter A', 'Chapter B']);
+    await page.reload();
+    await expect(tabs).toHaveText(['Chapter A', 'Chapter B']);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.tiptap:visible')).toContainText('A sample manuscript');
+    await page.getByRole('button', { name: 'Close Chapter A', exact: true }).click();
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
+    await page.reload();
+    await expect(tabs).toHaveText(['Chapter B']);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.tiptap:visible')).toContainText('Second chapter content.');
+});
+
 test('tree selection opens the correct document and updates breadcrumbs', async ({
     page,
     workspace,

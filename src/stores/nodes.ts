@@ -60,7 +60,7 @@ export const useNodeStore = defineStore('nodes', () => {
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
-        workspace.clearTabs();
+        workspace.resetWorld();
     };
 
     const selectNode = (node: NodeDto) => {

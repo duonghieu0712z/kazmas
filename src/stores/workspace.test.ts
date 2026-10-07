@@ -65,4 +65,39 @@ describe('workspace tabs', () => {
         workspace.closeTab('node:new');
         expect(workspace.activeDocumentId).toBeNull();
     });
+
+    it('keeps separate tab sessions when worlds are closed or switched', () => {
+        const workspace = useWorkspaceStore();
+        workspace.restoreWorld('world-a', () => true);
+        workspace.openDocument('a');
+        workspace.openDocument('b');
+        workspace.closeTab('node:b');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-b', () => true);
+        expect(workspace.tabs).toEqual([]);
+        workspace.openDocument('c');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-a', () => true);
+        expect(workspace.tabs.map((tab) => tab.nodeId)).toEqual(['a']);
+        expect(workspace.activeDocumentId).toBe('a');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-b', () => true);
+        expect(workspace.activeDocumentId).toBe('c');
+    });
+
+    it('skips documents that no longer exist and falls back when the active tab is missing', () => {
+        const workspace = useWorkspaceStore();
+        workspace.restoreWorld('world-a', () => true);
+        workspace.openDocument('a');
+        workspace.openDocument('b');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-a', (id) => id === 'a');
+        expect(workspace.tabs.map((tab) => tab.nodeId)).toEqual(['a']);
+        expect(workspace.activeDocumentId).toBe('a');
+        workspace.closeTab('node:a');
+        workspace.resetWorld();
+        workspace.restoreWorld('world-a', () => true);
+        expect(workspace.tabs).toEqual([]);
+        expect(workspace.activeDocumentId).toBeNull();
+    });
 });
