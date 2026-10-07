@@ -28,7 +28,13 @@ const crumbs = computed(() => {
         <BreadcrumbList class="flex-nowrap text-xs text-content-header-muted-foreground">
             <template v-for="(item, index) in crumbs" :key="item.id">
                 <BreadcrumbItem class="min-w-0">
-                    <DropdownMenu>
+                    <BreadcrumbPage
+                        v-if="index === 0"
+                        class="truncate text-content-header-foreground"
+                    >
+                        {{ item.name }}
+                    </BreadcrumbPage>
+                    <DropdownMenu v-else>
                         <DropdownMenuTrigger
                             :aria-label="`Navigate from ${item.name}`"
                             as="button"
