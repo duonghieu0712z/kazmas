@@ -11,7 +11,7 @@ for (const theme of ['light', 'dark'] as const) {
         await treeItem.click();
         await page.mouse.move(1190, 790);
         const bold = page.getByRole('button', { name: 'Bold', exact: true });
-        const editor = page.locator('.tiptap');
+        const editor = page.locator('.tiptap:visible');
         const editorColor = await editor.evaluate((element) => getComputedStyle(element).color);
         const editorBackground = await editor.evaluate(
             (element) => getComputedStyle(element).backgroundColor,
@@ -47,7 +47,7 @@ for (const theme of ['light', 'dark'] as const) {
             theme,
         );
         await workspace.open();
-        const ratios = await page.locator('.tiptap').evaluate((editor) => {
+        const ratios = await page.locator('.tiptap:visible').evaluate((editor) => {
             const canvas = document.createElement('canvas');
             canvas.width = 1;
             canvas.height = 1;

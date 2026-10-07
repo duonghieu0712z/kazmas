@@ -2,7 +2,6 @@ import type { MenuCommand } from '@/generated/bindings';
 
 import { emit } from '@tauri-apps/api/event';
 import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
-import { nextTick } from 'vue';
 
 import { manifest, node } from '../support/fixtures';
 
@@ -173,12 +172,16 @@ const bridge = {
 export type UiTestBridge = typeof bridge;
 
 export async function initializeUiTest() {
-    const [{ useNodeStore }, { openNewWorldDialog }] = await Promise.all([
+    const [{ useNodeStore }, { useWorldStore }, { openNewWorldDialog }] = await Promise.all([
         import('@/stores/nodes'),
+        import('@/stores/world'),
         import('@/dialogs'),
     ]);
-    await nextTick();
-    if (['editor', 'long', 'load-error', 'save-error', 'slow-document'].includes(scenario)) {
+    await useWorldStore().waitForNodes();
+    if (
+        !useNodeStore().openedNodeId &&
+        ['editor', 'long', 'load-error', 'save-error', 'slow-document'].includes(scenario)
+    ) {
         useNodeStore().openNode(entries[scenario === 'long' ? 2 : 0]!);
     }
     if (scenario === 'dialog') {

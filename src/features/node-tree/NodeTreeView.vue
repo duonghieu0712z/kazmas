@@ -4,9 +4,9 @@ import type { NodeTreeSection } from './use-node-tree';
 import type { NodeTreeDto } from '@/stores/nodes';
 import type { TreeItemSelectEvent } from 'reka-ui';
 
-import { FileIcon, FolderIcon, FolderOpenIcon } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
 
+import { getNodeIcon } from '@/lib/node-icons';
 import { useNodeStore } from '@/stores/nodes';
 
 import NodeTreeLabel from './NodeTreeLabel.vue';
@@ -89,6 +89,18 @@ function getKey(node: TreeNode) {
     return node.id;
 }
 
+function getIcon(node: TreeNode, expanded: boolean) {
+    const kind =
+        node.kind !== 'draft'
+            ? node.kind
+            : node.type === 'folder'
+              ? 'folder'
+              : props.section === 'Wiki'
+                ? 'wiki_entry'
+                : 'manuscript_entry';
+    return getNodeIcon(kind, expanded);
+}
+
 function getChildren(node: TreeNode): TreeNode[] | undefined {
     if (node.kind === 'draft') {
         return;
@@ -129,7 +141,7 @@ function focusName(element: Element | ComponentPublicInstance | null) {
 
 <template>
     <ScrollArea
-        class="min-h-0 min-w-0 flex-1 **:data-[slot=scroll-area-viewport]:p-1"
+        class="min-h-0 min-w-0 flex-1 **:data-[slot=scroll-area-viewport]:p-1 **:data-[slot=scroll-area-viewport]:pb-6"
         viewport-as-child
     >
         <TreeRoot
@@ -160,16 +172,10 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                     @select="selectNode"
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">
-                        <template
-                            v-if="
-                                item.value.kind === 'folder' ||
-                                (item.value.kind === 'draft' && item.value.type === 'folder')
-                            "
-                        >
-                            <FolderOpenIcon v-if="isExpanded" class="size-3.5 shrink-0" />
-                            <FolderIcon v-else class="size-3.5 shrink-0" />
-                        </template>
-                        <FileIcon v-else class="size-3.5 shrink-0" />
+                        <component
+                            :is="getIcon(item.value, isExpanded)"
+                            class="size-3.5 shrink-0"
+                        />
 
                         <Input
                             v-if="item.value.kind === 'draft'"

@@ -61,7 +61,9 @@ export const test = base.extend<{ workspace: Workspace; pageErrors: string[] }>(
                 await expectPlatformChrome(page);
                 await page.evaluate(() => document.fonts.ready);
                 if (scenario === 'editor') {
-                    await expect(page.locator('.tiptap')).toContainText('A sample manuscript');
+                    await expect(page.locator('.tiptap:visible')).toContainText(
+                        'A sample manuscript',
+                    );
                 }
             },
         });
