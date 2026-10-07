@@ -57,6 +57,26 @@ function updateLastTabEdge() {
     );
 }
 
+function scrollTabs(event: WheelEvent) {
+    const element = viewport.value;
+    if (
+        !element ||
+        element.scrollWidth <= element.clientWidth ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.deltaX !== 0 ||
+        event.deltaY === 0
+    ) {
+        return;
+    }
+
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientWidth : 1;
+    event.preventDefault();
+    element.scrollBy({ left: event.deltaY * unit });
+}
+
+useEventListener(viewport, 'wheel', scrollTabs, { passive: false });
 useEventListener(viewport, 'scroll', updateLastTabEdge);
 useResizeObserver([viewport, tabList], updateLastTabEdge);
 watch([activeTab, () => props.tabs], revealSelectedTab, { flush: 'post' });
