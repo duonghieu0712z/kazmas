@@ -62,6 +62,34 @@ const documents = new Map(
 const calls: { command: string; args: Record<string, unknown> }[] = [];
 const pendingDocuments = new Map<string, () => void>();
 let failedWrite = false;
+let failedRename = false;
+
+function visibleEntries(items: typeof entries) {
+    const hidden = new Set(items.filter((item) => item.deletedAt).map((item) => item.id));
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const item of items) {
+            if (item.parentId && hidden.has(item.parentId) && !hidden.has(item.id)) {
+                hidden.add(item.id);
+                changed = true;
+            }
+        }
+    }
+    return items.filter((item) => !hidden.has(item.id));
+}
+
+function creationTarget(parentId: unknown, wiki: boolean) {
+    if (typeof parentId === 'string') {
+        if (entries.some((item) => item.id === parentId)) {
+            return entries;
+        }
+        if (wikiEntries.some((item) => item.id === parentId)) {
+            return wikiEntries;
+        }
+    }
+    return wiki ? wikiEntries : entries;
+}
 
 const platforms: Record<string, string> = { darwin: 'macos', win32: 'windows', linux: 'linux' };
 const platform = platforms[import.meta.env.VITE_UI_TEST_PLATFORM];
@@ -78,13 +106,13 @@ mockIPC(
             case 'get_world':
                 return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
             case 'get_manuscripts':
-                return [...entries];
+                return visibleEntries(entries);
             case 'get_wikis':
-                return [...wikiEntries];
+                return visibleEntries(wikiEntries);
             case 'create_manuscript_entry':
             case 'create_wiki_entry': {
                 const wiki = command === 'create_wiki_entry';
-                const target = wiki ? wikiEntries : entries;
+                const target = creationTarget(data.parentId, wiki);
                 const id = `${wiki ? 'wiki' : 'entry'}-new-${target.length}`;
                 target.push(
                     node({
@@ -101,7 +129,7 @@ mockIPC(
                 return id;
             }
             case 'create_folder': {
-                const target = data.section === 'wiki' ? wikiEntries : entries;
+                const target = creationTarget(data.parentId, data.section === 'wiki');
                 const id = `folder-new-${target.length}`;
                 target.push(
                     node({
@@ -112,6 +140,28 @@ mockIPC(
                     }),
                 );
                 return id;
+            }
+            case 'update_node': {
+                if (scenario === 'rename-error' && !failedRename) {
+                    failedRename = true;
+                    return Promise.reject({ code: 'IO', message: 'Rename failed.' });
+                }
+                const update = data.node as { id: string; name: string; parentId: string | null };
+                const item = [...entries, ...wikiEntries].find((item) => item.id === update.id);
+                if (!item || item.deletedAt) {
+                    return false;
+                }
+                item.name = update.name;
+                item.parentId = update.parentId;
+                return true;
+            }
+            case 'delete_node': {
+                const item = [...entries, ...wikiEntries].find((item) => item.id === data.nodeId);
+                if (!item || item.deletedAt) {
+                    return false;
+                }
+                item.deletedAt = new Date().toISOString();
+                return true;
             }
             case 'get_document':
                 if (scenario === 'load-error') {
@@ -124,7 +174,7 @@ mockIPC(
                 }
                 return documents.get(String(data.nodeId)) ?? null;
             case 'update_document':
-                if (scenario === 'save-error' && !failedWrite) {
+                if ((scenario === 'save-error' && !failedWrite) || scenario === 'write-blocked') {
                     failedWrite = true;
                     return Promise.reject({ code: 'IO', message: 'Document write failed.' });
                 }
@@ -180,7 +230,9 @@ export async function initializeUiTest() {
     await useWorldStore().waitForNodes();
     if (
         !useNodeStore().openedNodeId &&
-        ['editor', 'long', 'load-error', 'save-error', 'slow-document'].includes(scenario)
+        ['editor', 'long', 'load-error', 'save-error', 'slow-document', 'write-blocked'].includes(
+            scenario,
+        )
     ) {
         useNodeStore().openNode(entries[scenario === 'long' ? 2 : 0]!);
     }

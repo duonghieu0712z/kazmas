@@ -105,7 +105,14 @@ function startNodeAt(
     parentId: string | null,
     entryKind?: NodeDraft['entryKind'],
 ) {
-    if (!canCreate.value || (parentId && nodes.getNode(parentId)?.kind !== 'folder')) {
+    const sectionRoot =
+        parentId &&
+        props.tree.some((node) => node.parentId === parentId) &&
+        !nodes.getNode(parentId);
+    if (
+        !canCreate.value ||
+        (parentId && !sectionRoot && nodes.getNode(parentId)?.kind !== 'folder')
+    ) {
         return;
     }
     draft.value = { id: 'node-tree-draft', kind: 'draft', type, parentId, entryKind };

@@ -8,6 +8,7 @@ test('reload restores each tree state and the active activity', async ({ page, w
         .locator('.tree-chevron-icon')
         .click();
     await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click();
+    await expect(page.locator('.tiptap:visible')).toBeFocused();
     await page.getByRole('textbox', { name: 'Filter manuscript' }).fill('Chapter A');
     await expect(page.getByRole('treeitem')).toHaveCount(2);
     await page.getByRole('button', { name: 'Collapse all', exact: true }).click();
@@ -18,6 +19,7 @@ test('reload restores each tree state and the active activity', async ({ page, w
         .locator('.tree-chevron-icon')
         .click();
     await page.getByRole('treeitem', { name: 'Character', exact: true }).click();
+    await expect(page.locator('.tiptap:visible')).toBeFocused();
     await page.getByRole('textbox', { name: 'Filter wiki' }).fill('Character');
 
     await page.reload();

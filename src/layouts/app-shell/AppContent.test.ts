@@ -4,10 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, onBeforeUnmount, ref } from 'vue';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { executeMenuCommand } from '@/menus';
+import { useContextMenuProvider } from '@/providers/context-menu';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { useWorldStore } from '@/stores/world';
 
-import { node } from '../../../tests/support/fixtures';
+import { deferred, manifest, node } from '../../../tests/support/fixtures';
 import { tauri } from '../../../tests/unit/tauri';
 import AppContent from './AppContent.vue';
 
@@ -136,5 +139,74 @@ describe('workspace content', () => {
 
         expect(wrapper.get('[role="tab"]').text()).toBe('Revised chapter');
         expect(wrapper.get('header').text()).toContain('Revised chapter');
+    });
+
+    it('ignores a cached menu command after its target tab is closed and reopened', async () => {
+        const { wrapper, nodes, workspace, prepareClose } = await createContent();
+        const world = useWorldStore();
+        world.setManifest(manifest());
+        await world.waitForNodes();
+        nodes.openNode(node());
+        await flushPromises();
+        const provider = useContextMenuProvider();
+        try {
+            await wrapper.get('[role="tab"]').trigger('contextmenu');
+            const item = toValue(provider.activeContextMenu.value!.items).find(
+                (item) => item.id === 'close-tab',
+            );
+            if (item?.type !== 'item') {
+                throw new Error('Close Tab is unavailable.');
+            }
+            workspace.closeTab(workspace.tabs[0]!.id);
+            nodes.openNode(node());
+            await executeMenuCommand(item.command);
+            expect(workspace.tabs).toHaveLength(1);
+            expect(prepareClose).not.toHaveBeenCalled();
+            world.setManifest(manifest('other-world'));
+            await world.waitForNodes();
+            nodes.openNode(node());
+            await executeMenuCommand(item.command);
+            expect(workspace.tabs).toHaveLength(1);
+            expect(prepareClose).not.toHaveBeenCalled();
+        } finally {
+            provider.closeContextMenu();
+        }
+    });
+
+    it('disables closing items during a pending batch and ignores repeated execution', async () => {
+        const { wrapper, nodes, workspace, prepareClose } = await createContent();
+        const world = useWorldStore();
+        world.setManifest(manifest());
+        await world.waitForNodes();
+        nodes.openNode(node());
+        nodes.openNode(node({ id: 'entry-b' }));
+        await flushPromises();
+        const pending = deferred<boolean>();
+        prepareClose.mockReturnValueOnce(pending.promise);
+        const provider = useContextMenuProvider();
+        try {
+            await wrapper.get('[role="tab"]').trigger('contextmenu');
+            const item = toValue(provider.activeContextMenu.value!.items).find(
+                (item) => item.id === 'close-all-tabs',
+            );
+            if (item?.type !== 'item') {
+                throw new Error('Close All Tabs is unavailable.');
+            }
+            const closing = executeMenuCommand(item.command);
+            await executeMenuCommand(item.command);
+            const closingItems = toValue(provider.activeContextMenu.value!.items).filter((item) =>
+                item.id.startsWith('close-'),
+            );
+            expect(
+                closingItems.every((item) => item.type === 'item' && item.enabled === false),
+            ).toBe(true);
+            expect(prepareClose).toHaveBeenCalledExactlyOnceWith('entry-a');
+            pending.resolve(false);
+            await closing;
+            expect(workspace.tabs).toHaveLength(2);
+            expect(workspace.activeDocumentId).toBe('entry-a');
+        } finally {
+            provider.closeContextMenu();
+        }
     });
 });
