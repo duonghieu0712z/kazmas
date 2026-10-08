@@ -53,7 +53,7 @@ async function prepareClose() {
     }
 }
 
-defineExpose({ prepareClose });
+defineExpose({ prepareClose, hasSaveError: computed(() => !!saveError.value) });
 
 watch(
     () => props.active,

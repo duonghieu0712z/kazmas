@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { defineComponent, h, onBeforeUnmount, ref } from 'vue';
+import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { executeMenuCommand } from '@/menus';
@@ -26,12 +26,16 @@ describe('workspace content', () => {
         await nodes.reloadNodes();
         const prepareClose = vi.fn<(nodeId: string) => Promise<boolean>>().mockResolvedValue(true);
         const unmounted = vi.fn();
+        const saveErrors = ref<Record<string, boolean>>({});
         const editor = defineComponent({
             name: 'Editor',
             props: ['nodeId', 'active'],
             setup(props, { expose }) {
                 const text = ref(props.nodeId);
-                expose({ prepareClose: () => prepareClose(props.nodeId) });
+                expose({
+                    prepareClose: () => prepareClose(props.nodeId),
+                    hasSaveError: computed(() => !!saveErrors.value[props.nodeId]),
+                });
                 onBeforeUnmount(() => unmounted(props.nodeId));
                 return () =>
                     h('input', {
@@ -54,7 +58,14 @@ describe('workspace content', () => {
                 },
             },
         );
-        return { wrapper, nodes, workspace: useWorkspaceStore(), prepareClose, unmounted };
+        return {
+            wrapper,
+            nodes,
+            workspace: useWorkspaceStore(),
+            prepareClose,
+            unmounted,
+            saveErrors,
+        };
     };
 
     it('starts empty and preserves mounted document state when switching tabs', async () => {
@@ -124,6 +135,27 @@ describe('workspace content', () => {
 
         expect(workspace.activeDocumentId).toBe('entry-a');
         expect(editor.props('active')).toBe(true);
+    });
+
+    it('keeps the visible save failure active when another editor also fails', async () => {
+        const { wrapper, nodes, workspace, saveErrors } = await createContent();
+        nodes.openNode(node());
+        nodes.openNode(node({ id: 'entry-b' }));
+        await flushPromises();
+        const editors = wrapper.findAllComponents({ name: 'Editor' });
+
+        saveErrors.value['entry-a'] = true;
+        editors[0]!.vm.$emit('error:save');
+        await flushPromises();
+        saveErrors.value['entry-b'] = true;
+        editors[1]!.vm.$emit('error:save');
+        await flushPromises();
+        expect(workspace.activeDocumentId).toBe('entry-a');
+
+        saveErrors.value['entry-a'] = false;
+        editors[1]!.vm.$emit('error:save');
+        await flushPromises();
+        expect(workspace.activeDocumentId).toBe('entry-b');
     });
 
     it('refreshes tab labels and breadcrumbs when node metadata changes', async () => {

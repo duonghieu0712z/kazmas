@@ -14,6 +14,7 @@ import { useWorldStore } from '@/stores/world';
 
 interface TabContent {
     prepareClose?: () => Promise<boolean>;
+    hasSaveError?: boolean;
 }
 
 const nodes = useNodeStore();
@@ -37,7 +38,10 @@ const tabs = computed<ContentTab[]>(() =>
             props: {
                 nodeId: tab.nodeId,
                 'onError:save': () => {
-                    if (workspace.tabs.includes(tab)) {
+                    if (
+                        workspace.tabs.includes(tab) &&
+                        !tabContents.get(workspace.activeTab)?.hasSaveError
+                    ) {
                         workspace.activeTab = tab.id;
                     }
                 },
