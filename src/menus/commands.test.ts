@@ -26,7 +26,7 @@ vi.mock('@/dialogs', () => ({ openAboutDialog: handlers.about }));
 describe('menu command ordering', () => {
     beforeEach(() => setActivePinia(createPinia()));
 
-    it.each(['save', 'save-as', 'close-window', 'quit'] as const)(
+    it.each(['save', 'save-as', 'close-window', 'quit', 'reload-window'] as const)(
         'waits for pending writes before %s',
         async (command) => {
             const pending = deferred<void>();
@@ -39,13 +39,16 @@ describe('menu command ordering', () => {
         },
     );
 
-    it('does not save the package when a document flush fails', async () => {
-        handlers.flush.mockRejectedValueOnce(new Error('Write failed'));
-        await expect(executeMenuCommand('save')).rejects.toThrow('Write failed');
-        expect(tauri.executeMenuCommand).not.toHaveBeenCalled();
-    });
+    it.each(['save', 'reload-window'] as const)(
+        'does not execute %s when a document flush fails',
+        async (command) => {
+            handlers.flush.mockRejectedValueOnce(new Error('Write failed'));
+            await expect(executeMenuCommand(command)).rejects.toThrow('Write failed');
+            expect(tauri.executeMenuCommand).not.toHaveBeenCalled();
+        },
+    );
 
-    it.each(['save', 'save-as', 'close-window', 'quit'] as const)(
+    it.each(['save', 'save-as', 'close-window', 'quit', 'reload-window'] as const)(
         'waits for pending creation before %s',
         async (command) => {
             const pending = deferred<void>();

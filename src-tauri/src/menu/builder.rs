@@ -138,11 +138,10 @@ fn build_help_menu(
     app: &AppHandle,
     items: &mut HashMap<MenuCommand, MenuItemKind<Wry>>,
 ) -> KazmasResult<Submenu<Wry>> {
-    menu(app, HELP_SUBMENU_ID, "Help", &[&item(
-        app,
-        items,
-        MenuCommand::ToggleDevtools,
-    )?])
+    menu(app, HELP_SUBMENU_ID, "Help", &[
+        &item(app, items, MenuCommand::ReloadWindow)?,
+        &item(app, items, MenuCommand::ToggleDevtools)?,
+    ])
 }
 
 fn menu(

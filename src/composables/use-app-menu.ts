@@ -1,10 +1,9 @@
-import type { MenuCommand } from '@/generated/bindings';
 import type { MenuItemIndex } from '@/menus';
 
 import { createGlobalState } from '@vueuse/core';
 import { reactive, watchEffect } from 'vue';
 
-import { createMenu, createMenuIndex, executeMenuCommand } from '@/menus';
+import { createMenu, createMenuIndex } from '@/menus';
 import { useWorldStore } from '@/stores/world';
 
 export const useAppMenu = createGlobalState(createAppMenu);
@@ -33,11 +32,10 @@ function createAppMenu() {
 
     return {
         menu,
-        executeMenuCommand,
     };
 }
 
-function setMenuItemEnabled(items: MenuItemIndex, id: MenuCommand, enabled: boolean) {
+function setMenuItemEnabled(items: MenuItemIndex, id: string, enabled: boolean) {
     const menuItem = items.get(id);
     if (menuItem) {
         menuItem.enabled = enabled;

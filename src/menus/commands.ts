@@ -1,4 +1,5 @@
-import type { MenuCommand } from '@/generated/bindings';
+import type { MenuCommand } from './types';
+import type { MenuCommand as RustMenuCommand } from '@/generated/bindings';
 
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
@@ -11,16 +12,17 @@ import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
 
-const backendMenuCommands = new Set<MenuCommand>([
+const backendMenuCommands = new Set<RustMenuCommand>([
     'close-window',
     'new-window',
     'quit',
+    'reload-window',
     'save',
     'save-as',
     'toggle-devtools',
 ]);
 
-const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
+const frontendMenuHandlers: Partial<Record<RustMenuCommand, MenuCommandHandler>> = {
     about: openAboutDialog,
     'close-world': closeWorld,
     'new-folder': createFolder,
@@ -43,6 +45,11 @@ async function createWikiEntry() {
 }
 
 export async function executeMenuCommand(command: MenuCommand) {
+    if (typeof command !== 'string') {
+        await command.execute();
+        return;
+    }
+
     const handler = frontendMenuHandlers[command];
     if (handler) {
         await handler();
@@ -50,7 +57,7 @@ export async function executeMenuCommand(command: MenuCommand) {
     }
 
     if (backendMenuCommands.has(command)) {
-        if (['save', 'save-as', 'close-window', 'quit'].includes(command)) {
+        if (['save', 'save-as', 'close-window', 'quit', 'reload-window'].includes(command)) {
             await useWorldStore().waitForCreations();
             await flushDocumentSaves();
         }

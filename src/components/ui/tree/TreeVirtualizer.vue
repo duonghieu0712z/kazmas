@@ -9,6 +9,7 @@ defineOptions({ inheritAttrs: false });
 const props = defineProps<
     Omit<TreeVirtualizerProps, 'textContent'> & {
         scrollToKey?: string;
+        scrollToVersion?: number;
         textContent?: (item: T) => string;
     }
 >();
@@ -17,7 +18,7 @@ type VirtualSlot = Parameters<
     NonNullable<InstanceType<typeof TreeVirtualizer>['$slots']['default']>
 >[0];
 
-const delegatedProps = reactiveOmit(props, 'scrollToKey', 'textContent');
+const delegatedProps = reactiveOmit(props, 'scrollToKey', 'scrollToVersion', 'textContent');
 const forwarded = useForwardProps(delegatedProps);
 const tree = injectTreeRootContext();
 let virtualizer: VirtualSlot['virtualizer'] | undefined;
@@ -35,8 +36,8 @@ function slotProps(value: VirtualSlot) {
 }
 
 watch(
-    () => props.scrollToKey,
-    async (key) => {
+    () => [props.scrollToKey, props.scrollToVersion] as const,
+    async ([key]) => {
         if (!key) {
             return;
         }

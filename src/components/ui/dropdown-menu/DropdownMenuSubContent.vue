@@ -15,12 +15,18 @@ defineOptions({
     inheritAttrs: false,
 });
 
-const props = defineProps<
-    DropdownMenuSubContentProps & {
-        class?: HTMLAttributes['class'];
-        portal?: DropdownMenuPortalProps;
-    }
->();
+const props = withDefaults(
+    defineProps<
+        DropdownMenuSubContentProps & {
+            class?: HTMLAttributes['class'];
+            portal?: DropdownMenuPortalProps;
+        }
+    >(),
+    {
+        sideOffset: 2,
+        alignOffset: 0,
+    },
+);
 const emits = defineEmits<DropdownMenuSubContentEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'portal');
@@ -43,6 +49,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                 )
             "
             data-slot="dropdown-menu-sub-content"
+            @contextmenu.stop.prevent
         >
             <slot />
         </DropdownMenuSubContent>

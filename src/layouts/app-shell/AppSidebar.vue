@@ -12,6 +12,23 @@ import AppActivityBar from './AppActivityBar.vue';
 const activeActivity = useSessionStorage<ActivityBarItemName | null>('node_view_activity', null);
 const nodes = useNodeStore();
 const { open } = useSidebar();
+
+watch(
+    () => nodes.treeRequest,
+    (request) => {
+        if (!request) {
+            return;
+        }
+        const section =
+            request.action === 'create'
+                ? request.section
+                : nodes.getNodePath(request.nodeId)[0]?.id;
+        if (section === 'Manuscript' || section === 'Wiki') {
+            activeActivity.value = section;
+            open.value = true;
+        }
+    },
+);
 </script>
 
 <template>
