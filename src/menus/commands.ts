@@ -57,7 +57,7 @@ export async function executeMenuCommand(command: MenuCommand) {
     }
 
     if (backendMenuCommands.has(command)) {
-        if (['save', 'save-as', 'close-window', 'quit'].includes(command)) {
+        if (['save', 'save-as', 'close-window', 'quit', 'reload-window'].includes(command)) {
             await useWorldStore().waitForCreations();
             await flushDocumentSaves();
         }
