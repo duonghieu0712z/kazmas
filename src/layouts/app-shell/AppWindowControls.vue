@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Close window"
-            class="rounded-none text-muted-foreground hover:bg-destructive focus:text-foreground"
+            class="rounded-none text-muted-foreground hover:bg-destructive focus:text-foreground active:bg-destructive"
             size="icon"
             variant="ghost"
             @click.prevent="closeWindow"
