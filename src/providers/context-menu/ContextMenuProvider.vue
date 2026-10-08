@@ -76,7 +76,12 @@ function restoreFocus(event: Event) {
     }
 
     const target = renderedMenu.value?.focusTarget;
-    if (!interactedOutside && !activeDialog.value && target?.isConnected) {
+    const focused = document.activeElement;
+    const focusMovedOutside =
+        focused instanceof HTMLElement &&
+        focused !== document.body &&
+        !(event.target instanceof HTMLElement && event.target.contains(focused));
+    if (!interactedOutside && !activeDialog.value && !focusMovedOutside && target?.isConnected) {
         target.focus({ preventScroll: true });
     }
     renderedMenu.value = null;
@@ -86,7 +91,7 @@ onBeforeUnmount(() => closeContextMenu());
 </script>
 
 <template>
-    <ContextMenu :open="isOpen" @update:open="updateOpen">
+    <ContextMenu :modal="false" :open="isOpen" @update:open="updateOpen">
         <ContextMenuContent
             v-if="renderedMenu"
             aria-label="Context menu"

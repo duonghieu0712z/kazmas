@@ -39,6 +39,7 @@ const forwardedProps = useForwardProps(delegatedProps);
                 )
             "
             data-slot="menubar-content"
+            @contextmenu.stop.prevent
         >
             <slot />
         </MenubarContent>

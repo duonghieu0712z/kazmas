@@ -33,6 +33,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                 )
             "
             data-slot="context-menu-content"
+            @contextmenu.stop.prevent
         >
             <slot />
         </ContextMenuContent>
