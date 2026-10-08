@@ -22,6 +22,17 @@ export const useNodeStore = defineStore('nodes', () => {
     const workspace = useWorkspaceStore();
     const openedNodeId = computed(() => workspace.activeDocumentId);
     let revision = 0;
+    const treeRequest = shallowRef<
+        | { action: 'reveal'; nodeId: string; sequence: number }
+        | {
+              action: 'create';
+              section: 'Manuscript' | 'Wiki';
+              entryKind: 'manuscript_entry' | 'wiki_entry';
+              sequence: number;
+          }
+        | null
+    >(null);
+    let treeRequestSequence = 0;
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
@@ -60,6 +71,7 @@ export const useNodeStore = defineStore('nodes', () => {
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
+        treeRequest.value = null;
         workspace.resetWorld();
     };
 
@@ -112,6 +124,20 @@ export const useNodeStore = defineStore('nodes', () => {
         loadManuscripts,
         loadWikis,
         reloadNodes,
+        treeRequest,
+        createEntryInTree: (entryKind: 'manuscript_entry' | 'wiki_entry') => {
+            treeRequest.value = {
+                action: 'create',
+                entryKind,
+                section: entryKind === 'manuscript_entry' ? 'Manuscript' : 'Wiki',
+                sequence: ++treeRequestSequence,
+            };
+        },
+        revealInTree: (nodeId: string) => {
+            if (getNode(nodeId)) {
+                treeRequest.value = { action: 'reveal', nodeId, sequence: ++treeRequestSequence };
+            }
+        },
     };
 });
 

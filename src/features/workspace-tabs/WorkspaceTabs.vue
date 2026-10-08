@@ -19,6 +19,7 @@ const tabList = computed(() => viewport.value?.querySelector<HTMLElement>('[role
 const lastTabAtRightEdge = ref(false);
 const emit = defineEmits<{
     close: [id: string];
+    contextmenu: [event: MouseEvent, tab: T];
     move: [id: string, index: number];
 }>();
 const { draggedId, dragPosition, dropTarget } = useTabReorder({
@@ -125,6 +126,7 @@ onMounted(revealSelectedTab);
                     :reordering="!!draggedId"
                     :tab="tab"
                     @close="emit('close', $event)"
+                    @contextmenu="emit('contextmenu', $event, tab)"
                 />
             </TabsList>
         </ScrollArea>

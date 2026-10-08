@@ -133,7 +133,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
             query.value = '';
             revealAncestors(parentId);
         },
-        revealNode: (nodeId: string) => {
+        revealNode: (nodeId: string, open = true) => {
             const node = findNode(props.tree, nodeId);
             if (!node) {
                 return false;
@@ -142,7 +142,9 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
             revealAncestors(node.parentId);
             selected.value = node;
             nodes.selectNode(node);
-            nodes.openNode(node);
+            if (open) {
+                nodes.openNode(node);
+            }
             return true;
         },
         expandAll: () => {

@@ -17,6 +17,7 @@ type TreeNode = NodeTreeDto | NodeDraft;
 const props = defineProps<{ tree: NodeTreeDto[]; section: NodeTreeSection }>();
 const emits = defineEmits<{
     'create:node': [id: string];
+    'contextmenu:node': [event: MouseEvent, node: NodeTreeDto];
 }>();
 const draft = defineModel<NodeDraft | null>('draft', { default: null });
 const creating = defineModel<boolean>('creating', { default: false });
@@ -64,6 +65,15 @@ async function blurName(event?: FocusEvent) {
 const selected = defineModel<NodeTreeDto>();
 const expanded = defineModel<string[]>('expanded', { default: () => [] });
 const nodes = useNodeStore();
+
+function showContextMenu(event: MouseEvent, node: TreeNode) {
+    if (node.kind === 'draft') {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    emits('contextmenu:node', event, node);
+}
 let nameInput: HTMLInputElement | null = null;
 let focusedDraft: NodeDraft | null = null;
 
@@ -95,9 +105,11 @@ function getIcon(node: TreeNode, expanded: boolean) {
             ? node.kind
             : node.type === 'folder'
               ? 'folder'
-              : props.section === 'Wiki'
-                ? 'wiki_entry'
-                : 'manuscript_entry';
+              : node.entryKind
+                ? node.entryKind
+                : props.section === 'Wiki'
+                  ? 'wiki_entry'
+                  : 'manuscript_entry';
     return getNodeIcon(kind, expanded);
 }
 
@@ -163,12 +175,14 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                 :estimate-size="20"
                 :overscan="8"
                 :scroll-to-key="draft?.id ?? selected?.id"
+                :scroll-to-version="nodes.treeRequest?.sequence"
                 :text-content="(node: TreeNode) => (node.kind === 'draft' ? createName : node.name)"
             >
                 <TreeItem
                     v-bind="item.bind"
                     :key="item._id"
                     v-slot="{ isExpanded }"
+                    @contextmenu="showContextMenu($event, item.value)"
                     @select="selectNode"
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">

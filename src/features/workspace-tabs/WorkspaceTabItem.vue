@@ -19,6 +19,7 @@ const closeHovered = ref(false);
 
 const emit = defineEmits<{
     close: [id: string];
+    contextmenu: [event: MouseEvent];
 }>();
 </script>
 
@@ -45,6 +46,8 @@ const emit = defineEmits<{
                 ]"
                 :data-tab-id="tab.id"
                 :value="tab.id"
+                @contextmenu="emit('contextmenu', $event)"
+                @mousedown.right.prevent
             >
                 <component
                     :is="tab.icon"
