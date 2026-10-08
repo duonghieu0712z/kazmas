@@ -6,7 +6,7 @@ import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { isNodeTypeSelected } from '@/lib/tiptap';
-import { parseShortcutKeys } from '@/utils/shortcut';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 
@@ -126,7 +126,7 @@ export function useTextAlign(config: UseTextAlignConfig) {
     );
     const label = computed(() => TEXT_ALIGN_LABELS[align.value]);
     const icon = computed(() => TEXT_ALIGN_ICONS[align.value]);
-    const shortcutKeys = computed(() => parseShortcutKeys(TEXT_ALIGN_SHORTCUT_KEYS[align.value]));
+    const shortcutKeys = computed(() => getShortcutKeys(TEXT_ALIGN_SHORTCUT_KEYS[align.value]));
 
     const handleTextAlign = () => {
         const success = setTextAlign(editor.value, align.value);
