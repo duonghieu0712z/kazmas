@@ -3,6 +3,10 @@ use std::collections::HashMap;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+#[cfg(test)]
+#[path = "registry_tests.rs"]
+mod tests;
+
 use crate::app::{KazmasError, KazmasResult};
 
 type WindowId = Uuid;
@@ -36,9 +40,52 @@ impl WindowRegistry {
         inner.focused_window
     }
 
+    pub(crate) async fn empty_window(&self) -> Option<WindowId> {
+        let inner = self.inner.lock().await;
+        if let Some(window_id) = inner.focused_window
+            && inner.by_windows.get(&window_id) == Some(&None)
+        {
+            return Some(window_id);
+        }
+
+        inner
+            .by_windows
+            .iter()
+            .find_map(|(window_id, project_id)| project_id.is_none().then_some(*window_id))
+    }
+
     pub(crate) async fn set_focus(&self, window_id: Option<WindowId>) {
         let mut inner = self.inner.lock().await;
         inner.focused_window = window_id;
+    }
+
+    pub(crate) async fn claim_empty_window(
+        &self,
+        window_id: WindowId,
+        project_id: ProjectId,
+    ) -> KazmasResult<bool> {
+        let mut inner = self.inner.lock().await;
+        if inner.by_windows.get(&window_id) != Some(&None) {
+            return Ok(false);
+        }
+
+        if let Some(opened_window_id) = inner.by_projects.get(&project_id) {
+            return Err(KazmasError::AlreadyExists(format!(
+                "world {project_id} is already opened in window {opened_window_id}"
+            )));
+        }
+
+        inner.by_windows.insert(window_id, Some(project_id));
+        inner.by_projects.insert(project_id, window_id);
+        Ok(true)
+    }
+
+    pub(crate) async fn release_window_claim(&self, window_id: WindowId, project_id: ProjectId) {
+        let mut inner = self.inner.lock().await;
+        if inner.by_windows.get(&window_id) == Some(&Some(project_id)) {
+            inner.by_windows.insert(window_id, None);
+            inner.by_projects.remove(&project_id);
+        }
     }
 
     pub(crate) async fn register_window(

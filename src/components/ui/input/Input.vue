@@ -26,11 +26,11 @@ const modelValue = useVModel(props, 'modelValue', emits, {
         v-model="modelValue"
         :class="
             cn(
-                'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-8 w-full min-w-0 rounded-sm border bg-transparent px-2 text-sm shadow-xs transition-[color,box-shadow] outline-none',
-                'file:text-foreground file:inline-flex file:h-7.5 file:border-0 file:bg-transparent file:text-sm file:font-medium',
-                'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1.5px]',
-                'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-                'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+                'h-8 w-full min-w-0 rounded-sm border border-input-border bg-transparent px-2 text-sm shadow-xs transition-[color,box-shadow] outline-none selection:bg-input-selection selection:text-input-selection-foreground placeholder:text-input-placeholder',
+                'file:inline-flex file:h-7.5 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
+                'focus-visible:border-focus-ring focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50',
+                'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+                'disabled:pointer-events-none disabled:cursor-not-allowed disabled:text-disabled-foreground! md:text-sm disabled:[&_svg]:text-disabled-foreground!',
                 props.class,
             )
         "

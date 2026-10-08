@@ -12,7 +12,7 @@ const props = defineProps<{
     <ol
         :class="
             cn(
-                'text-muted-foreground flex flex-wrap items-center text-sm wrap-break-word',
+                'flex flex-wrap items-center text-sm wrap-break-word text-muted-foreground',
                 props.class,
             )
         "

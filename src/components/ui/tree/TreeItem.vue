@@ -5,6 +5,7 @@ import type { HTMLAttributes } from 'vue';
 import { ChevronRightIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
 import { injectTreeRootContext, TreeItem, useForwardPropsEmits } from 'reka-ui';
+import { computed } from 'vue';
 
 import { cn } from '@/lib/utils';
 
@@ -57,13 +58,17 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'text-sidebar-accent-foreground relative flex h-6 w-full min-w-0 cursor-pointer items-center pe-2 transition-colors outline-none',
-                    'hover:bg-sidebar-accent/60 focus-visible:bg-sidebar-accent/60 data-selected:bg-sidebar-accent',
-                    'data-disabled:pointer-events-none data-disabled:opacity-50',
+                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs text-tree-item-foreground transition-colors outline-none',
+                    'hover:bg-tree-item-hover hover:text-tree-item-hover-foreground',
+                    'focus-visible:bg-tree-item-hover focus-visible:text-tree-item-hover-foreground',
+                    'active:bg-active active:text-active-foreground',
+                    'data-selected:bg-tree-item-selected data-selected:text-tree-item-selected-foreground',
+                    'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
                     // Indent guide
                     indentGuide && [
                         `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
-                        'before:bg-[repeating-linear-gradient(to_right,var(--sidebar-border)_0,var(--sidebar-border)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
+                        '[--tree-item-guide-color:var(--color-tree-indent-guide)]',
+                        'before:bg-[repeating-linear-gradient(to_right,var(--tree-item-guide-color)_0,var(--tree-item-guide-color)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
                     ],
                 ],
                 props.class,

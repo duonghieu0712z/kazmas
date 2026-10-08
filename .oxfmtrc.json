@@ -1,7 +1,14 @@
 {
     "$schema": "./node_modules/oxfmt/configuration_schema.json",
     "endOfLine": "lf",
-    "ignorePatterns": ["dist/**", "src/generated/**", "src-tauri/gen/**", "src-tauri/target/**"],
+    "ignorePatterns": [
+        "dist/**",
+        "temp/**",
+        ".artifacts/**",
+        "src/generated/**",
+        "src-tauri/gen/**",
+        "src-tauri/target/**"
+    ],
     "jsxSingleQuote": true,
     "printWidth": 100,
     "semi": true,
@@ -20,6 +27,7 @@
         ]
     },
     "sortTailwindcss": {
+        "stylesheet": "src/styles/globals.css",
         "functions": ["clsx", "cn", "cva", "twMerge"]
     },
     "tabWidth": 4,

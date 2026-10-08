@@ -1,5 +1,3 @@
 * text=auto eol=lf
 
-pnpm-lock.yaml linguist-generated=true
-src-tauri/Cargo.lock linguist-generated=true
 src/generated/**/*.ts linguist-generated=true

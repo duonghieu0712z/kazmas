@@ -19,6 +19,12 @@ const WEBVIEW_URL: &str = "index.html";
 const WINDOW_TITLE: &str = "New World";
 const WINDOW_WIDTH: f64 = 1200.0;
 const WINDOW_HEIGHT: f64 = 800.0;
+const WINDOW_MIN_WIDTH: f64 = 420.0;
+const WINDOW_MIN_HEIGHT: f64 = 300.0;
+
+pub(crate) const TITLE_BAR_HEIGHT: f64 = 32.0;
+#[cfg(target_os = "macos")]
+const TRAFFIC_LIGHT_BUTTON_HEIGHT: f64 = 14.0;
 
 pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
@@ -27,12 +33,16 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
     let builder = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(WEBVIEW_URL.into()))
         .title(WINDOW_TITLE)
         .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
         .center();
 
     #[cfg(target_os = "macos")]
     let builder = builder
         .title_bar_style(TitleBarStyle::Overlay)
-        .traffic_light_position(LogicalPosition::new(12, 14))
+        .traffic_light_position(LogicalPosition::new(
+            12.0,
+            TITLE_BAR_HEIGHT - TRAFFIC_LIGHT_BUTTON_HEIGHT,
+        ))
         .hidden_title(true);
 
     #[cfg(not(target_os = "macos"))]
@@ -65,7 +75,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
 
     focus_window(&window)?;
 
-    #[cfg(debug_assertions)]
+    #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     window.open_devtools();
 
     Ok(())
@@ -170,7 +180,7 @@ async fn handle_webview_window_event(
             } else if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
             }
-        }
+        },
         WindowEvent::Destroyed => {
             if Some(window_id) == registry.focused_window().await {
                 registry.set_focus(None).await;
@@ -183,8 +193,8 @@ async fn handle_webview_window_event(
             if let Some(project_id) = registry.unregister_window(window_id).await {
                 project_manager.close_project(project_id).await?;
             }
-        }
-        _ => {}
+        },
+        _ => {},
     }
     Ok(())
 }

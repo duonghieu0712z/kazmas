@@ -28,7 +28,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
     <AlertDialogPortal>
         <AlertDialogOverlay
             :class="[
-                'fixed inset-0 z-50 bg-black/80',
+                'fixed inset-0 z-60 bg-overlay-background',
                 'data-[state=open]:animate-in data-[state=open]:fade-in-0',
                 'data-[state=closed]:animate-out data-[state=closed]:fade-out-0',
             ]"
@@ -38,7 +38,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...$attrs, ...forwarded }"
             :class="
                 cn(
-                    'bg-background z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-sm border p-6 shadow-xs duration-200 sm:max-w-lg',
+                    'z-60 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-md border border-popup-border bg-popup-background p-6 text-popup-foreground shadow-xs duration-200 sm:max-w-lg',
                     'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]',
                     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',

@@ -9,9 +9,18 @@ import { cn } from '@/lib/utils';
 
 import ScrollBar from './ScrollBar.vue';
 
-const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'] }>();
+const props = withDefaults(
+    defineProps<
+        ScrollAreaRootProps & {
+            class?: HTMLAttributes['class'];
+            orientation?: 'vertical' | 'horizontal' | 'both';
+            viewportAsChild?: boolean;
+        }
+    >(),
+    { orientation: 'vertical' },
+);
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'orientation', 'viewportAsChild');
 </script>
 
 <template>
@@ -21,15 +30,21 @@ const delegatedProps = reactiveOmit(props, 'class');
         data-slot="scroll-area"
     >
         <ScrollAreaViewport
+            :as-child="viewportAsChild"
             :class="[
-                'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
-                'focus-visible:ring-ring/50 focus-visible:ring-[1.5px] focus-visible:outline-1',
+                'relative z-0 size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
+                'focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50 focus-visible:outline-1',
+                '[&>div]:grid [&>div]:min-h-full',
             ]"
             data-slot="scroll-area-viewport"
         >
             <slot />
         </ScrollAreaViewport>
-        <ScrollBar />
-        <ScrollAreaCorner />
+        <ScrollBar v-if="orientation === 'vertical' || orientation === 'both'" />
+        <ScrollBar
+            v-if="orientation === 'horizontal' || orientation === 'both'"
+            orientation="horizontal"
+        />
+        <ScrollAreaCorner v-if="orientation === 'both'" />
     </ScrollAreaRoot>
 </template>

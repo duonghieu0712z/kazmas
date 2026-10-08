@@ -1,0 +1,205 @@
+name: Quality Checks
+
+on:
+  workflow_call:
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  frontend-quality:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format
+
+      - name: Check oxlint
+        run: pnpm lint:check:oxlint --format=github
+
+      - name: Check ESLint
+        uses: reviewdog/action-eslint@v1
+        with:
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-check' || 'github-check' }}
+          filter_mode: ${{ github.event_name == 'pull_request' && 'added' || 'nofilter' }}
+          fail_level: error
+          eslint_flags: '. --cache'
+
+      - name: Check application, test and configuration types
+        run: pnpm test:types
+
+      - name: Test frontend with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-coverage
+          path: .artifacts/coverage
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+      - name: Build frontend
+        run: pnpm build-only
+
+  tauri-quality:
+    name: Tauri quality (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup stable Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+          components: clippy
+          cache-workspaces: './src-tauri -> target'
+          rustflags: ''
+
+      - name: Setup nightly rustfmt
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: nightly
+          components: rustfmt
+          override: false
+          cache: false
+          rustflags: ''
+
+      - name: Check formatting
+        uses: actions-rust-lang/rustfmt@v1
+        env:
+          RUSTUP_TOOLCHAIN: nightly
+        with:
+          manifest-path: src-tauri/Cargo.toml
+
+      - name: Check Clippy
+        working-directory: src-tauri
+        env:
+          RUSTUP_TOOLCHAIN: stable
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test Rust
+        working-directory: src-tauri
+        run: cargo test --locked
+
+  ui-tests:
+    name: Browser UI and visual regression (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Test UI
+        run: pnpm test:ui
+
+      - name: Upload UI results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-ui-results-${{ matrix.os }}
+          path: |
+            .artifacts/playwright/results
+            .artifacts/playwright/report
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+  desktop-tests:
+    name: Desktop tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Setup stable Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: stable
+          cache-workspaces: './src-tauri -> target'
+          rustflags: ''
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build test application
+        run: pnpm test:desktop:build
+
+      - name: Test desktop
+        run: pnpm test:desktop
+
+      - name: Upload desktop results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-results-${{ matrix.os }}
+          path: .artifacts/desktop
+          include-hidden-files: true
+          if-no-files-found: ignore

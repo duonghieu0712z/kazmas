@@ -26,10 +26,10 @@ const modelValue = useVModel(props, 'modelValue', emits, {
         v-model="modelValue"
         :class="
             cn(
-                'border-input placeholder:text-muted-foreground dark:bg-input/30 flex field-sizing-content min-h-18 w-full rounded-sm border bg-transparent px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none',
-                'focus-visible:ring-ring/50 focus-visible:border-ring focus-visible:ring-[1.5px]',
-                'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-                'disabled:cursor-not-allowed disabled:opacity-50',
+                'flex field-sizing-content min-h-18 w-full rounded-sm border border-input-border bg-transparent px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-input-placeholder',
+                'focus-visible:border-focus-ring focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50',
+                'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+                'disabled:cursor-not-allowed disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground!',
                 props.class,
             )
         "

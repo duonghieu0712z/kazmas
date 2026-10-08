@@ -37,7 +37,7 @@ onBeforeUnmount(() => {
     <div class="flex">
         <Button
             aria-label="Minimize window"
-            class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
+            class="rounded-none text-muted-foreground focus:text-foreground"
             size="icon"
             variant="ghost"
             @click.stop.prevent="minimizeWindow"
@@ -46,7 +46,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Toggle maximize window"
-            class="[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground rounded-none"
+            class="rounded-none text-muted-foreground focus:text-foreground"
             size="icon"
             variant="ghost"
             @click.prevent="toggleMaximizeWindow"
@@ -56,10 +56,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Close window"
-            :class="[
-                'hover:bg-destructive/90 dark:hover:bg-destructive/90 rounded-none',
-                '[&_svg]:stroke-muted-foreground active:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground hover:[&_svg]:stroke-foreground',
-            ]"
+            class="rounded-none text-muted-foreground hover:bg-destructive focus:text-foreground"
             size="icon"
             variant="ghost"
             @click.prevent="closeWindow"

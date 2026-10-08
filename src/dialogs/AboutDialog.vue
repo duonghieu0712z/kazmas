@@ -30,13 +30,13 @@ onMounted(async () => {
             <div class="relative flex flex-col items-center justify-center overflow-visible">
                 <div
                     :class="[
-                        'font-title inline-block text-7xl',
+                        'inline-block font-title text-7xl',
                         'bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text pr-1.5 pl-4 text-transparent',
                     ]"
                 >
                     {{ appName }}
                 </div>
-                <div class="text-muted-foreground absolute right-0 bottom-0 pr-1.5 text-[10px]">
+                <div class="absolute right-0 bottom-0 pr-1.5 text-[10px] text-muted-foreground">
                     v{{ appVersion }}
                 </div>
             </div>

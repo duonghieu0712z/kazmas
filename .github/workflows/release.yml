@@ -11,6 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Code quality
+    uses: ./.github/workflows/quality-checks.yml
+    permissions:
+      checks: write
+      contents: read
+
   changelog:
     name: Read release changelog
     runs-on: ubuntu-latest
@@ -54,7 +61,8 @@ jobs:
                   .gsub(/[\[\].]/, '')
                   .gsub(/[^a-z0-9 _-]/, '')
                   .gsub(/\s+/, '-')
-                changelog_url = "#{ENV.fetch('GITHUB_SERVER_URL')}/#{ENV.fetch('GITHUB_REPOSITORY')}/blob/#{ref}/CHANGELOG.md##{anchor}"
+                changelog_ref = event_name == 'workflow_dispatch' ? ENV.fetch('GITHUB_SHA') : "v#{heading_name}"
+                changelog_url = "#{ENV.fetch('GITHUB_SERVER_URL')}/#{ENV.fetch('GITHUB_REPOSITORY')}/blob/#{changelog_ref}/CHANGELOG.md##{anchor}"
                 body = "#{match[:body].strip}\n\n[See full changelog](#{changelog_url})"
               end
             rescue StandardError
@@ -72,7 +80,9 @@ jobs:
 
   build:
     name: Build release (${{ matrix.label }})
-    needs: changelog
+    needs:
+      - changelog
+      - quality
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -97,22 +107,19 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
+      - name: Setup stable Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
-          workspaces: './src-tauri -> target'
+          toolchain: stable
+          cache-workspaces: './src-tauri -> target'
+          rustflags: ''
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
@@ -127,4 +134,4 @@ jobs:
           releaseBody: ${{ needs.changelog.outputs.body }}
           releaseDraft: true
           prerelease: false
-          releaseAssetNamePattern: '[name]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'
+          releaseAssetNamePattern: '[mainBinaryName]-v[version]-${{ matrix.platform }}-[arch][setup][ext]'

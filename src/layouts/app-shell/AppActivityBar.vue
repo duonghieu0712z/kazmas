@@ -47,7 +47,6 @@ const { open, setOpen } = useSidebar();
 
 function selectItem(item: ItemType) {
     if (open.value && props.modelValue === item.name) {
-        emit('update:modelValue', null);
         setOpen(false);
         return;
     }
@@ -61,33 +60,25 @@ onMounted(() => {
         emit('update:modelValue', ITEMS[0]!.name);
     }
 });
-
-watch(open, (val) => {
-    if (!val) {
-        emit('update:modelValue', null);
-    }
-});
 </script>
 
 <template>
     <Sidebar
-        class="bg-background text-foreground w-(--sidebar-width-icon) items-center border-r"
+        class="w-[calc(var(--sidebar-width-icon)+1px)] border-y border-r border-sidebar-border bg-activity-bar-background text-sidebar-foreground"
+        :class="open ? 'border-y-transparent' : 'border-transparent'"
         collapsible="none"
     >
         <SidebarContent>
-            <SidebarMenu class="gap-0">
+            <SidebarMenu class="p-1">
                 <SidebarMenuItem
                     v-for="item in ITEMS"
                     :key="item.name"
-                    class="flex size-(--sidebar-width-icon) items-center justify-center"
+                    class="flex w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        :class="[
-                            'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
-                        ]"
-                        :is-active="modelValue === item.name"
+                        class="size-8 justify-center p-0 text-activity-bar-foreground"
+                        :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"
                     >
@@ -99,18 +90,15 @@ watch(open, (val) => {
         </SidebarContent>
 
         <SidebarFooter class="gap-0 p-0">
-            <SidebarMenu class="gap-0">
+            <SidebarMenu class="p-1">
                 <SidebarMenuItem
                     v-for="item in FOOTERS"
                     :key="item.name"
-                    class="flex size-(--sidebar-width-icon) items-center justify-center"
+                    class="flex w-full items-center justify-center"
                 >
                     <SidebarMenuButton
                         always-show-tooltip
-                        :class="[
-                            'size-8 justify-center p-0 hover:bg-transparent active:bg-transparent',
-                            'hover:[&>svg]:stroke-sidebar-accent-foreground active:[&>svg]:stroke-accent-foreground data-[active=true]:[&>svg]:stroke-accent-foreground [&>svg]:stroke-sidebar-ring',
-                        ]"
+                        class="size-8 justify-center p-0 text-activity-bar-foreground"
                         :tooltip="item.name"
                     >
                         <component :is="item.icon" />

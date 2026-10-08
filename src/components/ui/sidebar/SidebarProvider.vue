@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import type { HTMLAttributes, Ref } from 'vue';
 
-import { defaultDocument, useEventListener, useMediaQuery, useVModel } from '@vueuse/core';
+import { useEventListener, useMediaQuery, useVModel } from '@vueuse/core';
 import { TooltipProvider } from 'reka-ui';
 import { computed, ref } from 'vue';
 
 import { cn } from '@/lib/utils';
 
+import { sidebarPreferences } from './storage';
 import {
     provideSidebarContext,
-    SIDEBAR_COOKIE_MAX_AGE,
-    SIDEBAR_COOKIE_NAME,
     SIDEBAR_KEYBOARD_SHORTCUT,
     SIDEBAR_WIDTH,
     SIDEBAR_WIDTH_ICON,
@@ -23,7 +22,7 @@ const props = withDefaults(
         class?: HTMLAttributes['class'];
     }>(),
     {
-        defaultOpen: !defaultDocument?.cookie.includes(`${SIDEBAR_COOKIE_NAME}=false`),
+        defaultOpen: sidebarPreferences.value.open,
         open: undefined,
     },
 );
@@ -41,10 +40,8 @@ const open = useVModel(props, 'open', emits, {
 }) as Ref<boolean>;
 
 function setOpen(value: boolean) {
-    open.value = value; // emits('update:open', value)
-
-    // This sets the cookie to keep the sidebar state.
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${open.value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+    open.value = value;
+    sidebarPreferences.value.open = open.value;
 }
 
 function setOpenMobile(value: boolean) {
@@ -88,7 +85,7 @@ provideSidebarContext({
         <div
             :class="
                 cn(
-                    'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',
+                    'group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-background',
                     props.class,
                 )
             "

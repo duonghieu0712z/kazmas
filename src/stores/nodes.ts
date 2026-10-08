@@ -3,6 +3,7 @@ import type { NodeDto } from '@/generated/bindings';
 import { defineStore } from 'pinia';
 
 import { commands } from '@/generated/bindings';
+import { useWorkspaceStore } from '@/stores/workspace';
 
 export type NodeTreeDto = NodeDto & {
     children: NodeTreeDto[];
@@ -17,7 +18,10 @@ export const useNodeStore = defineStore('nodes', () => {
     const manuscriptNodes = shallowRef<NodeDto[]>([]);
     const wikiNodes = shallowRef<NodeDto[]>([]);
     const selectedNodeId = shallowRef<string | null>(null);
-    const openedNodeId = shallowRef<string | null>(null);
+
+    const workspace = useWorkspaceStore();
+    const openedNodeId = computed(() => workspace.activeDocumentId);
+    let revision = 0;
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
@@ -26,45 +30,71 @@ export const useNodeStore = defineStore('nodes', () => {
             return [];
         }
 
-        return (
-            buildNodePath('Manuscript', manuscriptNodes.value, openedNodeId.value) ??
-            buildNodePath('Wiki', wikiNodes.value, openedNodeId.value) ??
-            []
-        );
+        return getNodePath(openedNodeId.value);
     });
 
+    const getNode = (nodeId: string) =>
+        manuscriptNodes.value.find((node) => node.id === nodeId) ??
+        wikiNodes.value.find((node) => node.id === nodeId);
+
+    const getNodePath = (nodeId: string) => {
+        return (
+            buildNodePath('Manuscript', manuscriptNodes.value, nodeId) ??
+            buildNodePath('Wiki', wikiNodes.value, nodeId) ??
+            []
+        );
+    };
+
+    watch(
+        openedNodeId,
+        (nodeId) => {
+            if (nodeId) {
+                selectedNodeId.value = nodeId;
+            }
+        },
+        { flush: 'sync' },
+    );
+
     const clearNodes = () => {
+        revision += 1;
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
-        openedNodeId.value = null;
+        workspace.resetWorld();
     };
 
-    function selectNode(node: NodeDto) {
+    const selectNode = (node: NodeDto) => {
         selectedNodeId.value = node.id;
-    }
+    };
 
-    function openNode(node: NodeDto) {
+    const openNode = (node: NodeDto) => {
         if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
-            openedNodeId.value = node.id;
+            workspace.openDocument(node.id);
         }
-    }
+    };
 
     const loadManuscripts = async () => {
+        const currentRevision = revision;
         const result = await commands.getManuscripts();
-        if (result.status === 'ok') {
+        if (currentRevision === revision && result.status === 'ok') {
             manuscriptNodes.value = result.data ?? [];
+            return manuscriptNodes.value;
         }
+        return false;
     };
 
     const loadWikis = async () => {
+        const currentRevision = revision;
         const result = await commands.getWikis();
-        if (result.status === 'ok') {
+        if (currentRevision === revision && result.status === 'ok') {
             wikiNodes.value = result.data ?? [];
+            return wikiNodes.value;
         }
+        return false;
     };
 
     const reloadNodes = async () => {
+        revision += 1;
         await Promise.all([loadManuscripts(), loadWikis()]);
     };
 
@@ -74,6 +104,8 @@ export const useNodeStore = defineStore('nodes', () => {
         selectedNodeId,
         openedNodeId,
         openedNodePath,
+        getNode,
+        getNodePath,
         clearNodes,
         selectNode,
         openNode,
@@ -109,8 +141,13 @@ function buildNodePath(rootName: string, nodes: NodeDto[], nodeId: string) {
     }
 
     const path: NodePathItem[] = [];
+    const visited = new Set<string>();
     let node = nodeMap.get(nodeId);
     while (node) {
+        if (visited.has(node.id)) {
+            return;
+        }
+        visited.add(node.id);
         path.unshift({
             id: node.id,
             name: node.name,

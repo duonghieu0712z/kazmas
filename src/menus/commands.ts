@@ -5,6 +5,8 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { closeWorld, newWorld, openWorld } from '@/actions/world';
 import { openAboutDialog } from '@/dialogs';
 import { commands, events } from '@/generated/bindings';
+import { flushDocumentSaves } from '@/lib/document-saves';
+import { useWorldStore } from '@/stores/world';
 import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
@@ -29,7 +31,7 @@ const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
 };
 
 async function createFolder() {
-    await commands.createFolder(null, null);
+    await commands.createFolder(null, null, 'manuscript');
 }
 
 async function createManuscriptEntry() {
@@ -48,6 +50,10 @@ export async function executeMenuCommand(command: MenuCommand) {
     }
 
     if (backendMenuCommands.has(command)) {
+        if (['save', 'save-as', 'close-window', 'quit'].includes(command)) {
+            await useWorldStore().waitForCreations();
+            await flushDocumentSaves();
+        }
         await commands.executeMenuCommand(command);
         return;
     }

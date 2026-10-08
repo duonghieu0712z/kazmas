@@ -3,19 +3,24 @@ import type { Editor } from '@tiptap/vue-3';
 import type { HTMLAttributes } from 'vue';
 
 import { EditorContent } from '@tiptap/vue-3';
+import { toRef } from 'vue';
 
 import { cn } from '@/lib/utils';
 
-import { useTiptapEditor } from './utils';
+import { useTiptapEditor } from './context';
 
 const props = defineProps<{
     editor?: Editor;
     class?: HTMLAttributes['class'];
 }>();
 
-const editor = useTiptapEditor(toRef(props, 'editor'));
+const { editor } = useTiptapEditor(toRef(props, 'editor'));
 </script>
 
 <template>
-    <EditorContent :class="cn('min-h-full w-full', props.class)" :editor="editor" />
+    <EditorContent
+        :class="cn('min-h-full w-full select-auto', props.class)"
+        data-slot="editor-content"
+        :editor="editor ?? undefined"
+    />
 </template>

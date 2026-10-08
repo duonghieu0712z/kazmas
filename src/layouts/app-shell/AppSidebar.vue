@@ -1,28 +1,34 @@
 <script setup lang="ts">
 import type { ActivityBarItemName } from './AppActivityBar.vue';
 
-import { NodeTreeView } from '@/features/node-tree';
+import { useSessionStorage } from '@vueuse/core';
+
+import { useSidebar } from '@/components/ui/sidebar';
+import { NodeTreeSidebar } from '@/features/node-tree';
 import { useNodeStore } from '@/stores/nodes';
 
 import AppActivityBar from './AppActivityBar.vue';
 
-const activeActivity = ref<ActivityBarItemName | null>(null);
+const activeActivity = useSessionStorage<ActivityBarItemName | null>('node_view_activity', null);
 const nodes = useNodeStore();
+const { open } = useSidebar();
 </script>
 
 <template>
-    <Sidebar
-        :class="[
-            'top-(--title-bar-height) bottom-(--status-bar-height) h-[calc(100svh-var(--title-bar-height)-var(--status-bar-height))]',
-            'overflow-hidden *:data-[sidebar=sidebar]:flex-row',
-        ]"
-        collapsible="icon"
-    >
-        <AppActivityBar v-model="activeActivity" />
+    <Sidebar class="min-h-0 w-full flex-row overflow-hidden" collapsible="none">
+        <AppActivityBar v-model="activeActivity" class="shrink-0" />
 
-        <Sidebar class="hidden min-w-0 flex-1 overflow-hidden md:flex" collapsible="none">
-            <NodeTreeView v-if="activeActivity === 'Manuscript'" :tree="nodes.manuscripts" />
-            <NodeTreeView v-else-if="activeActivity === 'Wiki'" :tree="nodes.wikis" />
+        <Sidebar v-show="open" class="min-h-0 min-w-0 flex-1 overflow-hidden" collapsible="none">
+            <NodeTreeSidebar
+                :active="activeActivity === 'Manuscript'"
+                section="Manuscript"
+                :tree="nodes.manuscripts"
+            />
+            <NodeTreeSidebar
+                :active="activeActivity === 'Wiki'"
+                section="Wiki"
+                :tree="nodes.wikis"
+            />
         </Sidebar>
     </Sidebar>
 </template>

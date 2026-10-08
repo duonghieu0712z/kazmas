@@ -18,13 +18,13 @@ impl ProjectManager {
     pub(crate) async fn world_manifest(&self, id: Uuid) -> KazmasResult<Option<WorldManifest>> {
         let projects = self.projects.lock().await;
         let project = projects.get(&id);
-        let manifest = project.map(|p| p.manifest());
+        let manifest = project.map(WorldProject::manifest);
         Ok(manifest)
     }
 
     pub(crate) async fn project_dirty(&self, id: Uuid) -> Option<bool> {
         let projects = self.projects.lock().await;
-        projects.get(&id).map(|project| project.is_dirty())
+        projects.get(&id).map(WorldProject::is_dirty)
     }
 
     pub(crate) async fn open_project_or_close<T>(
@@ -150,10 +150,14 @@ impl ProjectManager {
         id: Uuid,
         name: Option<&str>,
         parent_id: Option<Uuid>,
+        parent_kind: NodeKind,
     ) -> KazmasResult<Option<Uuid>> {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(&id) {
-            return project.create_folder(name, parent_id).await.map(Some);
+            return project
+                .create_folder(name, parent_id, parent_kind)
+                .await
+                .map(Some);
         }
         Ok(None)
     }

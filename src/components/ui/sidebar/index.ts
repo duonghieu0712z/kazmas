@@ -33,24 +33,188 @@ export { default as SidebarProvider } from './SidebarProvider.vue';
 export { default as SidebarRail } from './SidebarRail.vue';
 export { default as SidebarSeparator } from './SidebarSeparator.vue';
 export { default as SidebarTrigger } from './SidebarTrigger.vue';
+export { sidebarPreferences } from './storage';
 export { useSidebar } from './utils';
+
+export const sidebarGapVariants = cva(
+    'relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
+    {
+        variants: {
+            side: {
+                left: null,
+                right: 'rotate-180',
+            },
+            variant: {
+                sidebar: null,
+                floating: null,
+                inset: null,
+            },
+            collapsible: {
+                offcanvas: null,
+                icon: null,
+                none: null,
+            },
+            state: {
+                expanded: null,
+                collapsed: null,
+            },
+        },
+        compoundVariants: [
+            {
+                collapsible: 'offcanvas',
+                state: 'collapsed',
+                class: 'w-0',
+            },
+            {
+                variant: 'sidebar',
+                collapsible: 'icon',
+                state: 'collapsed',
+                class: 'w-(--sidebar-width-icon)',
+            },
+            {
+                variant: ['floating', 'inset'],
+                collapsible: 'icon',
+                state: 'collapsed',
+                class: 'w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]',
+            },
+        ],
+    },
+);
+
+export const sidebarContainerVariants = cva(
+    'fixed inset-y-0 z-20 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
+    {
+        variants: {
+            side: {
+                left: 'left-0',
+                right: 'right-0',
+            },
+            variant: {
+                sidebar: null,
+                floating: 'p-2',
+                inset: 'p-2',
+            },
+            collapsible: {
+                offcanvas: null,
+                icon: null,
+                none: null,
+            },
+            state: {
+                expanded: null,
+                collapsed: null,
+            },
+        },
+        compoundVariants: [
+            {
+                side: 'left',
+                collapsible: 'offcanvas',
+                state: 'collapsed',
+                class: '-left-(--sidebar-width)',
+            },
+            {
+                side: 'right',
+                collapsible: 'offcanvas',
+                state: 'collapsed',
+                class: '-right-(--sidebar-width)',
+            },
+            {
+                variant: 'sidebar',
+                collapsible: 'icon',
+                state: 'collapsed',
+                class: 'w-(--sidebar-width-icon)',
+            },
+            {
+                variant: ['floating', 'inset'],
+                collapsible: 'icon',
+                state: 'collapsed',
+                class: 'w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]',
+            },
+            {
+                variant: 'sidebar',
+                side: 'left',
+                class: 'border-r',
+            },
+            {
+                variant: 'sidebar',
+                side: 'right',
+                class: 'border-l',
+            },
+        ],
+    },
+);
+
+export const sidebarRailVariants = cva(
+    [
+        'absolute inset-y-0 z-30 hidden w-4 -translate-x-1/2 transition-all ease-linear sm:flex',
+        'after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 hover:after:bg-border',
+    ],
+    {
+        variants: {
+            side: {
+                left: '-right-4',
+                right: 'left-0',
+            },
+            state: {
+                expanded: null,
+                collapsed: null,
+            },
+            collapsible: {
+                offcanvas: 'translate-x-0 after:left-full hover:bg-background',
+                icon: null,
+                none: null,
+            },
+        },
+        compoundVariants: [
+            {
+                side: 'left',
+                state: 'expanded',
+                class: 'cursor-w-resize',
+            },
+            {
+                side: 'right',
+                state: 'expanded',
+                class: 'cursor-e-resize',
+            },
+            {
+                side: 'left',
+                state: 'collapsed',
+                class: 'cursor-e-resize',
+            },
+            {
+                side: 'right',
+                state: 'collapsed',
+                class: 'cursor-w-resize',
+            },
+            {
+                side: 'left',
+                collapsible: 'offcanvas',
+                class: '-right-2',
+            },
+            {
+                side: 'right',
+                collapsible: 'offcanvas',
+                class: '-left-2',
+            },
+        ],
+    },
+);
 
 export const sidebarMenuButtonVariants = cva(
     [
-        'peer/menu-button ring-sidebar-ring flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
-        'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground',
-        'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
-        'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium',
-        'data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground',
+        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-focus-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
+        'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
+        'disabled:pointer-events-none disabled:text-disabled-foreground! aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! aria-disabled:[&_svg]:text-disabled-foreground!',
+        'data-[active=true]:bg-selected data-[active=true]:font-medium data-[active=true]:text-selected-foreground',
+        'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',
         `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
     ],
     {
         variants: {
             variant: {
-                default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                default: 'hover:bg-hover hover:text-hover-foreground',
                 outline:
-                    'bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
+                    'bg-background shadow-[0_0_0_1px_var(--border)] hover:bg-hover hover:text-hover-foreground',
             },
             size: {
                 default: 'h-8',

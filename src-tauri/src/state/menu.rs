@@ -18,7 +18,6 @@ impl MenuManager {
     pub(crate) async fn init(&self, app: &AppHandle) -> KazmasResult<()> {
         app.on_menu_event(|app, event| {
             let app = app.clone();
-            let event = event.clone();
             spawn(async move {
                 let window_id = get_state(&app).registry().focused_window().await;
                 if let Err(error) = handle_menu_event(&app, event, window_id).await {
@@ -81,7 +80,7 @@ fn set_native_item_enabled(item: &MenuItemKind<Wry>, enabled: bool) -> KazmasRes
         MenuItemKind::Submenu(item) => item.set_enabled(enabled)?,
         MenuItemKind::Check(item) => item.set_enabled(enabled)?,
         MenuItemKind::Icon(item) => item.set_enabled(enabled)?,
-        MenuItemKind::Predefined(_) => {}
+        MenuItemKind::Predefined(_) => {},
     }
     Ok(())
 }

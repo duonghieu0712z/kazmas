@@ -1,0 +1,192 @@
+import type { Editor } from '@tiptap/vue-3';
+import type { Component, MaybeRefOrGetter } from 'vue';
+
+import {
+    Heading1Icon,
+    Heading2Icon,
+    Heading3Icon,
+    Heading4Icon,
+    Heading5Icon,
+    Heading6Icon,
+} from '@lucide/vue';
+import { isNodeSelection, isTextSelection } from '@tiptap/vue-3';
+import { computed, toValue } from 'vue';
+
+import { useTiptapEditor } from '@/components/tiptap/editor';
+import {
+    findNodePosition,
+    isNodeInSchema,
+    isNodeTypeSelected,
+    isValidPosition,
+    parseShortcutKeys,
+} from '@/lib/tiptap';
+
+export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type HeadingNodeLevel = Exclude<HeadingLevel, 0>;
+
+export interface UseHeadingConfig {
+    editor?: MaybeRefOrGetter<Editor | undefined>;
+    level: MaybeRefOrGetter<HeadingNodeLevel>;
+    hideWhenUnavailable?: MaybeRefOrGetter<boolean | undefined>;
+    onToggled?: () => void;
+}
+
+export const HEADING_ICONS = {
+    1: Heading1Icon,
+    2: Heading2Icon,
+    3: Heading3Icon,
+    4: Heading4Icon,
+    5: Heading5Icon,
+    6: Heading6Icon,
+} satisfies Record<HeadingNodeLevel, Component>;
+
+export const HEADING_SHORTCUT_KEYS = {
+    1: 'mod+alt+1',
+    2: 'mod+alt+2',
+    3: 'mod+alt+3',
+    4: 'mod+alt+4',
+    5: 'mod+alt+5',
+    6: 'mod+alt+6',
+} satisfies Record<HeadingNodeLevel, string>;
+
+export function canToggleHeading(editor: Editor | null, level?: HeadingNodeLevel, turnInto = true) {
+    if (
+        !editor?.isEditable ||
+        !isNodeInSchema(editor, 'heading') ||
+        isNodeTypeSelected(editor, ['image'])
+    ) {
+        return false;
+    }
+
+    if (!turnInto) {
+        return level === undefined
+            ? editor.can().setNode('heading')
+            : editor.can().setNode('heading', { level });
+    }
+
+    try {
+        const { selection } = editor.view.state;
+        if (selection.empty || isTextSelection(selection)) {
+            const pos = findNodePosition(editor, { node: selection.$anchor.node(1) })?.pos;
+            if (!isValidPosition(pos)) {
+                return false;
+            }
+        }
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export function isHeadingActive(
+    editor: Editor | null,
+    level?: HeadingNodeLevel | HeadingNodeLevel[],
+) {
+    if (!editor) {
+        return false;
+    }
+
+    if (Array.isArray(level)) {
+        return level.some((l) => editor.isActive('heading', { level: l }));
+    }
+
+    return level === undefined ? editor.isActive('heading') : editor.isActive('heading', { level });
+}
+
+export function toggleHeading(
+    editor: Editor | null,
+    level: HeadingNodeLevel | HeadingNodeLevel[],
+): boolean {
+    if (!editor?.isEditable) {
+        return false;
+    }
+
+    const levels = Array.isArray(level) ? level : [level];
+    const toggleLevel = levels.find((l) => canToggleHeading(editor, l));
+
+    if (toggleLevel === undefined) {
+        return false;
+    }
+
+    try {
+        const { selection } = editor.view.state;
+        let chain = editor.chain().focus();
+        if (isNodeSelection(selection)) {
+            const firstChild = selection.node.firstChild?.firstChild;
+            const lastChild = selection.node.lastChild?.lastChild;
+
+            const from = firstChild ? selection.from + firstChild.nodeSize : selection.from + 1;
+            const to = lastChild ? selection.to - lastChild.nodeSize : selection.to - 1;
+
+            chain = chain.setTextSelection({ from, to }).clearNodes();
+        }
+
+        const isActive = levels.some((l) => editor.isActive('heading', { level: l }));
+        const toggle = isActive
+            ? chain.setNode('paragraph')
+            : chain.setNode('heading', { level: toggleLevel });
+
+        return toggle.run();
+    } catch {
+        return false;
+    }
+}
+
+export function shouldShowHeadingButton(
+    editor: Editor | null,
+    level: HeadingNodeLevel | HeadingNodeLevel[] | undefined,
+    hideWhenUnavailable: boolean,
+    editable = editor?.isEditable ?? false,
+): boolean {
+    if (!editor || !isNodeInSchema(editor, 'heading')) {
+        return false;
+    }
+
+    if (hideWhenUnavailable && editable && !editor.isActive('code')) {
+        if (Array.isArray(level)) {
+            return level.some((l) => canToggleHeading(editor, l));
+        }
+        return canToggleHeading(editor, level);
+    }
+
+    return true;
+}
+
+export function useHeading(config: UseHeadingConfig) {
+    const { editor, isEditable } = useTiptapEditor(config.editor);
+    const level = computed(() => toValue(config.level));
+
+    const canToggle = computed(
+        () => isEditable.value && canToggleHeading(editor.value, level.value),
+    );
+    const isActive = computed(() => isHeadingActive(editor.value, level.value));
+    const isVisible = computed(() =>
+        shouldShowHeadingButton(
+            editor.value,
+            level.value,
+            toValue(config.hideWhenUnavailable) ?? false,
+            isEditable.value,
+        ),
+    );
+    const label = computed(() => `Heading ${level.value}`);
+    const icon = computed(() => HEADING_ICONS[level.value]);
+    const shortcutKeys = computed(() => parseShortcutKeys(HEADING_SHORTCUT_KEYS[level.value]));
+
+    const handleHeading = () => {
+        const success = toggleHeading(editor.value, level.value);
+        if (success) {
+            config.onToggled?.();
+        }
+        return success;
+    };
+
+    return {
+        isVisible,
+        isActive,
+        canToggle,
+        label,
+        icon,
+        shortcutKeys,
+        handleHeading,
+    };
+}

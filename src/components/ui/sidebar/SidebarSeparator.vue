@@ -11,7 +11,7 @@ const props = defineProps<{
 
 <template>
     <Separator
-        :class="cn('bg-sidebar-border mx-2 w-auto', props.class)"
+        :class="cn('mx-2 w-auto bg-sidebar-border', props.class)"
         data-sidebar="separator"
         data-slot="sidebar-separator"
     >
