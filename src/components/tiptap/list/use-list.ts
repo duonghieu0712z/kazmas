@@ -11,8 +11,8 @@ import {
     isNodeInSchema,
     isNodeTypeSelected,
     isValidPosition,
-    parseShortcutKeys,
 } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 export type ListType = 'bulletList' | 'orderedList' | 'taskList';
 

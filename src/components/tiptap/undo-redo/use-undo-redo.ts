@@ -5,7 +5,8 @@ import { RedoIcon, UndoIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeTypeSelected } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 export type UndoRedoAction = 'undo' | 'redo';
 
