@@ -61,6 +61,11 @@ async fn handle_backend_command(
         MenuCommand::NewWindow => spawn_window(app, None).await?,
         #[cfg(not(target_os = "macos"))]
         MenuCommand::Quit => app.exit(0),
+        MenuCommand::ReloadWindow => {
+            if let Some(window) = current_window(app, window_id) {
+                window.reload()?;
+            }
+        },
         MenuCommand::Save => save_world(app, window_id).await?,
         MenuCommand::SaveAs => save_world_as(app, window_id).await?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),

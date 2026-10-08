@@ -15,6 +15,7 @@ const backendMenuCommands = new Set<MenuCommand>([
     'close-window',
     'new-window',
     'quit',
+    'reload-window',
     'save',
     'save-as',
     'toggle-devtools',

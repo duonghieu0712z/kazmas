@@ -50,7 +50,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_prevent_default::debug());
+        .plugin(tauri_plugin_prevent_default::with_flags(
+            tauri_plugin_prevent_default::Flags::debug()
+                | tauri_plugin_prevent_default::Flags::CONTEXT_MENU,
+        ));
 
     #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     let builder = builder.plugin(devtools_plugin);
