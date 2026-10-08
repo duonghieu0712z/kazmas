@@ -15,7 +15,7 @@ const delegatedProps = reactiveOmit(props, 'class');
 <template>
     <ContextMenuSeparator
         v-bind="delegatedProps"
-        :class="cn('-mx-1 my-1 h-px bg-popup-border', props.class)"
+        :class="cn('my-1 h-px bg-popup-border', props.class)"
         data-slot="context-menu-separator"
     />
 </template>

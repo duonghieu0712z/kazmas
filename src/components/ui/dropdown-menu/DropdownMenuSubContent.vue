@@ -15,12 +15,18 @@ defineOptions({
     inheritAttrs: false,
 });
 
-const props = defineProps<
-    DropdownMenuSubContentProps & {
-        class?: HTMLAttributes['class'];
-        portal?: DropdownMenuPortalProps;
-    }
->();
+const props = withDefaults(
+    defineProps<
+        DropdownMenuSubContentProps & {
+            class?: HTMLAttributes['class'];
+            portal?: DropdownMenuPortalProps;
+        }
+    >(),
+    {
+        sideOffset: 2,
+        alignOffset: 0,
+    },
+);
 const emits = defineEmits<DropdownMenuSubContentEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'portal');

@@ -22,7 +22,7 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm text-menu-item-foreground outline-hidden select-none data-inset:pl-8',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs text-menu-item-foreground outline-hidden select-none data-inset:pl-6',
                 'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground',
                 'data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
                 'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
@@ -34,6 +34,6 @@ const forwardedProps = useForwardProps(delegatedProps);
         data-slot="context-menu-sub-trigger"
     >
         <slot />
-        <ChevronRightIcon class="ml-auto" />
+        <ChevronRightIcon class="ml-auto size-3.5" />
     </ContextMenuSubTrigger>
 </template>

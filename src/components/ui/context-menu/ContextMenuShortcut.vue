@@ -10,7 +10,12 @@ const props = defineProps<{
 
 <template>
     <span
-        :class="cn('ml-auto text-xs tracking-widest text-popup-muted-foreground', props.class)"
+        :class="
+            cn(
+                'ml-auto text-xs tracking-widest text-popup-muted-foreground in-data-disabled:text-disabled-foreground',
+                props.class,
+            )
+        "
         data-slot="context-menu-shortcut"
     >
         <slot />
