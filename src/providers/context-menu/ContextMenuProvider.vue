@@ -2,19 +2,15 @@
 import type { ContextMenuProviderEntry } from './use-context-menu-provider';
 
 import { useEventListener } from '@vueuse/core';
-import { computed, onBeforeUnmount, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, shallowRef, toValue, watch } from 'vue';
 
 import {
     ContextMenu,
     ContextMenuContent,
-    ContextMenuItem,
     ContextMenuSeparator,
-    ContextMenuShortcut,
 } from '@/components/ui/context-menu';
-import { executeMenuCommand } from '@/menus';
+import { ContextMenuItemRenderer, createCommandMenuItem } from '@/menus';
 import { useDialogProvider } from '@/providers/dialog';
-import { isMac } from '@/utils/platform';
-import { parseShortcutKeys } from '@/utils/shortcut';
 
 import { useContextMenuProvider } from './use-context-menu-provider';
 
@@ -35,7 +31,8 @@ const reference = computed(() => {
 
 let interactedOutside = false;
 const isDevelopment = import.meta.env.DEV;
-const reloadShortcut = parseShortcutKeys('mod+r').join(isMac() ? '' : '+');
+const reloadItem = createCommandMenuItem('reload-window');
+const items = computed(() => toValue(renderedMenu.value?.items) ?? []);
 
 if (isDevelopment) {
     useEventListener(document, 'contextmenu', (event) => {
@@ -97,20 +94,15 @@ onBeforeUnmount(() => closeContextMenu());
             @close-auto-focus="restoreFocus"
             @interact-outside="handleInteractOutside"
         >
-            <component
-                :is="renderedMenu.component"
-                v-if="renderedMenu.component"
-                :key="renderedMenu.key"
-                :payload="renderedMenu.payload"
-                @close:context-menu="closeContextMenu(renderedMenu.key)"
+            <ContextMenuItemRenderer
+                v-for="item in items"
+                :key="`${renderedMenu.key}:${item.id}`"
+                :item="item"
             />
 
             <template v-if="isDevelopment">
-                <ContextMenuSeparator v-if="renderedMenu.component" />
-                <ContextMenuItem @select="executeMenuCommand('reload-window')">
-                    Reload Window
-                    <ContextMenuShortcut>{{ reloadShortcut }}</ContextMenuShortcut>
-                </ContextMenuItem>
+                <ContextMenuSeparator v-if="items.length" />
+                <ContextMenuItemRenderer :item="reloadItem" />
             </template>
         </ContextMenuContent>
     </ContextMenu>

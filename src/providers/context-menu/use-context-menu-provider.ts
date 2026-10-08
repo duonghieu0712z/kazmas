@@ -1,24 +1,17 @@
+import type { MenuItem } from '@/menus';
+import type { MaybeRefOrGetter } from 'vue';
+
 import { createGlobalState } from '@vueuse/core';
-import { markRaw, shallowReadonly, shallowRef } from 'vue';
+import { shallowReadonly, shallowRef } from 'vue';
 
-type ContextMenuComponent = new (...args: any[]) => { $props: any };
-
-type ContextMenuPayload<TComponent extends ContextMenuComponent> =
-    InstanceType<TComponent>['$props'] extends { payload: infer TPayload }
-        ? { payload: TPayload }
-        : InstanceType<TComponent>['$props'] extends { payload?: infer TPayload }
-          ? { payload?: TPayload }
-          : { payload?: never };
-
-type ContextMenuOpenEntry<TComponent extends ContextMenuComponent> = {
+export type ContextMenuOpenEntry = {
     event: MouseEvent;
-    component: TComponent;
-} & ContextMenuPayload<TComponent>;
+    items?: MaybeRefOrGetter<readonly MenuItem[]>;
+};
 
 export type ContextMenuProviderEntry = {
     key: number;
-    component?: ContextMenuComponent;
-    payload?: unknown;
+    items: MaybeRefOrGetter<readonly MenuItem[]>;
     position: { x: number; y: number };
     owner: HTMLElement | null;
     focusTarget: HTMLElement | null;
@@ -28,11 +21,7 @@ function createContextMenuProvider() {
     const activeContextMenu = shallowRef<ContextMenuProviderEntry | null>(null);
     let nextKey = 0;
 
-    const openContextMenu = <TComponent extends ContextMenuComponent>(
-        entry:
-            | ContextMenuOpenEntry<TComponent>
-            | { event: MouseEvent; component?: never; payload?: never },
-    ) => {
+    const openContextMenu = (entry: ContextMenuOpenEntry) => {
         const { event } = entry;
         event.preventDefault();
         event.stopPropagation();
@@ -55,8 +44,7 @@ function createContextMenuProvider() {
 
         activeContextMenu.value = {
             key: ++nextKey,
-            component: entry.component ? markRaw(entry.component) : undefined,
-            payload: entry.payload,
+            items: entry.items ?? [],
             position,
             owner,
             focusTarget,

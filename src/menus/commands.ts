@@ -1,4 +1,5 @@
-import type { MenuCommand } from '@/generated/bindings';
+import type { MenuCommand } from './types';
+import type { MenuCommand as RustMenuCommand } from '@/generated/bindings';
 
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
@@ -11,7 +12,7 @@ import { isMac } from '@/utils/platform';
 
 type MenuCommandHandler = () => Promise<void>;
 
-const backendMenuCommands = new Set<MenuCommand>([
+const backendMenuCommands = new Set<RustMenuCommand>([
     'close-window',
     'new-window',
     'quit',
@@ -21,7 +22,7 @@ const backendMenuCommands = new Set<MenuCommand>([
     'toggle-devtools',
 ]);
 
-const frontendMenuHandlers: Partial<Record<MenuCommand, MenuCommandHandler>> = {
+const frontendMenuHandlers: Partial<Record<RustMenuCommand, MenuCommandHandler>> = {
     about: openAboutDialog,
     'close-world': closeWorld,
     'new-folder': createFolder,
@@ -44,6 +45,11 @@ async function createWikiEntry() {
 }
 
 export async function executeMenuCommand(command: MenuCommand) {
+    if (typeof command !== 'string') {
+        await command.execute();
+        return;
+    }
+
     const handler = frontendMenuHandlers[command];
     if (handler) {
         await handler();

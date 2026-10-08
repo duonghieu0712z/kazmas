@@ -1,2 +1,6 @@
 export { default as ContextMenuProvider } from './ContextMenuProvider.vue';
-export { useContextMenuProvider, type ContextMenuProviderEntry } from './use-context-menu-provider';
+export {
+    useContextMenuProvider,
+    type ContextMenuOpenEntry,
+    type ContextMenuProviderEntry,
+} from './use-context-menu-provider';
