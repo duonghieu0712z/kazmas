@@ -14,7 +14,7 @@ import {
     setParagraph,
 } from '@/components/tiptap/paragraph';
 import { isNodeInSchema } from '@/lib/tiptap';
-import { parseShortcutKeys } from '@/utils/shortcut';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 import {
     canToggleHeading,
@@ -109,8 +109,8 @@ export function useHeadings(config: UseHeadingsConfig) {
 
     const getLabel = (level: HeadingLevel) => (level === 0 ? PARAGRAPH_LABEL : `Heading ${level}`);
     const getIcon = (level: HeadingLevel) => (level === 0 ? TypeIcon : HEADING_ICONS[level]);
-    const getShortcutKeys = (level: HeadingLevel) =>
-        parseShortcutKeys(level === 0 ? PARAGRAPH_SHORTCUT_KEY : HEADING_SHORTCUT_KEYS[level]);
+    const getHeadingShortcutKeys = (level: HeadingLevel) =>
+        getShortcutKeys(level === 0 ? PARAGRAPH_SHORTCUT_KEY : HEADING_SHORTCUT_KEYS[level]);
     const canSetLevel = (level: HeadingLevel) => canSetHeadingLevel(editor.value, level);
     const handleLevel = (level: HeadingLevel) => {
         const success = setHeadingLevel(editor.value, level);
@@ -129,7 +129,7 @@ export function useHeadings(config: UseHeadingsConfig) {
         levels,
         getLabel,
         getIcon,
-        getShortcutKeys,
+        getHeadingShortcutKeys,
         canSetLevel,
         handleLevel,
     };

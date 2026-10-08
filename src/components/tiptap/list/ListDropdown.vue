@@ -39,7 +39,7 @@ const {
     types,
     getLabel,
     getIcon,
-    getShortcutKeys,
+    getListShortcutKeys,
     canToggleType,
     handleList,
 } = useLists({
@@ -108,7 +108,7 @@ function handleCloseAutoFocus(event: Event) {
                 <component :is="getIcon(type)" class="text-inherit" />
                 <span>{{ getLabel(type) }}</span>
                 <KbdGroup v-if="showShortcut" class="ml-auto">
-                    <Kbd v-for="key in getShortcutKeys(type)" :key="key">{{ key }}</Kbd>
+                    <Kbd v-for="key in getListShortcutKeys(type)" :key="key">{{ key }}</Kbd>
                 </KbdGroup>
             </DropdownMenuItem>
         </DropdownMenuContent>

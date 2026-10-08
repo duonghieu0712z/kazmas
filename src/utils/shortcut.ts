@@ -35,9 +35,13 @@ export function formatShortcutKey(key: string, isMac: boolean, capitalize = true
     return capitalize ? key.replace(/^./, (c) => c.toUpperCase()) : key;
 }
 
-export function parseShortcutKeys(shortcutKeys: string, delimiter = '+', capitalize = true) {
+export function getShortcutKeys(shortcutKeys: string, delimiter = '+', capitalize = true) {
     const mac = isMac();
     return shortcutKeys
         .split(delimiter)
         .map((key) => formatShortcutKey(key.trim(), mac, capitalize));
+}
+
+export function formatShortcutText(shortcut: string) {
+    return getShortcutKeys(shortcut).join(isMac() ? '' : '+');
 }

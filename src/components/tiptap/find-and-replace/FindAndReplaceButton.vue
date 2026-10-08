@@ -7,7 +7,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
-import { parseShortcutKeys } from '@/utils/shortcut';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 import {
     FIND_AND_REPLACE_LABEL,
@@ -32,7 +32,7 @@ const emits = defineEmits<{
 const { editor } = useTiptapEditor(() => props.editor);
 const isAvailable = computed(() => isFindAndReplaceAvailable(editor.value));
 const isVisible = computed(() => shouldShowFindAndReplace(editor.value, props.hideWhenUnavailable));
-const shortcutKeys = parseShortcutKeys(FIND_AND_REPLACE_SHORTCUT_KEY);
+const shortcutKeys = getShortcutKeys(FIND_AND_REPLACE_SHORTCUT_KEY);
 const delegatedProps = reactiveOmit(
     props,
     'editor',

@@ -39,7 +39,7 @@ const {
     levels,
     getLabel,
     getIcon,
-    getShortcutKeys,
+    getHeadingShortcutKeys,
     canSetLevel,
     handleLevel,
 } = useHeadings({
@@ -109,7 +109,7 @@ function handleCloseAutoFocus(event: Event) {
                 <component :is="getIcon(level)" class="text-inherit" />
                 <span>{{ getLabel(level) }}</span>
                 <KbdGroup v-if="showShortcut" class="ml-auto">
-                    <Kbd v-for="key in getShortcutKeys(level)" :key="key">{{ key }}</Kbd>
+                    <Kbd v-for="key in getHeadingShortcutKeys(level)" :key="key">{{ key }}</Kbd>
                 </KbdGroup>
             </DropdownMenuItem>
         </DropdownMenuContent>

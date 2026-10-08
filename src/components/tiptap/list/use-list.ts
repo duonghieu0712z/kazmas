@@ -12,7 +12,7 @@ import {
     isNodeTypeSelected,
     isValidPosition,
 } from '@/lib/tiptap';
-import { parseShortcutKeys } from '@/utils/shortcut';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export type ListType = 'bulletList' | 'orderedList' | 'taskList';
 
@@ -140,7 +140,7 @@ export function useList(config: UseListConfig) {
     );
     const label = computed(() => LIST_LABELS[type.value]);
     const icon = computed(() => LIST_ICONS[type.value]);
-    const shortcutKeys = computed(() => parseShortcutKeys(LIST_SHORTCUT_KEYS[type.value]));
+    const shortcutKeys = computed(() => getShortcutKeys(LIST_SHORTCUT_KEYS[type.value]));
 
     const handleList = () => {
         const success = toggleList(editor.value, type.value);

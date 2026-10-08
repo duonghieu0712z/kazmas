@@ -19,7 +19,7 @@ import {
     isNodeTypeSelected,
     isValidPosition,
 } from '@/lib/tiptap';
-import { parseShortcutKeys } from '@/utils/shortcut';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type HeadingNodeLevel = Exclude<HeadingLevel, 0>;
@@ -170,7 +170,7 @@ export function useHeading(config: UseHeadingConfig) {
     );
     const label = computed(() => `Heading ${level.value}`);
     const icon = computed(() => HEADING_ICONS[level.value]);
-    const shortcutKeys = computed(() => parseShortcutKeys(HEADING_SHORTCUT_KEYS[level.value]));
+    const shortcutKeys = computed(() => getShortcutKeys(HEADING_SHORTCUT_KEYS[level.value]));
 
     const handleHeading = () => {
         const success = toggleHeading(editor.value, level.value);
