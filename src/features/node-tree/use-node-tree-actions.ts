@@ -2,25 +2,14 @@ import type { NodeTreeDto } from '@/stores/nodes';
 
 import { commands } from '@/generated/bindings';
 import { flushDocumentSaves } from '@/lib/document-saves';
-import { useDialogProvider } from '@/providers/dialog';
 import { useNodeStore } from '@/stores/nodes';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { useWorldStore } from '@/stores/world';
-
-import RenameNodeDialog from './RenameNodeDialog.vue';
-
-type RenameNodeDialogComponent = new () => {
-    $props: {
-        payload: { nodeId: string; worldId: string; name: string };
-        'onResolve:dialog'?: (name: string) => void;
-    };
-};
 
 export function useNodeTreeActions(tree: () => NodeTreeDto[]) {
     const nodes = useNodeStore();
     const world = useWorldStore();
     const workspace = useWorkspaceStore();
-    const { openDialog } = useDialogProvider();
     const busy = ref(false);
     const error = ref('');
 
@@ -37,18 +26,6 @@ export function useNodeTreeActions(tree: () => NodeTreeDto[]) {
             nodes.selectNode(node);
             nodes.openNode(node);
         }
-    };
-
-    const rename = async (id: string) => {
-        const node = nodes.getNode(id);
-        const worldId = world.manifest?.id;
-        if (!node || !worldId || busy.value) {
-            return;
-        }
-        await openDialog<RenameNodeDialogComponent>({
-            component: RenameNodeDialog as unknown as RenameNodeDialogComponent,
-            payload: { nodeId: id, worldId, name: node.name },
-        });
     };
 
     const trash = async (id: string) => {
@@ -101,7 +78,7 @@ export function useNodeTreeActions(tree: () => NodeTreeDto[]) {
         }
     };
 
-    return { open, rename, trash, busy, error };
+    return { open, trash, busy, error };
 }
 
 function findNode(tree: NodeTreeDto[], id: string): NodeTreeDto | undefined {

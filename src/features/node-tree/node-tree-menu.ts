@@ -9,7 +9,7 @@ export type NodeTreeMenuActions = {
         parentId: string | null,
         entryKind?: NodeDraft['entryKind'],
     ) => void;
-    rename: (id: string) => Promise<void>;
+    rename: (id: string) => void;
     trash: (id: string) => Promise<void>;
 };
 
@@ -29,11 +29,17 @@ export function createNodeTreeMenuItems(
                 text: 'New File',
                 enabled: canCreate,
                 items: [
-                    item('new-manuscript', 'New Manuscript', () =>
-                        actions.create('entry', parentId, 'manuscript_entry'),
+                    item(
+                        'new-manuscript',
+                        'New Manuscript',
+                        () => actions.create('entry', parentId, 'manuscript_entry'),
+                        { enabled: canCreate },
                     ),
-                    item('new-wiki', 'New Wiki', () =>
-                        actions.create('entry', parentId, 'wiki_entry'),
+                    item(
+                        'new-wiki',
+                        'New Wiki',
+                        () => actions.create('entry', parentId, 'wiki_entry'),
+                        { enabled: canCreate },
                     ),
                 ],
             },
@@ -42,12 +48,12 @@ export function createNodeTreeMenuItems(
             }),
         );
     } else {
-        items.push(item('open', 'Open', () => actions.open(node.id)));
+        items.push(item('open', 'Open', () => actions.open(node.id), { enabled: canModify }));
     }
     if (node) {
         items.push(
             { type: 'separator', id: 'node-edit-separator' },
-            item('rename', 'Rename', async () => await actions.rename(node.id), {
+            item('rename', 'Rename', () => actions.rename(node.id), {
                 enabled: canModify,
             }),
             { type: 'separator', id: 'node-trash-separator' },

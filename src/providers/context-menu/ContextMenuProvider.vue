@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import type { ContextMenuProviderEntry } from './use-context-menu-provider';
 
-import { useEventListener } from '@vueuse/core';
 import { computed, onBeforeUnmount, shallowRef, toValue, watch } from 'vue';
 
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuSeparator,
-} from '@/components/ui/context-menu';
-import { ContextMenuItemRenderer, createCommandMenuItem } from '@/menus';
+import { ContextMenu, ContextMenuContent } from '@/components/ui/context-menu';
+import { ContextMenuItemRenderer } from '@/menus';
 import { useDialogProvider } from '@/providers/dialog';
 
 import { useContextMenuProvider } from './use-context-menu-provider';
 
-const { activeContextMenu, openContextMenu, closeContextMenu } = useContextMenuProvider();
+const { activeContextMenu, closeContextMenu } = useContextMenuProvider();
 const { activeDialog } = useDialogProvider();
 
 const renderedMenu = shallowRef<ContextMenuProviderEntry | null>(null);
@@ -30,17 +25,7 @@ const reference = computed(() => {
 });
 
 let interactedOutside = false;
-const isDevelopment = import.meta.env.DEV;
-const reloadItem = createCommandMenuItem('reload-window');
 const items = computed(() => toValue(renderedMenu.value?.items) ?? []);
-
-if (isDevelopment) {
-    useEventListener(document, 'contextmenu', (event) => {
-        if (!event.defaultPrevented) {
-            openContextMenu({ event });
-        }
-    });
-}
 
 watch(
     activeContextMenu,
@@ -104,11 +89,6 @@ onBeforeUnmount(() => closeContextMenu());
                 :key="`${renderedMenu.key}:${item.id}`"
                 :item="item"
             />
-
-            <template v-if="isDevelopment">
-                <ContextMenuSeparator v-if="items.length" />
-                <ContextMenuItemRenderer :item="reloadItem" />
-            </template>
         </ContextMenuContent>
     </ContextMenu>
 </template>

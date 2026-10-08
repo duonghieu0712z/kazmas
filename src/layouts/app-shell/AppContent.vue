@@ -22,7 +22,8 @@ const world = useWorldStore();
 const { openContextMenu } = useContextMenuProvider();
 const { activeTab } = storeToRefs(workspace);
 const tabContents = new Map<string, TabContent>();
-const closingTabs = new Set<string>();
+const closingTabs = shallowReactive(new Set<string>());
+const closingBatch = ref(false);
 
 const tabs = computed<ContentTab[]>(() =>
     workspace.tabs.map((tab) => {
@@ -51,21 +52,29 @@ function showTabContextMenu(event: MouseEvent, tab: ContentTab) {
     if (!target) {
         return;
     }
+    const isCurrentTarget = () =>
+        !!worldId && world.manifest?.id === worldId && workspace.tabs.includes(target);
+    const canClose = () => isCurrentTarget() && !closingBatch.value && closingTabs.size === 0;
+    const canReveal = () => isCurrentTarget() && !!nodes.getNode(target.nodeId);
     openContextMenu({
         event,
-        items: () =>
-            createWorkspaceTabMenuItems(tabs.value, tab.id, !!nodes.getNode(target.nodeId), {
+        items: () => {
+            if (!isCurrentTarget()) {
+                return [];
+            }
+            return createWorkspaceTabMenuItems(tabs.value, tab.id, canReveal(), canClose(), {
                 close: async (ids) => {
-                    if (world.manifest?.id === worldId && workspace.tabs.includes(target)) {
+                    if (canClose()) {
                         await closeTabs(ids);
                     }
                 },
                 reveal: () => {
-                    if (world.manifest?.id === worldId && workspace.tabs.includes(target)) {
+                    if (canReveal()) {
                         nodes.revealInTree(target.nodeId);
                     }
                 },
-            }),
+            });
+        },
     });
 }
 
@@ -105,15 +114,23 @@ async function closeTab(id: string): Promise<boolean> {
 }
 
 async function closeTabs(ids: readonly string[]) {
+    if (closingBatch.value || closingTabs.size > 0) {
+        return;
+    }
     const worldId = world.manifest?.id;
     const targets = workspace.tabs.filter((tab) => ids.includes(tab.id));
-    for (const tab of targets) {
-        if (world.manifest?.id !== worldId) {
-            return;
+    closingBatch.value = true;
+    try {
+        for (const tab of targets) {
+            if (world.manifest?.id !== worldId) {
+                return;
+            }
+            if (workspace.tabs.includes(tab) && !(await closeTab(tab.id))) {
+                return;
+            }
         }
-        if (workspace.tabs.includes(tab) && !(await closeTab(tab.id))) {
-            return;
-        }
+    } finally {
+        closingBatch.value = false;
     }
 }
 </script>

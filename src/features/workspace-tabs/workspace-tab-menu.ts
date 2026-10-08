@@ -10,6 +10,7 @@ export function createWorkspaceTabMenuItems(
     tabs: readonly WorkspaceTab[],
     tabId: string,
     canRevealInTree: boolean,
+    canClose: boolean,
     actions: WorkspaceTabMenuActions,
 ): MenuItem[] {
     const index = tabs.findIndex((tab) => tab.id === tabId);
@@ -17,24 +18,25 @@ export function createWorkspaceTabMenuItems(
         return [];
     }
     const items: MenuItem[] = [
-        item('close-tab', 'Close Tab', async () => await actions.close([tabId])),
+        item('close-tab', 'Close Tab', async () => await actions.close([tabId]), canClose),
         item(
             'close-other-tabs',
             'Close Other Tabs',
             async () =>
                 await actions.close(tabs.filter((tab) => tab.id !== tabId).map((tab) => tab.id)),
-            tabs.length > 1,
+            canClose && tabs.length > 1,
         ),
         item(
             'close-tabs-to-right',
             'Close Tabs to the Right',
             async () => await actions.close(tabs.slice(index + 1).map((tab) => tab.id)),
-            index < tabs.length - 1,
+            canClose && index < tabs.length - 1,
         ),
         item(
             'close-all-tabs',
             'Close All Tabs',
             async () => await actions.close(tabs.map((tab) => tab.id)),
+            canClose,
         ),
     ];
     if (canRevealInTree) {
