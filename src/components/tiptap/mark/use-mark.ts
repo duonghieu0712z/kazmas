@@ -13,7 +13,8 @@ import {
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isMarkInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isMarkInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 export type MarkType =
     | 'bold'

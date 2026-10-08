@@ -7,7 +7,7 @@ import { reactiveOmit } from '@vueuse/core';
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Toggle } from '@/components/ui/toggle';
-import { parseShortcutKeys } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 import {
     FIND_AND_REPLACE_LABEL,

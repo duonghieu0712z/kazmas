@@ -13,7 +13,8 @@ import {
     PARAGRAPH_SHORTCUT_KEY,
     setParagraph,
 } from '@/components/tiptap/paragraph';
-import { isNodeInSchema, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 import {
     canToggleHeading,

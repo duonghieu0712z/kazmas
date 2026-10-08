@@ -18,8 +18,8 @@ import {
     isNodeInSchema,
     isNodeTypeSelected,
     isValidPosition,
-    parseShortcutKeys,
 } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 export type HeadingLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type HeadingNodeLevel = Exclude<HeadingLevel, 0>;

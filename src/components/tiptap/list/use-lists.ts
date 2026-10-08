@@ -6,7 +6,8 @@ import { ListIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 import {
     canToggleList,

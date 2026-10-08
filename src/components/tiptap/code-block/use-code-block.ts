@@ -6,7 +6,8 @@ import { isNodeSelection } from '@tiptap/vue-3';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { parseShortcutKeys } from '@/utils/shortcut';
 
 export interface UseCodeBlockConfig {
     editor?: MaybeRefOrGetter<Editor | undefined>;
