@@ -31,12 +31,11 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         v-bind="forwarded"
         :class="
             cn(
-                'relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none',
-                'focus:bg-accent focus:text-accent-foreground',
-                'data-[variant=destructive]:text-destructive-foreground data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/40 data-[variant=destructive]:focus:text-destructive-foreground',
-                `data-[variant=destructive]:*:[svg]:text-destructive-foreground! [&_svg:not([class*='text-'])]:text-muted-foreground`,
-                'data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8',
-                `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+                'relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-menu-item-foreground outline-hidden select-none',
+                'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground',
+                'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! data-inset:pl-8 disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
+                'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive',
+                `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-menu-item-icon-foreground data-[variant=destructive]:*:[svg]:text-destructive!`,
                 props.class,
             )
         "
