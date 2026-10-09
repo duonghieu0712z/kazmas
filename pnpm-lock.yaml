@@ -324,8 +324,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(expect-webdriverio@6.1.0)(supports-color@8.1.1)(tsx@4.23.15)(webdriverio@9.32.0(supports-color@8.1.1))
       '@wdio/types':
-        specifier: ^9.32.0
-        version: 9.32.0
+        specifier: ^10.0.0
+        version: 10.0.0
       eslint:
         specifier: ^10.12.0
         version: 10.12.0(jiti@2.7.0)(supports-color@8.1.1)
