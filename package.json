@@ -89,7 +89,7 @@
         "@wdio/spec-reporter": "^10.0.0",
         "@wdio/tauri-plugin": "^1.4.0",
         "@wdio/tauri-service": "^1.4.0",
-        "@wdio/types": "^9.32.0",
+        "@wdio/types": "^10.0.0",
         "eslint": "^10.12.0",
         "eslint-plugin-oxlint": "^1.87.0",
         "eslint-plugin-vue": "^10.11.1",
