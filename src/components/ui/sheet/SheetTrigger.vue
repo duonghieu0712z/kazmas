@@ -3,7 +3,7 @@ import type { DialogTriggerProps } from 'reka-ui';
 
 import { DialogTrigger } from 'reka-ui';
 
-const props = defineProps<DialogTriggerProps>();
+const props = withDefaults(defineProps<DialogTriggerProps>(), { as: 'div' });
 </script>
 
 <template>

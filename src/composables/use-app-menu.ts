@@ -1,7 +1,6 @@
 import type { MenuItemIndex } from '@/menus';
 
 import { createGlobalState } from '@vueuse/core';
-import { reactive, watchEffect } from 'vue';
 
 import { createMenu, createMenuIndex } from '@/menus';
 import { useWorldStore } from '@/stores/world';

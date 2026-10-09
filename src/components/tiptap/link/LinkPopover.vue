@@ -3,6 +3,7 @@ import type { LinkPopoverProps } from '.';
 
 import { CornerDownLeftIcon, ExternalLinkIcon, Trash2Icon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { ref, watch } from 'vue';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const {
     url,
     canSet,
@@ -109,7 +111,7 @@ function handleOpenAutoFocus(event: Event) {
                 />
             </InputGroup>
 
-            <ButtonGroup class="gap-0.5" spacing="spaced">
+            <ButtonGroup spacing="spaced">
                 <TooltipWrapper>
                     <Button
                         aria-label="Apply link"

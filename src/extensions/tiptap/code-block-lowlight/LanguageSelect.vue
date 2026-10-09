@@ -2,6 +2,7 @@
 import type { CodeBlockLanguageOption } from './languages';
 
 import { CheckIcon, ChevronsUpDownIcon } from '@lucide/vue';
+import { computed, ref } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,7 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const selectedLanguage = computed({
     get: () => props.currentLanguage ?? 'plaintext',
     set: (language: string) => {
@@ -93,7 +95,7 @@ const selectedLabel = computed(
                     '[&_[data-slot=scroll-area-viewport]>div]:pr-2',
                 ]"
             >
-                <ComboboxEmpty class="px-2 py-6 text-editor-toolbar-foreground">
+                <ComboboxEmpty class="px-2 text-editor-toolbar-foreground">
                     No languages found
                 </ComboboxEmpty>
 
@@ -102,7 +104,7 @@ const selectedLabel = computed(
                     :key="language.value"
                     :class="[
                         'h-6 w-full min-w-0 justify-start gap-1 px-1.5 text-xs font-normal whitespace-nowrap',
-                        'text-editor-toolbar-foreground data-highlighted:text-hover-foreground data-[state=checked]:text-menu-item-selected-foreground',
+                        'text-editor-toolbar-foreground data-highlighted:text-hover-foreground',
                     ]"
                     :text-value="`${language.label} ${language.value}`"
                     :value="language.value"

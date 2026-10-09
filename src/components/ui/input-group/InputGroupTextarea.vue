@@ -13,7 +13,7 @@ const props = defineProps<{
     <Textarea
         :class="
             cn(
-                'flex-1 resize-none rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0',
+                'flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0',
                 props.class,
             )
         "

@@ -3,6 +3,7 @@ import type { RubyTextPopoverProps } from '.';
 
 import { CornerDownLeftIcon, Trash2Icon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { ref, watch } from 'vue';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const {
     annotation,
     canSet,
@@ -100,7 +102,7 @@ function handleOpenAutoFocus(event: Event) {
                 />
             </InputGroup>
 
-            <ButtonGroup class="gap-0.5" spacing="spaced">
+            <ButtonGroup spacing="spaced">
                 <TooltipWrapper>
                     <Button
                         aria-label="Apply ruby text"

@@ -37,11 +37,14 @@ const world = useWorldStore();
 const nodes = useNodeStore();
 const actions = useNodeTreeActions(() => props.tree);
 const { rename, start: startRename, cancel: cancelRename, submit: submitRename } = useRenameNode();
+
 const draft = ref<NodeDraft | null>(null);
 const creating = ref(false);
+
 const canCreate = computed(
     () => world.hasWorld && !draft.value && !rename.value && !creating.value && !actions.busy.value,
 );
+
 const { openContextMenu } = useContextMenuProvider();
 
 function showMenu(event: MouseEvent, node?: NodeTreeDto) {

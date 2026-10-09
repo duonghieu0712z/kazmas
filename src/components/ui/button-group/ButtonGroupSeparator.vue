@@ -10,15 +10,14 @@ import { cn } from '@/lib/utils';
 const props = withDefaults(defineProps<SeparatorProps & { class?: HTMLAttributes['class'] }>(), {
     orientation: 'vertical',
 });
+
 const delegatedProps = reactiveOmit(props, 'class');
 </script>
 
 <template>
     <Separator
         v-bind="delegatedProps"
-        :class="
-            cn('relative self-stretch bg-border data-[orientation=vertical]:h-auto', props.class)
-        "
+        :class="cn('relative self-stretch data-[orientation=vertical]:h-auto', props.class)"
         data-slot="button-group-separator"
         :orientation="orientation"
     />

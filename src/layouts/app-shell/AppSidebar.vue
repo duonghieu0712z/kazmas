@@ -10,6 +10,7 @@ import { useNodeStore } from '@/stores/nodes';
 import AppActivityBar from './AppActivityBar.vue';
 
 const activeActivity = useSessionStorage<ActivityBarItemName | null>('node_view_activity', null);
+
 const nodes = useNodeStore();
 const { open } = useSidebar();
 

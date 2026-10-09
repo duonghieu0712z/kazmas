@@ -22,7 +22,9 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs text-menu-item-foreground outline-hidden select-none data-inset:pl-6',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs outline-hidden select-none',
+                'text-menu-item-foreground',
+                'data-inset:pl-6',
                 'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground',
                 'data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
                 'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',

@@ -55,6 +55,7 @@ const delegatedProps = reactiveOmit(
     'expandOnChevronOnly',
     'indentGuide',
 );
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 provideTreeContext({

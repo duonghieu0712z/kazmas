@@ -3,8 +3,6 @@ import type { WorkspaceTab } from '.';
 
 import { XIcon } from '@lucide/vue';
 
-import { TooltipTrigger } from '@/components/ui/tooltip';
-
 defineProps<{
     tab: WorkspaceTab;
     hideLeftCorner?: boolean;
@@ -32,7 +30,8 @@ const emit = defineEmits<{
             <TabsTrigger
                 as="div"
                 :class="[
-                    'group/tab relative h-full min-w-36 flex-none justify-start gap-2 rounded-t-md rounded-b-none border-0 border-r border-tabs-trigger-border px-3 pr-9 text-xs font-normal',
+                    'group/tab relative h-full min-w-36 flex-none justify-start gap-2 rounded-t-md rounded-b-none border-0 border-r px-3 pr-9 text-xs font-normal',
+                    'border-tabs-trigger-border',
                     'aria-selected:z-10 aria-selected:border-r-transparent aria-selected:shadow-none',
                     dragged && 'text-muted-foreground!',
 
@@ -58,7 +57,8 @@ const emit = defineEmits<{
                 <Button
                     :aria-label="`Close ${tab.title}`"
                     :class="[
-                        'invisible absolute top-1/2 right-2 z-20 size-5 -translate-y-1/2 text-tabs-close-foreground',
+                        'invisible absolute top-1/2 right-2 z-20 size-5 -translate-y-1/2',
+                        'text-tabs-close-foreground',
                         'hover:bg-tabs-close-hover hover:text-tabs-close-hover-foreground',
                         'group-focus-within/tab:visible group-hover/tab:visible group-aria-selected/tab:visible',
                     ]"

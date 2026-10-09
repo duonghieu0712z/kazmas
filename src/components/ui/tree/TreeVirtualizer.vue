@@ -3,6 +3,7 @@ import type { FlattenedItem, TreeVirtualizerProps } from 'reka-ui';
 
 import { reactiveOmit } from '@vueuse/core';
 import { injectTreeRootContext, Slot, TreeVirtualizer, useForwardProps } from 'reka-ui';
+import { nextTick, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -19,8 +20,10 @@ type VirtualSlot = Parameters<
 >[0];
 
 const delegatedProps = reactiveOmit(props, 'scrollToKey', 'scrollToVersion', 'textContent');
+
 const forwarded = useForwardProps(delegatedProps);
 const tree = injectTreeRootContext();
+
 let virtualizer: VirtualSlot['virtualizer'] | undefined;
 defineSlots<{
     default(props: Omit<VirtualSlot, 'item'> & { item: FlattenedItem<T> }): unknown;

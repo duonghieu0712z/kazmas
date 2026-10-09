@@ -13,7 +13,8 @@ export { default as InputGroupTextarea } from './InputGroupTextarea.vue';
 
 export const inputGroupAddonVariants = cva(
     [
-        'flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none',
+        'flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none',
+        'text-muted-foreground',
         "group-data-[disabled=true]/input-group:text-disabled-foreground! [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
     ],
     {
@@ -21,10 +22,16 @@ export const inputGroupAddonVariants = cva(
             align: {
                 'inline-start': 'order-first pl-2 has-[>button]:-ml-1 has-[>kbd]:ml-[-0.15rem]',
                 'inline-end': 'order-last pr-2 has-[>button]:-mr-1 has-[>kbd]:mr-[-0.15rem]',
-                'block-start':
-                    'order-first w-full justify-start px-2 pt-1 group-has-[>[data-slot=input-group-control]]/input-group:pt-2.5 [.border-b]:pb-3',
-                'block-end':
-                    'order-last w-full justify-start px-2 pb-1 group-has-[>[data-slot=input-group-control]]/input-group:pb-2.5 [.border-t]:pt-3',
+                'block-start': [
+                    'order-first w-full justify-start px-2 pt-1',
+                    'group-has-[>[data-slot=input-group-control]]/input-group:pt-2.5',
+                    '[.border-b]:pb-3',
+                ],
+                'block-end': [
+                    'order-last w-full justify-start px-2 pb-1',
+                    'group-has-[>[data-slot=input-group-control]]/input-group:pb-2.5',
+                    '[.border-t]:pt-3',
+                ],
             },
         },
         defaultVariants: {

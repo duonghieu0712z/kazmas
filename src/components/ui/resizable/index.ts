@@ -21,8 +21,11 @@ export const resizableHandleVariants = cva(
             orientation: {
                 horizontal:
                     'after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2',
-                vertical:
-                    'w-full after:absolute after:inset-y-0 after:left-0 after:h-1 after:w-full after:-translate-y-1/2 [&>div]:rotate-90',
+                vertical: [
+                    'w-full',
+                    'after:absolute after:inset-y-0 after:left-0 after:h-1 after:w-full after:-translate-y-1/2',
+                    '[&>div]:rotate-90',
+                ],
             },
         },
         compoundVariants: [

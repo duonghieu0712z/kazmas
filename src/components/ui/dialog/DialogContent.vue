@@ -36,7 +36,9 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...$attrs, ...forwarded }"
             :class="
                 cn(
-                    'fixed z-60 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-md border border-popup-border bg-popup-background p-6 text-popup-foreground shadow-xs duration-200 sm:max-w-lg',
+                    'fixed z-60 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-md border p-6 shadow-xs duration-200',
+                    'border-popup-border bg-popup-background text-popup-foreground',
+                    'sm:max-w-lg',
                     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'top-[50%] left-[50%]',
@@ -50,7 +52,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             <DialogClose
                 v-if="showCloseButton"
                 :class="[
-                    'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none',
+                    'absolute top-4 right-4 rounded-xs opacity-70 transition-opacity',
+                    'ring-offset-background',
+                    'hover:opacity-100',
+                    'disabled:pointer-events-none',
                     'focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:outline-hidden',
                     'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
                     `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,

@@ -7,7 +7,10 @@ import { ComboboxTrigger, useForwardProps } from 'reka-ui';
 
 import { cn } from '@/lib/utils';
 
-const props = defineProps<ComboboxTriggerProps & { class?: HTMLAttributes['class'] }>();
+const props = withDefaults(
+    defineProps<ComboboxTriggerProps & { class?: HTMLAttributes['class'] }>(),
+    { as: 'div' },
+);
 
 const delegatedProps = reactiveOmit(props, 'class');
 

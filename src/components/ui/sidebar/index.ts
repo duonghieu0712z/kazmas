@@ -82,7 +82,11 @@ export const sidebarGapVariants = cva(
 );
 
 export const sidebarContainerVariants = cva(
-    'fixed inset-y-0 z-20 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
+    [
+        'w-(--sidebar-width)',
+        'fixed inset-y-0 z-20 hidden h-svh transition-[left,right,width] duration-200 ease-linear',
+        'md:flex',
+    ],
     {
         variants: {
             side: {
@@ -145,7 +149,8 @@ export const sidebarContainerVariants = cva(
 
 export const sidebarRailVariants = cva(
     [
-        'absolute inset-y-0 z-30 hidden w-4 -translate-x-1/2 transition-all ease-linear sm:flex',
+        'absolute inset-y-0 z-30 hidden w-4 -translate-x-1/2 transition-all ease-linear',
+        'sm:flex',
         'after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 hover:after:bg-border',
     ],
     {
@@ -201,13 +206,19 @@ export const sidebarRailVariants = cva(
 
 export const sidebarMenuButtonVariants = cva(
     [
-        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm ring-focus-ring outline-hidden transition-[width,height,padding] focus-visible:ring-2 [&>span:last-child]:truncate',
+        'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-sm p-2 text-left text-sm outline-hidden transition-[width,height,padding]',
+        'ring-focus-ring',
+        'focus-visible:ring-2',
+        '[&>span:last-child]:truncate',
         'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
-        'disabled:pointer-events-none disabled:text-disabled-foreground! aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! aria-disabled:[&_svg]:text-disabled-foreground!',
+        'disabled:pointer-events-none disabled:text-disabled-foreground!',
+        'aria-disabled:pointer-events-none aria-disabled:text-disabled-foreground!',
+        'disabled:[&_svg]:text-disabled-foreground!',
+        'aria-disabled:[&_svg]:text-disabled-foreground!',
         'data-[active=true]:bg-selected data-[active=true]:font-medium data-[active=true]:text-selected-foreground',
         'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
         'group-has-data-[sidebar=menu-action]/menu-item:pr-8',
-        `[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4`,
+        "[&>svg]:shrink-0 [&>svg:not([class*='size-'])]:size-4",
     ],
     {
         variants: {

@@ -64,8 +64,11 @@ onMounted(() => {
 
 <template>
     <Sidebar
-        class="w-[calc(var(--sidebar-width-icon)+1px)] border-y border-r border-sidebar-border bg-activity-bar-background text-sidebar-foreground"
-        :class="open ? 'border-y-transparent' : 'border-transparent'"
+        :class="[
+            'w-[calc(var(--sidebar-width-icon)+1px)]',
+            'border-y border-r border-sidebar-border bg-activity-bar-background',
+            open ? 'border-y-transparent' : 'border-transparent',
+        ]"
         collapsible="none"
     >
         <SidebarContent>

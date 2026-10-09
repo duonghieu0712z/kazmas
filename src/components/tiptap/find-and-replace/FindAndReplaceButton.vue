@@ -3,6 +3,7 @@ import type { FindAndReplaceButtonProps } from '.';
 
 import { SearchIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { computed } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
@@ -30,9 +31,12 @@ const emits = defineEmits<{
 }>();
 
 const { editor } = useTiptapEditor(() => props.editor);
+
 const isAvailable = computed(() => isFindAndReplaceAvailable(editor.value));
 const isVisible = computed(() => shouldShowFindAndReplace(editor.value, props.hideWhenUnavailable));
+
 const shortcutKeys = getShortcutKeys(FIND_AND_REPLACE_SHORTCUT_KEY);
+
 const delegatedProps = reactiveOmit(
     props,
     'editor',

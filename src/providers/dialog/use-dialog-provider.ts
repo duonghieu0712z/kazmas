@@ -1,4 +1,5 @@
 import { createGlobalState } from '@vueuse/core';
+import { markRaw, readonly, shallowRef } from 'vue';
 
 type DialogComponent = new (...args: any[]) => { $props: any };
 

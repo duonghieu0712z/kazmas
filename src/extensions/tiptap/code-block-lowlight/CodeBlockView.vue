@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { NodeViewContent, NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3';
+import { computed } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
 import { cn } from '@/lib/utils';
@@ -9,6 +10,7 @@ import { getCodeBlockLanguageOptions } from './languages';
 import LanguageSelect from './LanguageSelect.vue';
 
 const props = defineProps(nodeViewProps);
+
 const { isEditable } = useTiptapEditor();
 
 const codeBlockAttributes = computed(() => ({
@@ -41,7 +43,10 @@ function selectLanguage(language: string) {
 <template>
     <NodeViewWrapper
         as="div"
-        class="group relative my-6 before:absolute before:top-[33px] before:left-[9px] before:font-code before:text-sm before:leading-6"
+        :class="[
+            'group relative my-6',
+            'before:absolute before:top-8.25 before:left-2.25 before:font-code before:text-sm before:leading-6',
+        ]"
     >
         <div class="absolute top-1 right-2 z-10 flex items-center gap-1" contenteditable="false">
             <LanguageSelect

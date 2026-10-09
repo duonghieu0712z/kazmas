@@ -7,6 +7,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 const window = getCurrentWindow();
 
 const isMaximized = ref(false);
+
 let unlistenResize: UnlistenFn | null = null;
 
 async function minimizeWindow() {

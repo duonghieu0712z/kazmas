@@ -31,7 +31,8 @@ onMounted(async () => {
                 <div
                     :class="[
                         'inline-block font-title text-7xl',
-                        'bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text pr-1.5 pl-4 text-transparent',
+                        'bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text pr-1.5 pl-4',
+                        'text-transparent',
                     ]"
                 >
                     {{ appName }}

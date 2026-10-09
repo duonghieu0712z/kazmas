@@ -3,6 +3,7 @@ import type { TextAlign, TextAlignPopoverProps } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { ref } from 'vue';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -24,11 +25,13 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const { canAlign, isVisible, label, icon } = useTextAligns({
     editor: () => props.editor,
     aligns: () => props.aligns,
     hideWhenUnavailable: () => props.hideWhenUnavailable,
 });
+
 const delegatedProps = reactiveOmit(
     props,
     'editor',

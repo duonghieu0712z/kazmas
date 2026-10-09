@@ -10,7 +10,7 @@ const STATUS_BAR_HEIGHT = '1.5rem';
 
 <template>
     <SidebarProvider
-        class="flex h-full min-h-0 flex-col overflow-hidden"
+        class="h-full min-h-0 flex-col overflow-hidden"
         :style="{
             '--title-bar-height': `${TITLE_BAR_HEIGHT}px`,
             '--status-bar-height': STATUS_BAR_HEIGHT,
