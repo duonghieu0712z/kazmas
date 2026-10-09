@@ -42,6 +42,7 @@ const delegatedProps = reactiveOmit(
         <Button
             v-bind="delegatedProps"
             :aria-label="label"
+            class="text-editor-toolbar-foreground"
             :disabled="!canReset"
             :size="showLabel ? 'default' : 'icon'"
             type="button"

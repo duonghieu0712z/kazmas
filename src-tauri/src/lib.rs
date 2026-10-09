@@ -50,7 +50,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_prevent_default::debug());
+        .plugin(tauri_plugin_prevent_default::with_flags(
+            tauri_plugin_prevent_default::Flags::debug()
+                | tauri_plugin_prevent_default::Flags::CONTEXT_MENU,
+        ));
 
     #[cfg(all(debug_assertions, not(feature = "desktop-tests")))]
     let builder = builder.plugin(devtools_plugin);
@@ -115,7 +118,10 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .build(tauri::generate_context!())
+        .map(|app| {
+            app.run(app::run_event_handler());
+        })
     {
         log::error!("error while running Tauri application: {error}");
         std::process::exit(1);

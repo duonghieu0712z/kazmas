@@ -6,7 +6,8 @@ import { ListIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 import {
     canToggleList,
@@ -71,7 +72,7 @@ export function useLists(config: UseListsConfig) {
 
     const getLabel = (type: ListType) => LIST_LABELS[type];
     const getIcon = (type: ListType) => LIST_ICONS[type];
-    const getShortcutKeys = (type: ListType) => parseShortcutKeys(LIST_SHORTCUT_KEYS[type]);
+    const getListShortcutKeys = (type: ListType) => getShortcutKeys(LIST_SHORTCUT_KEYS[type]);
     const canToggleType = (type: ListType) => canToggleList(editor.value, type);
     const handleList = (type: ListType) => {
         const success = toggleList(editor.value, type);
@@ -90,7 +91,7 @@ export function useLists(config: UseListsConfig) {
         types,
         getLabel,
         getIcon,
-        getShortcutKeys,
+        getListShortcutKeys,
         canToggleType,
         handleList,
     };

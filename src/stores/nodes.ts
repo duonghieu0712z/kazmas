@@ -3,6 +3,7 @@ import type { NodeDto } from '@/generated/bindings';
 import { defineStore } from 'pinia';
 
 import { commands } from '@/generated/bindings';
+import { useWorkspaceStore } from '@/stores/workspace';
 
 export type NodeTreeDto = NodeDto & {
     children: NodeTreeDto[];
@@ -17,8 +18,21 @@ export const useNodeStore = defineStore('nodes', () => {
     const manuscriptNodes = shallowRef<NodeDto[]>([]);
     const wikiNodes = shallowRef<NodeDto[]>([]);
     const selectedNodeId = shallowRef<string | null>(null);
-    const openedNodeId = shallowRef<string | null>(null);
+
+    const workspace = useWorkspaceStore();
+    const openedNodeId = computed(() => workspace.activeDocumentId);
     let revision = 0;
+    const treeRequest = shallowRef<
+        | { action: 'reveal'; nodeId: string; sequence: number }
+        | {
+              action: 'create';
+              section: 'Manuscript' | 'Wiki';
+              entryKind: 'manuscript_entry' | 'wiki_entry';
+              sequence: number;
+          }
+        | null
+    >(null);
+    let treeRequestSequence = 0;
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
@@ -27,19 +41,38 @@ export const useNodeStore = defineStore('nodes', () => {
             return [];
         }
 
+        return getNodePath(openedNodeId.value);
+    });
+
+    const getNode = (nodeId: string) =>
+        manuscriptNodes.value.find((node) => node.id === nodeId) ??
+        wikiNodes.value.find((node) => node.id === nodeId);
+
+    const getNodePath = (nodeId: string) => {
         return (
-            buildNodePath('Manuscript', manuscriptNodes.value, openedNodeId.value) ??
-            buildNodePath('Wiki', wikiNodes.value, openedNodeId.value) ??
+            buildNodePath('Manuscript', manuscriptNodes.value, nodeId) ??
+            buildNodePath('Wiki', wikiNodes.value, nodeId) ??
             []
         );
-    });
+    };
+
+    watch(
+        openedNodeId,
+        (nodeId) => {
+            if (nodeId) {
+                selectedNodeId.value = nodeId;
+            }
+        },
+        { flush: 'sync' },
+    );
 
     const clearNodes = () => {
         revision += 1;
         manuscriptNodes.value = [];
         wikiNodes.value = [];
         selectedNodeId.value = null;
-        openedNodeId.value = null;
+        treeRequest.value = null;
+        workspace.resetWorld();
     };
 
     const selectNode = (node: NodeDto) => {
@@ -48,7 +81,7 @@ export const useNodeStore = defineStore('nodes', () => {
 
     const openNode = (node: NodeDto) => {
         if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
-            openedNodeId.value = node.id;
+            workspace.openDocument(node.id);
         }
     };
 
@@ -83,12 +116,28 @@ export const useNodeStore = defineStore('nodes', () => {
         selectedNodeId,
         openedNodeId,
         openedNodePath,
+        getNode,
+        getNodePath,
         clearNodes,
         selectNode,
         openNode,
         loadManuscripts,
         loadWikis,
         reloadNodes,
+        treeRequest,
+        createEntryInTree: (entryKind: 'manuscript_entry' | 'wiki_entry') => {
+            treeRequest.value = {
+                action: 'create',
+                entryKind,
+                section: entryKind === 'manuscript_entry' ? 'Manuscript' : 'Wiki',
+                sequence: ++treeRequestSequence,
+            };
+        },
+        revealInTree: (nodeId: string) => {
+            if (getNode(nodeId)) {
+                treeRequest.value = { action: 'reveal', nodeId, sequence: ++treeRequestSequence };
+            }
+        },
     };
 });
 

@@ -15,13 +15,12 @@ import {
 } from '@lucide/vue';
 import { isMacOS } from '@tiptap/vue-3';
 
-import { TooltipWrapper } from '@/components/tiptap/tooltip';
-import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { Toggle } from '@/components/ui/toggle';
 import { cn } from '@/lib/utils';
 
+import FindAndReplacePanelButton from './FindAndReplacePanelButton.vue';
+import FindAndReplacePanelToggle from './FindAndReplacePanelToggle.vue';
 import { useFindAndReplace } from './use-find-and-replace';
 
 const props = withDefaults(defineProps<FindAndReplacePanelProps>(), {
@@ -201,7 +200,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
         aria-label="Find and replace"
         :class="
             cn(
-                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-sm border bg-background p-1.5 text-foreground shadow-md',
+                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-md border border-popup-border bg-popup-background p-1.5 text-popup-foreground shadow-md',
                 props.class,
             )
         "
@@ -209,22 +208,14 @@ function handlePanelKeydown(event: KeyboardEvent) {
         @keydown="handlePanelKeydown"
     >
         <div class="flex items-center gap-1">
-            <TooltipWrapper>
-                <Button
-                    :aria-expanded="replaceExpanded"
-                    aria-label="Toggle replace"
-                    class="size-7"
-                    size="icon"
-                    type="button"
-                    variant="ghost"
-                    @click="replaceExpanded = !replaceExpanded"
-                >
-                    <ChevronDownIcon v-if="replaceExpanded" />
-                    <ChevronRightIcon v-else />
-                </Button>
-
-                <template #tooltip>Toggle replace</template>
-            </TooltipWrapper>
+            <FindAndReplacePanelButton
+                :aria-expanded="replaceExpanded"
+                label="Toggle replace"
+                @click="replaceExpanded = !replaceExpanded"
+            >
+                <ChevronDownIcon v-if="replaceExpanded" />
+                <ChevronRightIcon v-else />
+            </FindAndReplacePanelButton>
 
             <InputGroup class="h-7 min-w-0 flex-1">
                 <InputGroupInput
@@ -243,50 +234,32 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 />
 
                 <InputGroupAddon align="inline-end" class="gap-0 pr-0.5">
-                    <TooltipWrapper>
-                        <Toggle
-                            aria-label="Match case"
-                            class="size-6"
-                            :disabled="!isAvailable"
-                            :model-value="caseSensitive"
-                            size="icon"
-                            @update:model-value="toggleCaseSensitive"
-                        >
-                            <CaseSensitiveIcon />
-                        </Toggle>
+                    <FindAndReplacePanelToggle
+                        :disabled="!isAvailable"
+                        label="Match case"
+                        :model-value="caseSensitive"
+                        @update:model-value="toggleCaseSensitive"
+                    >
+                        <CaseSensitiveIcon />
+                    </FindAndReplacePanelToggle>
 
-                        <template #tooltip>Match case</template>
-                    </TooltipWrapper>
+                    <FindAndReplacePanelToggle
+                        :disabled="!isAvailable"
+                        label="Match whole word"
+                        :model-value="wholeWord"
+                        @update:model-value="toggleWholeWord"
+                    >
+                        <WholeWordIcon />
+                    </FindAndReplacePanelToggle>
 
-                    <TooltipWrapper>
-                        <Toggle
-                            aria-label="Match whole word"
-                            class="size-6"
-                            :disabled="!isAvailable"
-                            :model-value="wholeWord"
-                            size="icon"
-                            @update:model-value="toggleWholeWord"
-                        >
-                            <WholeWordIcon />
-                        </Toggle>
-
-                        <template #tooltip>Match whole word</template>
-                    </TooltipWrapper>
-
-                    <TooltipWrapper>
-                        <Toggle
-                            aria-label="Use regular expression"
-                            class="size-6"
-                            :disabled="!isAvailable"
-                            :model-value="useRegex"
-                            size="icon"
-                            @update:model-value="toggleUseRegex"
-                        >
-                            <RegexIcon />
-                        </Toggle>
-
-                        <template #tooltip>Use regular expression</template>
-                    </TooltipWrapper>
+                    <FindAndReplacePanelToggle
+                        :disabled="!isAvailable"
+                        label="Use regular expression"
+                        :model-value="useRegex"
+                        @update:model-value="toggleUseRegex"
+                    >
+                        <RegexIcon />
+                    </FindAndReplacePanelToggle>
                 </InputGroupAddon>
             </InputGroup>
 
@@ -298,52 +271,29 @@ function handlePanelKeydown(event: KeyboardEvent) {
             </span>
 
             <ButtonGroup spacing="spaced">
-                <TooltipWrapper>
-                    <Button
-                        aria-label="Previous match"
-                        class="size-7"
-                        :disabled="!canNavigate"
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        @click="goToPrevious"
-                    >
-                        <ArrowUpIcon />
-                    </Button>
+                <FindAndReplacePanelButton
+                    :disabled="!canNavigate"
+                    label="Previous match"
+                    @click="goToPrevious"
+                >
+                    <ArrowUpIcon />
+                </FindAndReplacePanelButton>
 
-                    <template #tooltip>Previous match</template>
-                </TooltipWrapper>
+                <FindAndReplacePanelButton
+                    :disabled="!canNavigate"
+                    label="Next match"
+                    @click="goToNext"
+                >
+                    <ArrowDownIcon />
+                </FindAndReplacePanelButton>
 
-                <TooltipWrapper>
-                    <Button
-                        aria-label="Next match"
-                        class="size-7"
-                        :disabled="!canNavigate"
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        @click="goToNext"
-                    >
-                        <ArrowDownIcon />
-                    </Button>
-
-                    <template #tooltip>Next match</template>
-                </TooltipWrapper>
-
-                <TooltipWrapper>
-                    <Button
-                        aria-label="Close find and replace"
-                        class="size-7"
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        @click="closePanel"
-                    >
-                        <XIcon />
-                    </Button>
-
-                    <template #tooltip>Close</template>
-                </TooltipWrapper>
+                <FindAndReplacePanelButton
+                    label="Close find and replace"
+                    tooltip="Close"
+                    @click="closePanel"
+                >
+                    <XIcon />
+                </FindAndReplacePanelButton>
             </ButtonGroup>
         </div>
 
@@ -366,37 +316,23 @@ function handlePanelKeydown(event: KeyboardEvent) {
             </InputGroup>
 
             <ButtonGroup spacing="spaced">
-                <TooltipWrapper>
-                    <Button
-                        aria-label="Replace current match"
-                        class="size-7"
-                        :disabled="!canReplace"
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        @click="replaceCurrent"
-                    >
-                        <ReplaceIcon />
-                    </Button>
+                <FindAndReplacePanelButton
+                    :disabled="!canReplace"
+                    label="Replace current match"
+                    tooltip="Replace"
+                    @click="replaceCurrent"
+                >
+                    <ReplaceIcon />
+                </FindAndReplacePanelButton>
 
-                    <template #tooltip>Replace</template>
-                </TooltipWrapper>
-
-                <TooltipWrapper>
-                    <Button
-                        aria-label="Replace all matches"
-                        class="size-7"
-                        :disabled="!canReplaceAll"
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        @click="replaceAll"
-                    >
-                        <ReplaceAllIcon />
-                    </Button>
-
-                    <template #tooltip>Replace all</template>
-                </TooltipWrapper>
+                <FindAndReplacePanelButton
+                    :disabled="!canReplaceAll"
+                    label="Replace all matches"
+                    tooltip="Replace all"
+                    @click="replaceAll"
+                >
+                    <ReplaceAllIcon />
+                </FindAndReplacePanelButton>
             </ButtonGroup>
         </div>
     </div>

@@ -15,12 +15,18 @@ defineOptions({
     inheritAttrs: false,
 });
 
-const props = defineProps<
-    DropdownMenuSubContentProps & {
-        class?: HTMLAttributes['class'];
-        portal?: DropdownMenuPortalProps;
-    }
->();
+const props = withDefaults(
+    defineProps<
+        DropdownMenuSubContentProps & {
+            class?: HTMLAttributes['class'];
+            portal?: DropdownMenuPortalProps;
+        }
+    >(),
+    {
+        sideOffset: 2,
+        alignOffset: 0,
+    },
+);
 const emits = defineEmits<DropdownMenuSubContentEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'portal');
@@ -35,7 +41,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             :class="
                 cn(
                     'max-h-(--reka-dropdown-menu-content-available-height) max-w-(--reka-dropdown-menu-content-available-width) origin-(--reka-dropdown-menu-content-transform-origin)',
-                    'z-50 min-w-32 overflow-x-hidden overflow-y-auto rounded-sm border bg-background p-1 text-foreground shadow-xs',
+                    'z-50 min-w-32 overflow-x-hidden overflow-y-auto rounded-md border border-popup-border bg-popup-background p-1 text-popup-foreground shadow-xs',
                     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
@@ -43,6 +49,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                 )
             "
             data-slot="dropdown-menu-sub-content"
+            @contextmenu.stop.prevent
         >
             <slot />
         </DropdownMenuSubContent>

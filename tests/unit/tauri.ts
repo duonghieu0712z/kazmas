@@ -12,6 +12,8 @@ const tauri = vi.hoisted(() => ({
     openWorld: vi.fn(),
     closeWorld: vi.fn(),
     updateDocument: vi.fn(),
+    updateNode: vi.fn(),
+    deleteNode: vi.fn(),
     executeMenuCommand: vi.fn(),
     listen: vi.fn(),
     unlisten: vi.fn(),
@@ -30,6 +32,7 @@ vi.mock('@/generated/bindings', () => ({
 vi.mock('@tauri-apps/api/webviewWindow', () => ({
     getCurrentWebviewWindow: () => ({ label: 'test-window' }),
 }));
+vi.mock('@tauri-apps/api/app', () => ({ getName: async () => 'Kazmas' }));
 vi.mock('@tauri-apps/plugin-dialog', () => ({ open: tauri.open }));
 vi.mock('@tauri-apps/plugin-os', () => ({ platform: () => 'windows' }));
 
@@ -42,6 +45,8 @@ export function resetTauri() {
     tauri.getWikis.mockResolvedValue({ status: 'ok', data: [] });
     tauri.getDocument.mockResolvedValue({ status: 'ok', data: null });
     tauri.updateDocument.mockResolvedValue({ status: 'ok', data: true });
+    tauri.updateNode.mockResolvedValue({ status: 'ok', data: true });
+    tauri.deleteNode.mockResolvedValue({ status: 'ok', data: true });
     tauri.closeWorld.mockResolvedValue({ status: 'ok', data: null });
     tauri.executeMenuCommand.mockResolvedValue({ status: 'ok', data: null });
     tauri.listen.mockResolvedValue(tauri.unlisten);

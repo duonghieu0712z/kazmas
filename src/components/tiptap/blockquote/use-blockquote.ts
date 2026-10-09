@@ -6,7 +6,8 @@ import { isNodeSelection } from '@tiptap/vue-3';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export interface UseBlockquoteConfig {
     editor?: MaybeRefOrGetter<Editor | undefined>;
@@ -108,7 +109,7 @@ export function useBlockquote(config: UseBlockquoteConfig) {
         canToggle,
         label: BLOCKQUOTE_LABEL,
         icon: TextQuoteIcon,
-        shortcutKeys: parseShortcutKeys(BLOCKQUOTE_SHORTCUT_KEY),
+        shortcutKeys: getShortcutKeys(BLOCKQUOTE_SHORTCUT_KEY),
         handleBlockquote,
     };
 }

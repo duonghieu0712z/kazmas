@@ -35,7 +35,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         <DialogContent
             :class="
                 cn(
-                    'fixed z-60 flex flex-col gap-4 bg-background shadow-xs transition ease-in-out',
+                    'fixed z-60 flex flex-col gap-4 border-popup-border bg-popup-background text-popup-foreground shadow-xs transition ease-in-out',
                     'data-[state=open]:animate-in data-[state=open]:duration-500',
                     'data-[state=closed]:animate-out data-[state=closed]:duration-300',
                     side === 'right' &&
@@ -57,8 +57,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             <DialogClose
                 :class="[
                     'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none',
-                    'data-[state=open]:bg-interactive data-[state=open]:text-interactive-foreground',
-                    'focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden',
+                    'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
+                    'focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:outline-hidden',
                 ]"
             >
                 <XIcon class="size-4" />

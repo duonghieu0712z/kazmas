@@ -28,7 +28,7 @@ export function createEditorExtensions() {
             code: {
                 HTMLAttributes: {
                     class: cn(
-                        'rounded-sm border bg-background px-[0.2em] py-[0.1em] font-code',
+                        'rounded-sm border border-inline-code-border bg-inline-code-background px-[0.2em] py-[0.1em] font-code',
                         'before:content-none after:content-none',
                     ),
                 },
@@ -51,7 +51,7 @@ export function createEditorExtensions() {
         }),
         ActiveMark.configure({
             HTMLAttributes: {
-                class: cn('bg-primary/15'),
+                class: cn('bg-editor-active-mark'),
             },
             types: ['link', 'rubyText'],
         }),
@@ -86,7 +86,7 @@ export function createEditorExtensions() {
                         '[&>li>label::before]:block',
                         '[&>li>label::before]:size-[1em] [&>li>label::before]:cursor-pointer',
                         '[&>li>label::before]:rounded-sm [&>li>label::before]:border',
-                        '[&>li>label::before]:border-input [&>li>label::before]:bg-background',
+                        '[&>li>label::before]:border-border [&>li>label::before]:bg-background',
                         '[&>li>label::before]:transition-colors',
                         '[&>li>label::before]:duration-75',
                         '[&>li>label::before]:content-[""]',
@@ -100,11 +100,11 @@ export function createEditorExtensions() {
                         '[&>li>label::after]:rotate-45',
                         '[&>li>label::after]:border-r-2',
                         '[&>li>label::after]:border-b-2',
-                        '[&>li>label::after]:border-primary-foreground',
+                        '[&>li>label::after]:border-background',
                         '[&>li>label::after]:opacity-0',
                         '[&>li>label::after]:content-[""]',
-                        '[&>li>label:has(>input[type=checkbox]:checked)::before]:border-primary',
-                        '[&>li>label:has(>input[type=checkbox]:checked)::before]:bg-primary',
+                        '[&>li>label:has(>input[type=checkbox]:checked)::before]:border-foreground',
+                        '[&>li>label:has(>input[type=checkbox]:checked)::before]:bg-foreground',
                         '[&>li>label:has(>input[type=checkbox]:checked)::after]:opacity-100',
                         '[&>li>div]:min-w-0 [&>li>div]:flex-1',
                         '[&>li>div>p]:m-0',
@@ -116,7 +116,9 @@ export function createEditorExtensions() {
             lowlight,
             defaultLanguage: 'plaintext',
             HTMLAttributes: {
-                class: cn('rounded-sm border bg-background font-code'),
+                class: cn(
+                    'rounded-sm border border-code-block-border bg-code-block-background font-code text-code-block-foreground',
+                ),
             },
             enableTabIndentation: true,
         }),
@@ -127,12 +129,12 @@ export function createEditorExtensions() {
             visible: false,
         }),
         Placeholder.configure({
-            placeholder: 'Write something …',
+            placeholder: 'Write something...',
             emptyEditorClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-ring before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-editor-placeholder before:content-[attr(data-placeholder)]',
             ),
             emptyNodeClass: cn(
-                'before:pointer-events-none before:float-left before:h-0 before:text-ring before:content-[attr(data-placeholder)]',
+                'before:pointer-events-none before:float-left before:h-0 before:text-editor-placeholder before:content-[attr(data-placeholder)]',
             ),
         }),
         RubyText.configure({

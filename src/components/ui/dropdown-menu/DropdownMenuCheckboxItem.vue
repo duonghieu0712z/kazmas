@@ -21,19 +21,19 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         v-bind="forwarded"
         :class="
             cn(
-                'relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none',
-                'focus:bg-interactive focus:text-interactive-foreground',
-                'data-disabled:pointer-events-none data-disabled:opacity-50',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs pr-2 pl-6 text-xs text-menu-item-foreground outline-hidden select-none',
+                'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground data-[state=checked]:bg-menu-item-selected data-[state=checked]:text-menu-item-selected-foreground',
+                'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
                 `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
                 props.class,
             )
         "
         data-slot="dropdown-menu-checkbox-item"
     >
-        <span class="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+        <span class="pointer-events-none absolute left-1.5 flex size-3 items-center justify-center">
             <DropdownMenuItemIndicator>
                 <slot name="indicator-icon">
-                    <CheckIcon class="size-4" />
+                    <CheckIcon class="size-3.5" />
                 </slot>
             </DropdownMenuItemIndicator>
         </span>

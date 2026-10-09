@@ -58,13 +58,16 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         :class="
             cn(
                 [
-                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs text-muted-foreground transition-colors outline-none',
-                    'hover:bg-interactive/65 focus-visible:bg-interactive data-selected:bg-interactive data-selected:text-foreground',
-                    'data-disabled:pointer-events-none data-disabled:opacity-50',
+                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs text-tree-item-foreground transition-colors outline-none',
+                    'hover:bg-tree-item-hover hover:text-tree-item-hover-foreground',
+                    'focus-visible:bg-tree-item-hover focus-visible:text-tree-item-hover-foreground',
+                    'active:bg-active active:text-active-foreground',
+                    'data-selected:bg-tree-item-selected data-selected:text-tree-item-selected-foreground',
+                    'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
                     // Indent guide
                     indentGuide && [
                         `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
-                        '[--tree-item-guide-color:color-mix(in_oklab,var(--border)_75%,var(--ring)_25%)]',
+                        '[--tree-item-guide-color:var(--color-tree-indent-guide)]',
                         'before:bg-[repeating-linear-gradient(to_right,var(--tree-item-guide-color)_0,var(--tree-item-guide-color)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
                     ],
                 ],

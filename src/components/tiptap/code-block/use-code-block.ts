@@ -6,7 +6,8 @@ import { isNodeSelection } from '@tiptap/vue-3';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export interface UseCodeBlockConfig {
     editor?: MaybeRefOrGetter<Editor | undefined>;
@@ -108,7 +109,7 @@ export function useCodeBlock(config: UseCodeBlockConfig) {
         canToggle,
         label: CODE_BLOCK_LABEL,
         icon: SquareCodeIcon,
-        shortcutKeys: parseShortcutKeys(CODE_BLOCK_SHORTCUT_KEY),
+        shortcutKeys: getShortcutKeys(CODE_BLOCK_SHORTCUT_KEY),
         handleCodeBlock,
     };
 }

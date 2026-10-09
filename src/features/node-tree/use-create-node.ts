@@ -9,6 +9,7 @@ export type NodeDraft = {
     kind: 'draft';
     type: 'entry' | 'folder';
     parentId: string | null;
+    entryKind?: 'manuscript_entry' | 'wiki_entry';
 };
 
 export function useCreateNode(
@@ -70,7 +71,11 @@ export function useCreateNode(
                 if (type === 'folder') {
                     const section = props.section === 'Wiki' ? 'wiki' : 'manuscript';
                     result = await commands.createFolder(name, parentId, section);
-                } else if (props.section === 'Manuscript') {
+                } else if (
+                    (pending.entryKind ??
+                        (props.section === 'Manuscript' ? 'manuscript_entry' : 'wiki_entry')) ===
+                    'manuscript_entry'
+                ) {
                     result = await commands.createManuscriptEntry(name, parentId);
                 } else {
                     result = await commands.createWikiEntry(name, parentId);

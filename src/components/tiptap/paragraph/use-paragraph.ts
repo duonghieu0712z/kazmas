@@ -5,7 +5,8 @@ import { TypeIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export interface UseParagraphConfig {
     editor?: MaybeRefOrGetter<Editor | undefined>;
@@ -87,7 +88,7 @@ export function useParagraph(config: UseParagraphConfig) {
         canSet,
         label: PARAGRAPH_LABEL,
         icon: TypeIcon,
-        shortcutKeys: parseShortcutKeys(PARAGRAPH_SHORTCUT_KEY),
+        shortcutKeys: getShortcutKeys(PARAGRAPH_SHORTCUT_KEY),
         handleParagraph,
     };
 }

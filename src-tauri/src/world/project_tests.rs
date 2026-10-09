@@ -190,6 +190,24 @@ async fn save_as_preserves_original_and_restores_target_after_failure() -> TestR
 }
 
 #[tokio::test]
+async fn opens_worlds_with_case_insensitive_extensions() -> TestResult {
+    let dir = temp_dir()?;
+    let world = WorldProject::create_world("Extensions", dir.path(), dir.path()).await?;
+    let id = world.id();
+    world.close_world().await?;
+    let original = dir.path().join("Extensions.kazmas");
+
+    for extension in ["KAZMAS", "Kazmas", "kazmas"] {
+        let path = dir.path().join(format!("Reopened.{extension}"));
+        fs::copy(&original, &path).await?;
+        let world = WorldProject::open_world(&path, dir.path()).await?;
+        assert_eq!(world.id(), id);
+        world.close_world().await?;
+    }
+    Ok(())
+}
+
+#[tokio::test]
 async fn rejects_existing_target_invalid_extension_missing_and_corrupt_packages() -> TestResult {
     let dir = temp_dir()?;
     let world = WorldProject::create_world("Existing", dir.path(), dir.path()).await?;

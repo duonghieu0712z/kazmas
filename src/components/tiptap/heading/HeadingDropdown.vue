@@ -39,7 +39,7 @@ const {
     levels,
     getLabel,
     getIcon,
-    getShortcutKeys,
+    getHeadingShortcutKeys,
     canSetLevel,
     handleLevel,
 } = useHeadings({
@@ -78,7 +78,7 @@ function handleCloseAutoFocus(event: Event) {
                 <Toggle
                     v-bind="delegatedProps"
                     :aria-label="label"
-                    class="gap-0.5"
+                    class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="!canSet"
                     :model-value="(activeLevel !== undefined && activeLevel !== 0) || open"
                     size="default"
@@ -86,7 +86,7 @@ function handleCloseAutoFocus(event: Event) {
                     <slot>
                         <component :is="icon" />
                         <span v-if="showLabel">{{ label }}</span>
-                        <ChevronDownIcon class="size-3 text-muted-foreground" />
+                        <ChevronDownIcon class="size-3" />
                     </slot>
                 </Toggle>
 
@@ -100,16 +100,16 @@ function handleCloseAutoFocus(event: Event) {
                 :key="level"
                 :class="
                     activeLevel === level
-                        ? 'bg-primary/10 text-primary focus:bg-primary/15 focus:text-primary'
-                        : undefined
+                        ? 'bg-menu-item-selected text-menu-item-selected-foreground focus:bg-menu-item-selected focus:text-menu-item-selected-foreground'
+                        : 'text-editor-toolbar-foreground focus:text-hover-foreground'
                 "
                 :disabled="!canSetLevel(level)"
                 @select="changeLevel(level)"
             >
-                <component :is="getIcon(level)" />
+                <component :is="getIcon(level)" class="text-inherit" />
                 <span>{{ getLabel(level) }}</span>
                 <KbdGroup v-if="showShortcut" class="ml-auto">
-                    <Kbd v-for="key in getShortcutKeys(level)" :key="key">{{ key }}</Kbd>
+                    <Kbd v-for="key in getHeadingShortcutKeys(level)" :key="key">{{ key }}</Kbd>
                 </KbdGroup>
             </DropdownMenuItem>
         </DropdownMenuContent>

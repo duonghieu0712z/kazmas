@@ -18,19 +18,26 @@ async function openChapterA() {
     const entry = $('//*[@role="treeitem"][contains(., "Chapter A")]');
     await entry.waitForDisplayed();
     await entry.click();
-    await $('.tiptap').waitForDisplayed();
+    await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
 }
 
 async function expectDocumentText(expected: string) {
     await browser.waitUntil(
         async () =>
-            (await browser.execute(() => document.querySelector('.tiptap')?.textContent)) ===
-            expected,
+            (await browser.execute(
+                () =>
+                    document.querySelector('[role="tabpanel"][data-state="active"] .tiptap')
+                        ?.textContent,
+            )) === expected,
         { timeout: 10000, timeoutMsg: `Expected document content: ${expected}` },
     );
-    expect(await browser.execute(() => document.querySelector('.tiptap')?.textContent)).toBe(
-        expected,
-    );
+    expect(
+        await browser.execute(
+            () =>
+                document.querySelector('[role="tabpanel"][data-state="active"] .tiptap')
+                    ?.textContent,
+        ),
+    ).toBe(expected);
 }
 
 describe('desktop world lifecycle with real SQLite and packages', () => {
@@ -55,7 +62,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             directory,
         );
         await browser.execute(() => window.__kazmasDesktopTest.entry('Chapter A'));
-        await $('.tiptap').waitForDisplayed();
+        await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
     });
 
     afterEach(async () => {
@@ -85,7 +92,9 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
     });
 
     it('saves immediately after typing and reopens the same Unicode content', async () => {
-        await $('.tiptap').setValue('Unicode \u65e5\u672c\u8a9e and formatted manuscript');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
+            'Unicode \u65e5\u672c\u8a9e and formatted manuscript',
+        );
         await browser.execute(() => window.__kazmasDesktopTest.save());
         await browser.execute(() => window.__kazmasDesktopTest.close());
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
@@ -94,18 +103,22 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
     });
 
     it('saves formatted content through application controls', async () => {
-        await $('.tiptap').setValue('Formatted manuscript');
-        await $('.tiptap').click();
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Formatted manuscript');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').click();
         await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
         await $('button[aria-label="Bold"]').click();
-        await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
+        await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
+            'Formatted manuscript',
+        );
         if (process.platform === 'darwin') {
             await browser.execute(() => {
                 void window.__kazmasDesktopTest.close();
             });
             await $('[role="alertdialog"]').waitForDisplayed();
             await $('button=Save').click();
-            await $('.tiptap').waitForExist({ reverse: true });
+            await $('[role="tabpanel"][data-state="active"] .tiptap').waitForExist({
+                reverse: true,
+            });
         } else {
             await $('//*[@role="menuitem"][normalize-space(.)="File"]').click();
             await browser.keys('ArrowDown');
@@ -125,11 +138,15 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         }
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await openChapterA();
-        await expect($('.tiptap strong')).toHaveText('Formatted manuscript');
+        await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
+            'Formatted manuscript',
+        );
     });
 
     it('switches documents before debounce expires without losing the first edit', async () => {
-        await $('.tiptap').setValue('Pending chapter A content');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
+            'Pending chapter A content',
+        );
         await browser.execute(() => window.__kazmasDesktopTest.entry('Chapter B'));
         await openChapterA();
         await expectDocumentText('Pending chapter A content');
@@ -151,7 +168,9 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.keys('Enter');
         await expect(entry).toHaveAttribute('aria-selected', 'true');
         await expect(entry).toHaveAttribute('aria-level', '2');
-        await $('.tiptap').setValue('Nested chapter content');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
+            'Nested chapter content',
+        );
 
         await $('button[aria-label="New manuscript entry"]').click();
         await $('input[aria-label="New item name"]').setValue('Sibling chapter');
@@ -177,7 +196,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
     it('save as preserves the original package and persists the edited copy', async () => {
         const original = await readFile(packagePath);
-        await $('.tiptap').setValue('Copy content');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Copy content');
         const copy = packagePath.replace('.kazmas', '-copy.kazmas');
         await browser.execute((path) => window.__kazmasDesktopTest.saveAs(path), copy);
         expect(await readFile(packagePath)).toEqual(original);
@@ -189,7 +208,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
     it('cancel keeps the world open and discard reopens the last saved content', async () => {
         await browser.execute(() => window.__kazmasDesktopTest.save());
-        await $('.tiptap').setValue('Discarded content');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Discarded content');
         await browser.execute(() => {
             void window.__kazmasDesktopTest.close();
         });
@@ -201,20 +220,20 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         });
         await $('[role="alertdialog"]').waitForDisplayed();
         await $("button=Don't Save").click();
-        await $('.tiptap').waitForExist({ reverse: true });
+        await $('[role="tabpanel"][data-state="active"] .tiptap').waitForExist({ reverse: true });
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await openChapterA();
         await expectDocumentText('');
     });
 
     it('save from the close dialog persists the current document', async () => {
-        await $('.tiptap').setValue('Saved from dialog');
+        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Saved from dialog');
         await browser.execute(() => {
             void window.__kazmasDesktopTest.close();
         });
         await $('[role="alertdialog"]').waitForDisplayed();
         await $('button=Save').click();
-        await $('.tiptap').waitForExist({ reverse: true });
+        await $('[role="tabpanel"][data-state="active"] .tiptap').waitForExist({ reverse: true });
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await openChapterA();
         await expectDocumentText('Saved from dialog');
@@ -227,7 +246,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             browser.execute((path) => window.__kazmasDesktopTest.open(path), corrupt),
         ).rejects.toThrow();
         expect(await browser.execute(() => window.__kazmasDesktopTest.world()?.name)).toBe(name);
-        await expect($('.tiptap')).toBeDisplayed();
+        await expect($('[role="tabpanel"][data-state="active"] .tiptap')).toBeDisplayed();
     });
 
     it('keeps the existing project owner without creating a duplicate window', async () => {

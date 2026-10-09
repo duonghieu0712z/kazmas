@@ -28,7 +28,10 @@ pub(crate) async fn handle_menu_event(
         return Ok(());
     };
     let command = MenuCommand::from_str(id)?;
-    if matches!(command, MenuCommand::Save | MenuCommand::SaveAs) {
+    if matches!(
+        command,
+        MenuCommand::Save | MenuCommand::SaveAs | MenuCommand::ReloadWindow
+    ) {
         return emit_menu_event(app, window_id, command);
     }
     handle_command(app, command, window_id).await
@@ -61,6 +64,11 @@ async fn handle_backend_command(
         MenuCommand::NewWindow => spawn_window(app, None).await?,
         #[cfg(not(target_os = "macos"))]
         MenuCommand::Quit => app.exit(0),
+        MenuCommand::ReloadWindow => {
+            if let Some(window) = current_window(app, window_id) {
+                window.reload()?;
+            }
+        },
         MenuCommand::Save => save_world(app, window_id).await?,
         MenuCommand::SaveAs => save_world_as(app, window_id).await?,
         MenuCommand::ToggleDevtools => toggle_devtools(app, window_id),

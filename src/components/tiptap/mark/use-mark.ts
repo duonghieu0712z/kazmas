@@ -13,7 +13,8 @@ import {
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isMarkInSchema, isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isMarkInSchema, isNodeTypeSelected } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export type MarkType =
     | 'bold'
@@ -117,7 +118,7 @@ export function useMark(config: UseMarkConfig) {
     );
     const label = computed(() => toValue(config.label) ?? getFormattedMarkName(type.value));
     const icon = computed(() => MARK_ICONS[type.value]);
-    const shortcutKeys = computed(() => parseShortcutKeys(MARK_SHORTCUT_KEYS[type.value]));
+    const shortcutKeys = computed(() => getShortcutKeys(MARK_SHORTCUT_KEYS[type.value]));
 
     const handleMark = () => {
         const success = toggleMark(editor.value, type.value);

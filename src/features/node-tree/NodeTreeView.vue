@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { NodeDraft } from './use-create-node';
 import type { NodeTreeSection } from './use-node-tree';
+import type { NodeRename } from './use-rename-node';
 import type { NodeTreeDto } from '@/stores/nodes';
 import type { TreeItemSelectEvent } from 'reka-ui';
 
-import { FileIcon, FolderIcon, FolderOpenIcon } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
 
+import { getNodeIcon } from '@/lib/node-icons';
 import { useNodeStore } from '@/stores/nodes';
 
 import NodeTreeLabel from './NodeTreeLabel.vue';
@@ -14,12 +15,16 @@ import { useCreateNode } from './use-create-node';
 
 type TreeNode = NodeTreeDto | NodeDraft;
 
-const props = defineProps<{ tree: NodeTreeDto[]; section: NodeTreeSection }>();
+const props = defineProps<{ tree: NodeTreeDto[]; section: NodeTreeSection; active: boolean }>();
 const emits = defineEmits<{
     'create:node': [id: string];
+    'contextmenu:node': [event: MouseEvent, node: NodeTreeDto];
+    'submit:rename': [];
+    'cancel:rename': [];
 }>();
 const draft = defineModel<NodeDraft | null>('draft', { default: null });
 const creating = defineModel<boolean>('creating', { default: false });
+const rename = defineModel<NodeRename | null>('rename', { default: null });
 const { createName, createError, createdId, cancelName, submitName } = useCreateNode(
     props,
     draft,
@@ -64,6 +69,62 @@ async function blurName(event?: FocusEvent) {
 const selected = defineModel<NodeTreeDto>();
 const expanded = defineModel<string[]>('expanded', { default: () => [] });
 const nodes = useNodeStore();
+const renderedItems = shallowReactive(new Map<string, HTMLElement>());
+let focusedRevealSequence = 0;
+
+function setTreeItem(id: string, element: Element | ComponentPublicInstance | null) {
+    const target = element instanceof Element ? element : element?.$el;
+    if (target instanceof HTMLElement) {
+        renderedItems.set(id, target);
+    } else {
+        renderedItems.delete(id);
+    }
+}
+
+watch(
+    () => {
+        const request = nodes.treeRequest;
+        return {
+            request,
+            active: props.active,
+            editing: !!draft.value || !!rename.value,
+            target: request?.action === 'reveal' ? renderedItems.get(request.nodeId) : undefined,
+        };
+    },
+    async ({ request, active, editing, target }) => {
+        if (
+            !active ||
+            editing ||
+            request?.action !== 'reveal' ||
+            !target ||
+            request.sequence === focusedRevealSequence
+        ) {
+            return;
+        }
+        await nextTick();
+        if (
+            nodes.treeRequest !== request ||
+            !props.active ||
+            draft.value ||
+            rename.value ||
+            !target.isConnected
+        ) {
+            return;
+        }
+        focusedRevealSequence = request.sequence;
+        target.focus({ preventScroll: true });
+    },
+    { flush: 'post' },
+);
+
+function showContextMenu(event: MouseEvent, node: TreeNode) {
+    if (node.kind === 'draft' || rename.value) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    emits('contextmenu:node', event, node);
+}
 let nameInput: HTMLInputElement | null = null;
 let focusedDraft: NodeDraft | null = null;
 
@@ -89,6 +150,20 @@ function getKey(node: TreeNode) {
     return node.id;
 }
 
+function getIcon(node: TreeNode, expanded: boolean) {
+    const kind =
+        node.kind !== 'draft'
+            ? node.kind
+            : node.type === 'folder'
+              ? 'folder'
+              : node.entryKind
+                ? node.entryKind
+                : props.section === 'Wiki'
+                  ? 'wiki_entry'
+                  : 'manuscript_entry';
+    return getNodeIcon(kind, expanded);
+}
+
 function getChildren(node: TreeNode): TreeNode[] | undefined {
     if (node.kind === 'draft') {
         return;
@@ -101,11 +176,38 @@ function getChildren(node: TreeNode): TreeNode[] | undefined {
 
 function selectNode(event: TreeItemSelectEvent<TreeNode>) {
     const node = event.detail.value;
-    if (node?.kind === 'draft') {
+    if (node?.kind === 'draft' || rename.value) {
         event.preventDefault();
     } else if (node) {
         nodes.selectNode(node);
         nodes.openNode(node);
+    }
+}
+
+let focusedRename: NodeRename | null = null;
+
+async function focusRename(element: Element | ComponentPublicInstance | null) {
+    const input = element instanceof Element ? element : element?.$el;
+    await nextTick();
+    if (input instanceof HTMLInputElement && input.isConnected && rename.value !== focusedRename) {
+        focusedRename = rename.value;
+        input.focus();
+        input.select();
+    }
+}
+
+function enterRename(event: KeyboardEvent) {
+    if (!event.isComposing) {
+        event.preventDefault();
+        emits('submit:rename');
+    }
+}
+
+async function blurRename(event: FocusEvent) {
+    const input = event.target;
+    await nextTick();
+    if (input instanceof HTMLInputElement && input.isConnected) {
+        emits('submit:rename');
     }
 }
 
@@ -129,7 +231,7 @@ function focusName(element: Element | ComponentPublicInstance | null) {
 
 <template>
     <ScrollArea
-        class="min-h-0 min-w-0 flex-1 **:data-[slot=scroll-area-viewport]:p-1"
+        class="min-h-0 min-w-0 flex-1 **:data-[slot=scroll-area-viewport]:p-1 **:data-[slot=scroll-area-viewport]:pb-6"
         viewport-as-child
     >
         <TreeRoot
@@ -150,26 +252,23 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                 v-slot="{ item }"
                 :estimate-size="20"
                 :overscan="8"
-                :scroll-to-key="draft?.id ?? selected?.id"
+                :scroll-to-key="draft?.id ?? rename?.id ?? selected?.id"
+                :scroll-to-version="nodes.treeRequest?.sequence"
                 :text-content="(node: TreeNode) => (node.kind === 'draft' ? createName : node.name)"
             >
                 <TreeItem
                     v-bind="item.bind"
                     :key="item._id"
+                    :ref="(element) => setTreeItem(item._id, element)"
                     v-slot="{ isExpanded }"
+                    @contextmenu="showContextMenu($event, item.value)"
                     @select="selectNode"
                 >
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">
-                        <template
-                            v-if="
-                                item.value.kind === 'folder' ||
-                                (item.value.kind === 'draft' && item.value.type === 'folder')
-                            "
-                        >
-                            <FolderOpenIcon v-if="isExpanded" class="size-3.5 shrink-0" />
-                            <FolderIcon v-else class="size-3.5 shrink-0" />
-                        </template>
-                        <FileIcon v-else class="size-3.5 shrink-0" />
+                        <component
+                            :is="getIcon(item.value, isExpanded)"
+                            class="size-3.5 shrink-0"
+                        />
 
                         <Input
                             v-if="item.value.kind === 'draft'"
@@ -185,17 +284,34 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                             @keydown.esc.prevent="cancelName"
                             @keydown.stop
                         />
+                        <Input
+                            v-else-if="rename && item.value.id === rename.id"
+                            :ref="focusRename"
+                            v-model="rename.name"
+                            :aria-invalid="!!rename.error"
+                            aria-label="Item name"
+                            class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
+                            :readonly="rename.saving"
+                            @blur="blurRename"
+                            @click.stop
+                            @keydown.enter="enterRename"
+                            @keydown.esc.prevent="emits('cancel:rename')"
+                            @keydown.stop
+                        />
                         <NodeTreeLabel v-else :name="item.value.name" />
                     </span>
                 </TreeItem>
             </TreeVirtualizer>
         </TreeRoot>
     </ScrollArea>
+    <p v-if="rename?.error" class="px-3 py-2 text-xs text-destructive" role="alert">
+        {{ rename.error }}
+    </p>
     <div v-if="createError" class="px-3 py-2 text-xs text-destructive" role="alert">
         {{ createError }}
         <Button
             v-if="createdId"
-            class="h-5 px-2 text-xs"
+            class="h-5 text-xs"
             :disabled="creating"
             variant="ghost"
             @click="createNode"

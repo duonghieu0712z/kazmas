@@ -5,7 +5,8 @@ import { RedoIcon, UndoIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
-import { isNodeTypeSelected, parseShortcutKeys } from '@/lib/tiptap';
+import { isNodeTypeSelected } from '@/lib/tiptap';
+import { getShortcutKeys } from '@/utils/shortcut';
 
 export type UndoRedoAction = 'undo' | 'redo';
 
@@ -81,7 +82,7 @@ export function useUndoRedo(config: UseUndoRedoConfig) {
     );
     const label = computed(() => toValue(config.label) ?? getFormattedUndoRedoName(action.value));
     const icon = computed(() => UNDO_REDO_ICONS[action.value]);
-    const shortcutKeys = computed(() => parseShortcutKeys(UNDO_REDO_SHORTCUT_KEYS[action.value]));
+    const shortcutKeys = computed(() => getShortcutKeys(UNDO_REDO_SHORTCUT_KEYS[action.value]));
 
     const handleAction = () => {
         const success = executeUndoRedo(editor.value, action.value);
