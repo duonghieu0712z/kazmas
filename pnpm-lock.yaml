@@ -315,8 +315,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0(supports-color@8.1.1)(yauzl@2.10.0)
       '@wdio/spec-reporter':
-        specifier: ^9.32.0
-        version: 9.32.0
+        specifier: ^10.0.0
+        version: 10.0.0
       '@wdio/tauri-plugin':
         specifier: ^1.4.0
         version: 1.4.0(supports-color@8.1.1)(tsx@4.23.15)
@@ -2593,6 +2593,10 @@ packages:
     resolution: {integrity: sha512-qPxe2dq0hFDd6AZj6Z3SunpMvCOv9UdXS3CINtSrJweGNGHj1VltSNVPVqWYWwzs3ywuEjGg2t91JIQVxgfgWA==}
     engines: {node: '>=22.19.0'}
 
+  '@wdio/reporter@10.0.0':
+    resolution: {integrity: sha512-qPxe2dq0hFDd6AZj6Z3SunpMvCOv9UdXS3CINtSrJweGNGHj1VltSNVPVqWYWwzs3ywuEjGg2t91JIQVxgfgWA==}
+    engines: {node: '>=22.19.0'}
+
   '@wdio/reporter@9.30.1':
     resolution: {integrity: sha512-0whWaLfJtOAy3PzbGUxGrCAGitgaUCMe8qUgAuP2l7ess70AXqvp1wJibw74a/Z2giegJlJiAc4PxS0abs9/tw==}
     engines: {node: '>=18.20.0'}
@@ -2624,12 +2628,12 @@ packages:
       appium:
         optional: true
 
+  '@wdio/spec-reporter@10.0.0':
+    resolution: {integrity: sha512-48q0tROaNvP8JQ+JyquJYk1eXBXE9JTGksCKwuiuC8hhYcNyunX1uAtkxAshC5qPVg31pByLcSWnIkBLZkzMBg==}
+    engines: {node: '>=22.19.0'}
+
   '@wdio/spec-reporter@9.30.1':
     resolution: {integrity: sha512-En74iLuj8xjNanSPA05rTCii0qHZQe6Zpwi74vTGO6LtfGxvcNr1Z1zUj8xWwnoclnAne3DtmCAyXTezLX1pEA==}
-    engines: {node: '>=18.20.0'}
-
-  '@wdio/spec-reporter@9.32.0':
-    resolution: {integrity: sha512-WXL98WXqSGLffvDhLNsn4zD/sCGaWK1GF+i/gQsBxJN86vRiktL8XsB7q4SfBr7doyrR5+POwceX248M26bRgA==}
     engines: {node: '>=18.20.0'}
 
   '@wdio/tauri-plugin@1.4.0':
@@ -7212,6 +7216,13 @@ snapshots:
       diff: 8.0.4
       object-inspect: 1.13.4
 
+  '@wdio/reporter@10.0.0':
+    dependencies:
+      '@types/node': 22.20.5
+      '@wdio/types': 10.0.0
+      diff: 8.0.4
+      object-inspect: 1.13.4
+
   '@wdio/reporter@9.30.1':
     dependencies:
       '@types/node': 20.19.43
@@ -7284,18 +7295,18 @@ snapshots:
       - utf-8-validate
       - yauzl
 
-  '@wdio/spec-reporter@9.30.1':
+  '@wdio/spec-reporter@10.0.0':
     dependencies:
-      '@wdio/reporter': 9.30.1
-      '@wdio/types': 9.30.1
+      '@wdio/reporter': 10.0.0
+      '@wdio/types': 10.0.0
       chalk: 5.6.2
       easy-table: 1.2.0
       pretty-ms: 9.3.1
 
-  '@wdio/spec-reporter@9.32.0':
+  '@wdio/spec-reporter@9.30.1':
     dependencies:
-      '@wdio/reporter': 9.32.0
-      '@wdio/types': 9.32.0
+      '@wdio/reporter': 9.30.1
+      '@wdio/types': 9.30.1
       chalk: 5.6.2
       easy-table: 1.2.0
       pretty-ms: 9.3.1
