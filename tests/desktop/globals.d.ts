@@ -6,6 +6,8 @@ import type {
     afterEach as mochaAfterEach,
 } from 'mocha';
 
+import '@wdio/globals/types';
+
 declare global {
     const describe: typeof mochaDescribe;
     const it: typeof mochaIt;
