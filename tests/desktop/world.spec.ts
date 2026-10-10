@@ -157,7 +157,9 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         const entry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
         const sibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
 
-        await $('button[aria-label="New folder"]').click();
+        await $(
+            '//*[@data-slot="sidebar-header"][.//span[text()="Manuscript"]]//button[@aria-label="New folder"]',
+        ).click();
         await $('input[aria-label="New item name"]').setValue('  New folder  ');
         await browser.keys('Enter');
         await expect(folder).toHaveAttribute('aria-selected', 'true');
@@ -182,12 +184,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.execute(() => window.__kazmasDesktopTest.close());
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
-        const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
-        const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
         await reopenedFolder.waitForDisplayed();
         if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
             await reopenedFolder.$('.tree-chevron-icon').click();
         }
+        const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
+        const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
         await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
         await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
         await reopenedEntry.click();
