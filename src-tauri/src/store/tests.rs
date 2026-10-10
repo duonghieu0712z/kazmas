@@ -82,6 +82,13 @@ async fn soft_delete_hides_subtree_restore_recovers_it_and_purge_cascades() -> T
     );
     assert!(delete_node(&mut conn, folder.id).await?);
     assert!(!delete_node(&mut conn, folder.id).await?);
+    let trash = get_trash(&mut conn).await?;
+    assert_eq!(trash.len(), 2);
+    assert!(
+        trash
+            .iter()
+            .any(|node| node.id == child.id && node.deleted_at.is_none())
+    );
     assert!(
         get_node_descendants_by_kind(&mut conn, NodeKind::Manuscript)
             .await?
@@ -95,11 +102,59 @@ async fn soft_delete_hides_subtree_restore_recovers_it_and_purge_cascades() -> T
             .len(),
         2
     );
+    assert!(!purge_node(&mut conn, folder.id).await?);
+    assert!(delete_node(&mut conn, folder.id).await?);
     assert!(purge_node(&mut conn, folder.id).await?);
     assert!(get_node(&mut conn, child.id).await.is_err());
     assert!(get_document(&mut conn, child.id).await.is_err());
     assert!(get_metadata(&mut conn, child.id).await.is_err());
     assert!(!purge_node(&mut conn, folder.id).await?);
+    close_database(conn).await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn trash_preserves_independent_deletions_and_emptying_keeps_live_content() -> TestResult {
+    let dir = temp_dir()?;
+    let mut conn = database(&dir.path().join("trash.db")).await?;
+    let world = Node::new(NodeKind::World, None, None);
+    let root = Node::new(NodeKind::Manuscript, None, Some(world.id));
+    let folder = Node::new(NodeKind::Folder, None, Some(root.id));
+    let child = Node::new(NodeKind::ManuscriptEntry, None, Some(folder.id));
+    let live = Node::new(NodeKind::ManuscriptEntry, None, Some(root.id));
+    for node in [&world, &root, &folder, &child, &live] {
+        create_node(&mut conn, node).await?;
+    }
+    create_document(&mut conn, &Document::new(child.id, json!({"type": "doc"}))).await?;
+    create_metadata(&mut conn, &NodeMetadata::new(child.id, json!({}))).await?;
+    create_document(&mut conn, &Document::new(live.id, json!({"type": "doc"}))).await?;
+    assert!(!delete_node(&mut conn, world.id).await?);
+    assert!(!delete_node(&mut conn, root.id).await?);
+    assert!(!purge_node(&mut conn, live.id).await?);
+    assert!(delete_node(&mut conn, child.id).await?);
+    assert!(delete_node(&mut conn, folder.id).await?);
+    let trash = get_trash(&mut conn).await?;
+    assert_eq!(trash.len(), 2);
+    assert!(trash.iter().any(|node| node.id == folder.id));
+    assert!(trash.iter().any(|node| node.id == child.id));
+    assert!(!restore_node(&mut conn, child.id).await?);
+    assert!(restore_node(&mut conn, folder.id).await?);
+    let trash = get_trash(&mut conn).await?;
+    assert_eq!(trash.len(), 1);
+    assert_eq!(trash[0].id, child.id);
+    assert!(restore_trash(&mut conn).await?);
+    assert!(get_trash(&mut conn).await?.is_empty());
+    assert!(get_node(&mut conn, child.id).await?.deleted_at.is_none());
+    assert!(!restore_trash(&mut conn).await?);
+    assert!(delete_node(&mut conn, child.id).await?);
+    assert!(delete_node(&mut conn, folder.id).await?);
+    assert!(empty_trash(&mut conn).await?);
+    assert!(get_trash(&mut conn).await?.is_empty());
+    assert!(get_node(&mut conn, folder.id).await.is_err());
+    assert!(get_document(&mut conn, child.id).await.is_err());
+    assert!(get_metadata(&mut conn, child.id).await.is_err());
+    assert!(get_document(&mut conn, live.id).await.is_ok());
+    assert!(!empty_trash(&mut conn).await?);
     close_database(conn).await?;
     Ok(())
 }

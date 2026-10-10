@@ -14,6 +14,43 @@ const entries = [
     node({ id: 'entry-long', name: longName }),
 ];
 const wikiEntries = [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+const sectionRoots = [
+    node({ id: 'manuscript-root', kind: 'manuscript', name: 'Manuscript' }),
+    node({ id: 'wiki-root', kind: 'wiki', name: 'Wiki' }),
+];
+
+if (scenario === 'trash-order') {
+    const deletedAt = '2026-01-01T00:00:00Z';
+    entries.splice(
+        0,
+        entries.length,
+        node({ id: 'z-file', name: 'Zebra file', deletedAt }),
+        node({ id: 'a-file', name: 'apple file', deletedAt }),
+        node({ id: 'z-folder', name: 'Zebra folder', kind: 'folder', deletedAt }),
+        node({ id: 'a-folder', name: 'apple folder', kind: 'folder', deletedAt }),
+        node({ id: 'nested-z-file', name: 'Zebra child', parentId: 'a-folder' }),
+        node({ id: 'nested-a-file', name: 'apple child', parentId: 'a-folder' }),
+        node({
+            id: 'nested-z-folder',
+            name: 'Zebra subfolder',
+            parentId: 'a-folder',
+            kind: 'folder',
+        }),
+        node({
+            id: 'nested-a-folder',
+            name: 'apple subfolder',
+            parentId: 'a-folder',
+            kind: 'folder',
+        }),
+    );
+    wikiEntries.splice(
+        0,
+        wikiEntries.length,
+        node({ id: 'wiki-file', kind: 'wiki_entry', name: 'apple page', deletedAt }),
+        node({ id: 'wiki-z-folder', kind: 'folder', name: 'Zebra topics', deletedAt }),
+        node({ id: 'wiki-a-folder', kind: 'folder', name: 'apple topics', deletedAt }),
+    );
+}
 
 if (scenario === 'tree-state') {
     entries.splice(
@@ -35,6 +72,13 @@ if (scenario === 'large-tree') {
             node({ id: `large-${index}`, name: `Chapter ${String(index).padStart(5, '0')}` }),
         );
     }
+}
+
+for (const item of entries) {
+    item.parentId ??= 'manuscript-root';
+}
+for (const item of wikiEntries) {
+    item.parentId ??= 'wiki-root';
 }
 
 const documents = new Map(
@@ -103,12 +147,70 @@ mockIPC(
         const data = (args ?? {}) as Record<string, unknown>;
         calls.push({ command, args: data });
         switch (command) {
+            case 'get_node':
+                return (
+                    [...entries, ...wikiEntries, ...sectionRoots].find(
+                        (item) => item.id === data.nodeId,
+                    ) ?? null
+                );
             case 'get_world':
                 return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
             case 'get_manuscripts':
                 return visibleEntries(entries);
             case 'get_wikis':
                 return visibleEntries(wikiEntries);
+            case 'get_trash': {
+                const all = [...entries, ...wikiEntries];
+                const visible = new Set(visibleEntries(all).map((item) => item.id));
+                return all.filter((item) => !visible.has(item.id));
+            }
+            case 'restore_trash': {
+                const deleted = [...entries, ...wikiEntries].filter((item) => item.deletedAt);
+                for (const item of deleted) {
+                    item.deletedAt = null;
+                }
+                return deleted.length > 0;
+            }
+            case 'restore_node': {
+                const item = [...entries, ...wikiEntries].find((item) => item.id === data.nodeId);
+                if (!item?.deletedAt) {
+                    return false;
+                }
+                item.deletedAt = null;
+                return true;
+            }
+            case 'purge_node':
+            case 'empty_trash': {
+                const all = [...entries, ...wikiEntries];
+                const removed = new Set(
+                    all
+                        .filter(
+                            (item) =>
+                                item.deletedAt &&
+                                (command === 'empty_trash' || item.id === data.nodeId),
+                        )
+                        .map((item) => item.id),
+                );
+                let changed = true;
+                while (changed) {
+                    changed = false;
+                    for (const item of all) {
+                        if (item.parentId && removed.has(item.parentId) && !removed.has(item.id)) {
+                            removed.add(item.id);
+                            changed = true;
+                        }
+                    }
+                }
+                for (const items of [entries, wikiEntries]) {
+                    for (let index = items.length - 1; index >= 0; index--) {
+                        if (removed.has(items[index]!.id)) {
+                            documents.delete(items[index]!.id);
+                            items.splice(index, 1);
+                        }
+                    }
+                }
+                return removed.size > 0;
+            }
             case 'create_manuscript_entry':
             case 'create_wiki_entry': {
                 const wiki = command === 'create_wiki_entry';

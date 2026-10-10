@@ -50,6 +50,10 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.waitUntil(() => browser.execute(() => Boolean(window.__kazmasDesktopTest)), {
             timeout: 30000,
         });
+        const manuscript = $('button=Manuscript');
+        if ((await manuscript.getAttribute('data-active')) !== 'true') {
+            await manuscript.click();
+        }
         name = `World-${randomUUID()}`;
         const directory = process.env.KAZMAS_TEST_DATA_DIR;
         if (!directory) {
@@ -194,6 +198,58 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
         await reopenedEntry.click();
         await expectDocumentText('Nested chapter content');
+    });
+
+    it('groups trashed empty folders by source after saving and reopening', async () => {
+        for (const section of ['Manuscript', 'Wiki']) {
+            const activity = $(`button=${section}`);
+            if ((await activity.getAttribute('data-active')) !== 'true') {
+                await activity.click();
+            }
+            await $(
+                `//*[@data-slot="sidebar-header"][.//span[text()="${section}"]]//button[@aria-label="New folder"]`,
+            ).click();
+            const folderName = `Discarded ${section}`;
+            await $('input[aria-label="New item name"]').setValue(folderName);
+            await browser.keys('Enter');
+            const folder = $(`//*[@role="treeitem"][normalize-space(.)="${folderName}"]`);
+            await folder.waitForDisplayed();
+            await browser.execute((name) => {
+                const item = Array.from(document.querySelectorAll('[role="treeitem"]')).find(
+                    (element) => element.textContent?.trim() === name,
+                );
+                item?.dispatchEvent(
+                    new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }),
+                );
+            }, folderName);
+            await $('//*[@role="menuitem"][normalize-space(.)="Move to Trash"]').click();
+            await folder.waitForExist({ reverse: true });
+        }
+        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(() => window.__kazmasDesktopTest.close());
+        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await $('button=Trash').click();
+        for (const section of ['Manuscript', 'Wiki']) {
+            const group = $(
+                `[role="region"][aria-label="Trash"] [role="group"][aria-label="${section}"]`,
+            );
+            await group.waitForDisplayed();
+            await expect(group.$('[data-slot="sidebar-group-label"]')).toHaveText(section);
+            const folder = $(`[role="treeitem"][aria-label="Discarded ${section}"]`);
+            await expect(folder).toHaveAttribute('aria-level', '1');
+            await expect(
+                folder.$('[data-slot="tooltip-trigger"].text-muted-foreground'),
+            ).toHaveText(section);
+        }
+        await $('button[aria-label="Restore All"]').click();
+        await $('[role="region"][aria-label="Trash"] p').waitForDisplayed();
+        await expect($('[role="region"][aria-label="Trash"] p')).toHaveText('Trash is empty.');
+        for (const section of ['Manuscript', 'Wiki']) {
+            await $(`button=${section}`).click();
+            await expect(
+                $(`//*[@role="treeitem"][normalize-space(.)="Discarded ${section}"]`),
+            ).toBeDisplayed();
+        }
     });
 
     it('save as preserves the original package and persists the edited copy', async () => {

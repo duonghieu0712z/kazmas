@@ -22,7 +22,7 @@ export const useWorldStore = defineStore('world', () => {
 
     const nodes = useNodeStore();
     const workspace = useWorkspaceStore();
-    let nodeReload = Promise.resolve();
+    let nodeReload: Promise<unknown> = Promise.resolve();
 
     watch(
         () => manifest.value?.id,

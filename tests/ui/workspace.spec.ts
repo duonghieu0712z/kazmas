@@ -269,7 +269,7 @@ test('new world dialog validates input and restores focus after cancellation', a
 
 test('sidebar can be resized with the keyboard and collapsed', async ({ page, workspace }) => {
     await workspace.open();
-    const handle = page.locator('[data-slot="resizable-handle"]');
+    const handle = page.locator('[data-slot="resizable-handle"][data-orientation="horizontal"]');
     await handle.focus();
     const before = await handle.boundingBox();
     await page.keyboard.press('ArrowRight');
@@ -366,3 +366,68 @@ for (const scenario of ['empty', 'editor', 'long', 'dialog']) {
         });
     }
 }
+
+test('tree name tooltip stays beside its text after resizing the sidebar', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open();
+    const handle = page.locator('[data-slot="resizable-handle"][data-orientation="horizontal"]');
+    await handle.focus();
+    await page.keyboard.press('ArrowRight');
+    const label = page
+        .getByRole('treeitem')
+        .filter({ hasText: 'Chapter A' })
+        .locator('[data-slot="tooltip-trigger"]');
+    await label.hover();
+    const tooltip = page.locator('[data-slot="tooltip-content"]');
+    await expect(tooltip).toBeVisible();
+    await expect
+        .poll(async () => {
+            const anchor = await label.boundingBox();
+            const content = await tooltip.boundingBox();
+            return content!.x - (anchor!.x + anchor!.width);
+        })
+        .toBeLessThan(16);
+    const row = await label.locator('xpath=ancestor::*[@role="treeitem"][1]').boundingBox();
+    const anchor = await label.boundingBox();
+    expect(anchor!.x + anchor!.width).toBeLessThanOrEqual(row!.x + row!.width);
+});
+
+test('long tree items truncate within the viewport before and after moving to Trash', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open();
+    const handle = page.locator('[data-slot="resizable-handle"][data-orientation="horizontal"]');
+    await handle.focus();
+    await page.keyboard.press('ArrowLeft');
+    const name =
+        'A very long chapter title that must remain accessible without breaking the workspace layout';
+    const assertWidth = async () => {
+        const row = page.getByRole('treeitem').filter({ hasText: name });
+        await expect(row).toBeVisible();
+        const metrics = await row.evaluate((element) => {
+            const viewport = element.closest('[data-slot="scroll-area-viewport"]')!;
+            const label = element.querySelector<HTMLElement>('[data-slot="tooltip-trigger"]')!;
+            return {
+                rowRight: element.getBoundingClientRect().right,
+                viewportRight: viewport.getBoundingClientRect().right,
+                viewportWidth: viewport.clientWidth,
+                viewportScrollWidth: viewport.scrollWidth,
+                labelWidth: label.clientWidth,
+                labelScrollWidth: label.scrollWidth,
+                textOverflow: getComputedStyle(label).textOverflow,
+            };
+        });
+        expect(metrics.rowRight).toBeLessThanOrEqual(metrics.viewportRight - 4);
+        expect(metrics.viewportScrollWidth).toBeLessThanOrEqual(metrics.viewportWidth);
+        expect(metrics.labelScrollWidth).toBeGreaterThan(metrics.labelWidth);
+        expect(metrics.textOverflow).toBe('ellipsis');
+    };
+    await assertWidth();
+    await page.getByRole('treeitem').filter({ hasText: name }).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Move to Trash', exact: true }).click();
+    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    await assertWidth();
+});

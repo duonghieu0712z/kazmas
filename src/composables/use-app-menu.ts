@@ -2,13 +2,17 @@ import type { MenuItemIndex } from '@/menus';
 
 import { createGlobalState } from '@vueuse/core';
 
+import { useTrashActions } from '@/actions/trash';
 import { createMenu, createMenuIndex } from '@/menus';
+import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
 export const useAppMenu = createGlobalState(createAppMenu);
 
 function createAppMenu() {
     const world = useWorldStore();
+    const nodes = useNodeStore();
+    const trash = useTrashActions();
 
     const menu = reactive(createMenu());
     const menuItems = createMenuIndex(menu);
@@ -16,7 +20,7 @@ function createAppMenu() {
     watchEffect(() => {
         const hasProject = world.hasWorld;
         const hasRecentWorlds = false;
-        const hasTrash = false;
+        const hasTrash = nodes.trashNodes.length > 0 && !trash.busy;
         const canCreateNode = world.hasWorld;
 
         setMenuItemEnabled(menuItems, 'save', hasProject);

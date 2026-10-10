@@ -110,6 +110,30 @@ impl ProjectManager {
         Ok(None)
     }
 
+    pub(crate) async fn get_trash(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.get_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn empty_trash(&self, id: Uuid) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.empty_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn restore_trash(&self, id: Uuid) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.restore_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
     pub(crate) async fn get_wikis(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(&id) {

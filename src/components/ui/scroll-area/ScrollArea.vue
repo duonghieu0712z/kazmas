@@ -35,6 +35,8 @@ const delegatedProps = reactiveOmit(props, 'class', 'orientation', 'viewportAsCh
                 'relative z-0 size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
                 'focus-visible:ring-[1.5px] focus-visible:ring-focus-ring/50 focus-visible:outline-1',
                 '[&>div]:grid [&>div]:min-h-full',
+                orientation === 'vertical' &&
+                    '[&>div]:w-full [&>div]:min-w-0 [&>div]:grid-cols-[minmax(0,1fr)]',
             ]"
             data-slot="scroll-area-viewport"
         >

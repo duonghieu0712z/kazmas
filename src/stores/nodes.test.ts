@@ -8,6 +8,83 @@ import { useNodeStore } from './nodes';
 describe('node store', () => {
     beforeEach(() => setActivePinia(createPinia()));
 
+    it('identifies empty trashed folders by their original section and parent path', async () => {
+        const wiki = node({ id: 'wiki', kind: 'wiki', name: 'Wiki' });
+        const manuscript = node({ id: 'manuscript', kind: 'manuscript', name: 'Manuscript' });
+        const parent = node({
+            id: 'characters',
+            parentId: wiki.id,
+            kind: 'folder',
+            name: 'Characters',
+        });
+        const wikiFolder = node({
+            id: 'empty-wiki',
+            parentId: parent.id,
+            kind: 'folder',
+            name: 'Unused',
+        });
+        const manuscriptFolder = node({
+            id: 'empty-manuscript',
+            parentId: manuscript.id,
+            kind: 'folder',
+            name: 'Draft',
+        });
+        tauri.getTrash.mockResolvedValue({ status: 'ok', data: [wikiFolder, manuscriptFolder] });
+        tauri.getNode.mockImplementation(async (id: string) => ({
+            status: 'ok',
+            data: [wiki, manuscript, parent].find((item) => item.id === id) ?? null,
+        }));
+        const store = useNodeStore();
+        await store.loadTrash();
+        expect(store.trashLocations.get(wikiFolder.id)).toEqual({
+            section: 'Wiki',
+            path: 'Wiki / Characters',
+        });
+        expect(store.trashLocations.get(manuscriptFolder.id)).toEqual({
+            section: 'Manuscript',
+            path: 'Manuscript',
+        });
+    });
+
+    it('rejects late trash ancestor loads after closing a world', async () => {
+        const parent = deferred<{ status: 'ok'; data: ReturnType<typeof node> }>();
+        tauri.getTrash.mockResolvedValue({
+            status: 'ok',
+            data: [node({ parentId: 'manuscript' })],
+        });
+        tauri.getNode.mockReturnValue(parent.promise);
+        const store = useNodeStore();
+        const pending = store.loadTrash();
+        await Promise.resolve();
+        store.clearNodes();
+        parent.resolve({ status: 'ok', data: node({ id: 'manuscript', kind: 'manuscript' }) });
+        await pending;
+        expect(store.trashNodes).toEqual([]);
+        expect(store.trashLocations.size).toBe(0);
+    });
+
+    it('rejects late trash loads after closing a world', async () => {
+        const result = deferred<{ status: 'ok'; data: ReturnType<typeof node>[] }>();
+        tauri.getTrash.mockReturnValue(result.promise);
+        const store = useNodeStore();
+        const pending = store.loadTrash();
+        store.clearNodes();
+        result.resolve({ status: 'ok', data: [node({ deletedAt: '2026-01-01T00:00:00Z' })] });
+        await pending;
+        expect(store.trashNodes).toEqual([]);
+    });
+
+    it('reports trash load failures and clears the error after retry', async () => {
+        tauri.getTrash.mockRejectedValueOnce(new Error('Read failed'));
+        const store = useNodeStore();
+        expect(await store.loadTrash()).toBe(false);
+        expect(store.trashError).toContain('could not be loaded');
+        tauri.getTrash.mockResolvedValue({ status: 'ok', data: [node()] });
+        await store.loadTrash();
+        expect(store.trashNodes).toHaveLength(1);
+        expect(store.trashError).toBe('');
+    });
+
     it('builds nested trees and breadcrumbs from unordered nodes', async () => {
         const child = node({ parentId: 'folder' });
         const folder = node({ id: 'folder', kind: 'folder', name: 'Folder' });

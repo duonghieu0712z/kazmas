@@ -5,6 +5,7 @@ import { useSessionStorage } from '@vueuse/core';
 
 import { useSidebar } from '@/components/ui/sidebar';
 import { NodeTreeSidebar } from '@/features/node-tree';
+import { TrashSidebar } from '@/features/trash';
 import { useNodeStore } from '@/stores/nodes';
 
 import AppActivityBar from './AppActivityBar.vue';
@@ -13,6 +14,21 @@ const activeActivity = useSessionStorage<ActivityBarItemName | null>('node_view_
 
 const nodes = useNodeStore();
 const { open } = useSidebar();
+
+const activities = computed(() => ({
+    Manuscript: {
+        component: NodeTreeSidebar,
+        props: { section: 'Manuscript' as const, tree: nodes.manuscripts },
+    },
+    Wiki: {
+        component: NodeTreeSidebar,
+        props: { section: 'Wiki' as const, tree: nodes.wikis },
+    },
+    Trash: {
+        component: TrashSidebar,
+        props: {},
+    },
+}));
 
 watch(
     () => nodes.treeRequest,
@@ -37,15 +53,12 @@ watch(
         <AppActivityBar v-model="activeActivity" class="shrink-0" />
 
         <Sidebar v-show="open" class="min-h-0 min-w-0 flex-1 overflow-hidden" collapsible="none">
-            <NodeTreeSidebar
-                :active="activeActivity === 'Manuscript'"
-                section="Manuscript"
-                :tree="nodes.manuscripts"
-            />
-            <NodeTreeSidebar
-                :active="activeActivity === 'Wiki'"
-                section="Wiki"
-                :tree="nodes.wikis"
+            <component
+                :is="activity.component"
+                v-for="(activity, name) in activities"
+                :key="name"
+                :active="activeActivity === name"
+                v-bind="activity.props"
             />
         </Sidebar>
     </Sidebar>

@@ -17,6 +17,9 @@ export type NodePathItem = {
 export const useNodeStore = defineStore('nodes', () => {
     const manuscriptNodes = shallowRef<NodeDto[]>([]);
     const wikiNodes = shallowRef<NodeDto[]>([]);
+    const trashNodes = shallowRef<NodeDto[]>([]);
+    const trashAncestors = shallowRef<NodeDto[]>([]);
+    const trashError = ref('');
     const selectedNodeId = shallowRef<string | null>(null);
 
     const workspace = useWorkspaceStore();
@@ -36,6 +39,27 @@ export const useNodeStore = defineStore('nodes', () => {
 
     const manuscripts = computed(() => buildNodeTree(manuscriptNodes.value));
     const wikis = computed(() => buildNodeTree(wikiNodes.value));
+    const trashTree = computed(() => buildNodeTree(trashNodes.value));
+    const trashLocations = computed(() => {
+        const all = [...trashNodes.value, ...trashAncestors.value];
+        return new Map(
+            trashNodes.value.map((node) => {
+                const path = buildNodePath('', all, node.id)?.slice(1) ?? [];
+                const root = all.find((item) => item.id === path[0]?.id);
+                const section = root?.kind === 'wiki' ? 'Wiki' : 'Manuscript';
+                return [
+                    node.id,
+                    {
+                        section,
+                        path: path
+                            .slice(0, -1)
+                            .map((item) => item.name)
+                            .join(' / '),
+                    },
+                ];
+            }),
+        );
+    });
     const openedNodePath = computed(() => {
         if (!openedNodeId.value) {
             return [];
@@ -70,6 +94,9 @@ export const useNodeStore = defineStore('nodes', () => {
         revision += 1;
         manuscriptNodes.value = [];
         wikiNodes.value = [];
+        trashNodes.value = [];
+        trashAncestors.value = [];
+        trashError.value = '';
         selectedNodeId.value = null;
         treeRequest.value = null;
         workspace.resetWorld();
@@ -107,12 +134,61 @@ export const useNodeStore = defineStore('nodes', () => {
 
     const reloadNodes = async () => {
         revision += 1;
-        await Promise.all([loadManuscripts(), loadWikis()]);
+        const results = await Promise.all([loadManuscripts(), loadWikis(), loadTrash()]);
+        return results.every((result) => result !== false);
+    };
+
+    const loadTrash = async () => {
+        const currentRevision = revision;
+        try {
+            const result = await commands.getTrash();
+            if (currentRevision !== revision) {
+                return false;
+            }
+            if (result.status === 'ok') {
+                const trash = result.data ?? [];
+                const known = new Map(trash.map((node) => [node.id, node]));
+                const ancestors: NodeDto[] = [];
+                for (const item of trash) {
+                    let parentId = item.parentId;
+                    while (parentId && !known.has(parentId)) {
+                        const parent = await commands.getNode(parentId);
+                        if (currentRevision !== revision) {
+                            return false;
+                        }
+                        if (parent.status !== 'ok' || !parent.data) {
+                            throw new Error('Trash location could not be loaded');
+                        }
+                        known.set(parentId, parent.data);
+                        ancestors.push(parent.data);
+                        parentId =
+                            parent.data.kind === 'manuscript' || parent.data.kind === 'wiki'
+                                ? null
+                                : parent.data.parentId;
+                    }
+                }
+                trashNodes.value = trash;
+                trashAncestors.value = ancestors;
+                trashError.value = '';
+                return trashNodes.value;
+            }
+        } catch {
+            if (currentRevision !== revision) {
+                return false;
+            }
+        }
+        trashError.value = 'Trash could not be loaded. Try again.';
+        return false;
     };
 
     return {
         manuscripts,
         wikis,
+        trashNodes,
+        trashTree,
+        trashLocations,
+        trashError,
+        loadTrash,
         selectedNodeId,
         openedNodeId,
         openedNodePath,

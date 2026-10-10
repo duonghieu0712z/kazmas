@@ -2,8 +2,14 @@ import { vi } from 'vitest';
 
 const tauri = vi.hoisted(() => ({
     getWorld: vi.fn(),
+    getNode: vi.fn(),
     getManuscripts: vi.fn(),
     getWikis: vi.fn(),
+    getTrash: vi.fn(),
+    restoreNode: vi.fn(),
+    restoreTrash: vi.fn(),
+    purgeNode: vi.fn(),
+    emptyTrash: vi.fn(),
     getDocument: vi.fn(),
     createManuscriptEntry: vi.fn(),
     createWikiEntry: vi.fn(),
@@ -41,8 +47,14 @@ export function resetTauri() {
         mock.mockReset();
     }
     tauri.getWorld.mockResolvedValue({ status: 'ok', data: null });
+    tauri.getNode.mockResolvedValue({ status: 'ok', data: null });
     tauri.getManuscripts.mockResolvedValue({ status: 'ok', data: [] });
     tauri.getWikis.mockResolvedValue({ status: 'ok', data: [] });
+    tauri.getTrash.mockResolvedValue({ status: 'ok', data: [] });
+    tauri.restoreNode.mockResolvedValue({ status: 'ok', data: true });
+    tauri.restoreTrash.mockResolvedValue({ status: 'ok', data: true });
+    tauri.purgeNode.mockResolvedValue({ status: 'ok', data: true });
+    tauri.emptyTrash.mockResolvedValue({ status: 'ok', data: true });
     tauri.getDocument.mockResolvedValue({ status: 'ok', data: null });
     tauri.updateDocument.mockResolvedValue({ status: 'ok', data: true });
     tauri.updateNode.mockResolvedValue({ status: 'ok', data: true });

@@ -311,6 +311,26 @@ impl WorldProject {
         Ok(node_updated)
     }
 
+    pub(crate) async fn get_trash(&mut self) -> KazmasResult<Vec<Node>> {
+        store::get_trash(&mut self.conn).await
+    }
+
+    pub(crate) async fn restore_trash(&mut self) -> KazmasResult<bool> {
+        let restored = store::restore_trash(&mut self.conn).await?;
+        if restored {
+            self.dirty = true;
+        }
+        Ok(restored)
+    }
+
+    pub(crate) async fn empty_trash(&mut self) -> KazmasResult<bool> {
+        let emptied = store::empty_trash(&mut self.conn).await?;
+        if emptied {
+            self.dirty = true;
+        }
+        Ok(emptied)
+    }
+
     pub(crate) async fn delete_node(&mut self, id: Uuid) -> KazmasResult<bool> {
         let deleted = store::delete_node(&mut self.conn, id).await?;
         if deleted {

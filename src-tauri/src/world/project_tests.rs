@@ -125,6 +125,54 @@ async fn rolls_back_partial_entry_when_document_insert_fails() -> TestResult {
 }
 
 #[tokio::test]
+async fn trash_restore_and_permanent_deletion_persist_after_save_and_reopen() -> TestResult {
+    let dir = temp_dir()?;
+    let package = dir.path().join("Trash.kazmas");
+    let mut world = WorldProject::create_world("Trash", dir.path(), dir.path()).await?;
+    let id = world.create_wiki_entry(Some("Character"), None).await?;
+    let content = json!({"type": "doc", "content": [{"type": "paragraph"}]});
+    world
+        .update_document(&Document::new(id, content.clone()))
+        .await?;
+    assert!(world.delete_node(id).await?);
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert_eq!(world.get_trash().await?[0].id, id);
+    assert!(
+        world
+            .get_node_descendants_by_kind(NodeKind::Wiki)
+            .await?
+            .is_empty()
+    );
+    assert!(world.restore_node(id).await?);
+    assert!(world.is_dirty());
+    assert_eq!(world.get_document(id).await?.content, content);
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert!(world.get_trash().await?.is_empty());
+    assert_eq!(
+        world.get_node_descendants_by_kind(NodeKind::Wiki).await?[0].id,
+        id
+    );
+    assert!(world.delete_node(id).await?);
+    world.save_world().await?;
+    assert!(world.empty_trash().await?);
+    assert!(world.is_dirty());
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert!(world.get_trash().await?.is_empty());
+    assert!(world.get_document(id).await.is_err());
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn updates_document_and_timestamp_atomically() -> TestResult {
     let dir = temp_dir()?;
     let mut world = WorldProject::create_world("Atomic", dir.path(), dir.path()).await?;
