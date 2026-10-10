@@ -35,17 +35,24 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         <DialogContent
             :class="
                 cn(
-                    'fixed z-60 flex flex-col gap-4 border-popup-border bg-popup-background text-popup-foreground shadow-xs transition ease-in-out',
+                    'fixed z-60 flex flex-col gap-4 shadow-xs transition ease-in-out',
+                    'border-popup-border bg-popup-background text-popup-foreground',
                     'data-[state=open]:animate-in data-[state=open]:duration-500',
                     'data-[state=closed]:animate-out data-[state=closed]:duration-300',
-                    side === 'right' &&
-                        'inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
-                    side === 'left' &&
-                        'inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
-                    side === 'top' &&
-                        'inset-x-0 top-0 h-auto border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
-                    side === 'bottom' &&
-                        'inset-x-0 bottom-0 h-auto border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+                    side === 'right' && 'inset-y-0 right-0 h-full w-3/4 border-l',
+                    side === 'right' && 'data-[state=closed]:slide-out-to-right',
+                    side === 'right' && 'data-[state=open]:slide-in-from-right',
+                    side === 'right' && 'sm:max-w-sm',
+                    side === 'left' && 'inset-y-0 left-0 h-full w-3/4 border-r',
+                    side === 'left' && 'data-[state=closed]:slide-out-to-left',
+                    side === 'left' && 'data-[state=open]:slide-in-from-left',
+                    side === 'left' && 'sm:max-w-sm',
+                    side === 'top' && 'inset-x-0 top-0 h-auto border-b',
+                    side === 'top' && 'data-[state=closed]:slide-out-to-top',
+                    side === 'top' && 'data-[state=open]:slide-in-from-top',
+                    side === 'bottom' && 'inset-x-0 bottom-0 h-auto border-t',
+                    side === 'bottom' && 'data-[state=closed]:slide-out-to-bottom',
+                    side === 'bottom' && 'data-[state=open]:slide-in-from-bottom',
                     props.class,
                 )
             "
@@ -56,7 +63,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
             <DialogClose
                 :class="[
-                    'absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none',
+                    'absolute top-4 right-4 rounded-xs opacity-70 transition-opacity',
+                    'ring-offset-background',
+                    'hover:opacity-100',
+                    'disabled:pointer-events-none',
                     'data-[state=open]:bg-selected data-[state=open]:text-selected-foreground',
                     'focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:outline-hidden',
                 ]"

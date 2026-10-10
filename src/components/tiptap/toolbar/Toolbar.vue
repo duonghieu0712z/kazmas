@@ -3,6 +3,7 @@ import type { HTMLAttributes } from 'vue';
 
 import { ChevronsLeftIcon, ChevronsRightIcon } from '@lucide/vue';
 import { useResizeObserver } from '@vueuse/core';
+import { ref, useTemplateRef } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
@@ -24,6 +25,7 @@ const navigationContent = useTemplateRef<HTMLElement>('navigationContent');
 const canGoBackward = ref(false);
 const canGoForward = ref(false);
 const navigationEndSpace = ref(0);
+
 const previousNavigationPositions: number[] = [];
 
 function getGroups() {
@@ -191,7 +193,7 @@ useResizeObserver(navigationContent, updateNavigation);
 <template>
     <ScrollArea
         v-if="overflow === 'scroll'"
-        :class="cn('relative z-40 w-full shrink-0 bg-editor-toolbar-background', props.class)"
+        :class="cn('z-40 w-full shrink-0 bg-editor-toolbar-background', props.class)"
         data-slot="toolbar"
         orientation="horizontal"
     >
@@ -210,7 +212,8 @@ useResizeObserver(navigationContent, updateNavigation);
         v-else
         :class="
             cn(
-                'relative z-40 flex w-full shrink-0 border-b border-editor-toolbar-border bg-editor-toolbar-background',
+                'relative z-40 flex w-full shrink-0 border-b',
+                'border-editor-toolbar-border bg-editor-toolbar-background',
                 props.class,
             )
         "

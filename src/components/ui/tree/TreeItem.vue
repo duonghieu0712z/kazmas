@@ -28,9 +28,11 @@ const props = withDefaults(
 const emits = defineEmits<TreeItemEmits<T>>();
 
 const delegatedProps = reactiveOmit(props, 'class');
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 const rootContext = injectTreeRootContext();
+
 const hasChildren = computed(() => !!rootContext.getChildren(props.value)?.length);
 
 const treeContext = injectTreeContext();
@@ -57,20 +59,18 @@ function toggleItem(event: TreeItemToggleEvent<T>) {
         v-bind="forwarded"
         :class="
             cn(
-                [
-                    'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs text-tree-item-foreground transition-colors outline-none',
-                    'hover:bg-tree-item-hover hover:text-tree-item-hover-foreground',
-                    'focus-visible:bg-tree-item-hover focus-visible:text-tree-item-hover-foreground',
-                    'active:bg-active active:text-active-foreground',
-                    'data-selected:bg-tree-item-selected data-selected:text-tree-item-selected-foreground',
-                    'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
-                    // Indent guide
-                    indentGuide && [
-                        `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
-                        '[--tree-item-guide-color:var(--color-tree-indent-guide)]',
-                        'before:bg-[repeating-linear-gradient(to_right,var(--tree-item-guide-color)_0,var(--tree-item-guide-color)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
-                    ],
-                ],
+                'relative flex h-5 w-full min-w-0 cursor-pointer items-center rounded-sm pe-2 text-xs transition-colors outline-none',
+                'text-tree-item-foreground',
+                'hover:bg-tree-item-hover hover:text-tree-item-hover-foreground',
+                'focus-visible:bg-tree-item-hover focus-visible:text-tree-item-hover-foreground',
+                'active:bg-active active:text-active-foreground',
+                'data-selected:bg-tree-item-selected data-selected:text-tree-item-selected-foreground',
+                'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
+                indentGuide &&
+                    `before:pointer-events-none before:absolute before:inset-y-0 before:left-(--tree-item-guide-start) before:w-(--tree-item-guide-width) before:content-['']`,
+                indentGuide && '[--tree-item-guide-color:var(--color-tree-indent-guide)]',
+                indentGuide &&
+                    'before:bg-[repeating-linear-gradient(to_right,var(--tree-item-guide-color)_0,var(--tree-item-guide-color)_1px,transparent_1px,transparent_var(--tree-item-level-indent))]',
                 props.class,
             )
         "

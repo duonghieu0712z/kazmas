@@ -11,12 +11,7 @@ const props = defineProps<{
 
 <template>
     <Input
-        :class="
-            cn(
-                'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0',
-                props.class,
-            )
-        "
+        :class="cn('flex-1 rounded-none border-0 shadow-none focus-visible:ring-0', props.class)"
         data-slot="input-group-control"
     />
 </template>

@@ -1,18 +1,6 @@
 <script setup lang="ts">
 import type { MenuItem } from '../types';
 
-import {
-    ContextMenuSeparator,
-    ContextMenuLabel,
-    ContextMenuItem,
-    ContextMenuShortcut,
-    ContextMenuCheckboxItem,
-    ContextMenuRadioGroup,
-    ContextMenuRadioItem,
-    ContextMenuSub,
-    ContextMenuSubTrigger,
-    ContextMenuSubContent,
-} from '@/components/ui/context-menu';
 import { formatShortcutText } from '@/utils/shortcut';
 
 import { executeMenuCommand } from '../commands';

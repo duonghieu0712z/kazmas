@@ -3,6 +3,7 @@ import type { HeadingDropdownProps, HeadingLevel } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { computed, ref } from 'vue';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import {
@@ -30,6 +31,7 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const {
     activeLevel,
     canSet,
@@ -58,6 +60,7 @@ const delegatedProps = reactiveOmit(
     'showTooltip',
     'showShortcut',
 );
+
 const menuLevels = computed<HeadingLevel[]>(() => [0, ...levels.value]);
 
 function changeLevel(level: HeadingLevel) {

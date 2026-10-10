@@ -13,6 +13,7 @@ const props = defineProps<
 >();
 
 const delegatedProps = reactiveOmit(props, 'class', 'inset');
+
 const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
@@ -21,7 +22,8 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs text-menu-item-foreground outline-hidden select-none',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs outline-hidden select-none',
+                'text-menu-item-foreground',
                 'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
                 'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! data-inset:pl-6 disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
                 'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive',

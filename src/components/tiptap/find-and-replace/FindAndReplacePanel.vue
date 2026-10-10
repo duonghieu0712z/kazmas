@@ -14,6 +14,7 @@ import {
     XIcon,
 } from '@lucide/vue';
 import { isMacOS } from '@tiptap/vue-3';
+import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { ButtonGroup } from '@/components/ui/button-group';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -38,6 +39,7 @@ const emits = defineEmits<{
 
 const panel = useTemplateRef<HTMLElement>('panel');
 const replaceExpanded = ref(false);
+
 const {
     isVisible,
     isAvailable,
@@ -200,7 +202,8 @@ function handlePanelKeydown(event: KeyboardEvent) {
         aria-label="Find and replace"
         :class="
             cn(
-                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-md border border-popup-border bg-popup-background p-1.5 text-popup-foreground shadow-md',
+                'absolute top-11 right-2 z-30 w-md max-w-[calc(100%-1rem)] rounded-md border p-1.5 shadow-xs',
+                'border-popup-border bg-popup-background text-popup-foreground',
                 props.class,
             )
         "
@@ -217,7 +220,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
                 <ChevronRightIcon v-else />
             </FindAndReplacePanelButton>
 
-            <InputGroup class="h-7 min-w-0 flex-1">
+            <InputGroup class="h-7 flex-1">
                 <InputGroupInput
                     autocapitalize="off"
                     autocomplete="off"
@@ -298,7 +301,7 @@ function handlePanelKeydown(event: KeyboardEvent) {
         </div>
 
         <div v-show="replaceExpanded" class="mt-1 flex items-center gap-1 pl-8">
-            <InputGroup class="h-7 min-w-0 flex-1">
+            <InputGroup class="h-7 flex-1">
                 <InputGroupInput
                     autocapitalize="off"
                     autocomplete="off"

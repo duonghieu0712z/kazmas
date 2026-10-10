@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import type { AlertDialogPayload } from './alert-dialog';
 
+import { computed } from 'vue';
+
+import {
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 
 import { ALERT_DIALOG_DEFAULT_LABELS, AlertDialogButtons, AlertDialogResult } from './alert-dialog';
@@ -84,7 +93,7 @@ const actions = computed(() => {
     <AlertDialogContent class="sm:max-w-md">
         <AlertDialogHeader>
             <AlertDialogTitle>{{ payload.title }}</AlertDialogTitle>
-            <AlertDialogDescription class="text-sm leading-6 whitespace-pre-line">
+            <AlertDialogDescription class="leading-6 whitespace-pre-line">
                 {{ payload.content }}
             </AlertDialogDescription>
         </AlertDialogHeader>

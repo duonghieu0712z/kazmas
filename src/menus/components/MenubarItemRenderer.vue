@@ -1,18 +1,6 @@
 <script setup lang="ts">
 import type { MenuItem } from '../types';
 
-import {
-    MenubarSeparator,
-    MenubarLabel,
-    MenubarItem,
-    MenubarShortcut,
-    MenubarCheckboxItem,
-    MenubarRadioGroup,
-    MenubarRadioItem,
-    MenubarSub,
-    MenubarSubTrigger,
-    MenubarSubContent,
-} from '@/components/ui/menubar';
 import { formatShortcutText } from '@/utils/shortcut';
 
 import { executeMenuCommand } from '../commands';

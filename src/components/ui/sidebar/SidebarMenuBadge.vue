@@ -12,7 +12,8 @@ const props = defineProps<{
     <div
         :class="
             cn(
-                'pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-sm px-1 text-xs font-medium text-sidebar-foreground tabular-nums select-none',
+                'pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-sm px-1 text-xs font-medium tabular-nums select-none',
+                'text-sidebar-foreground',
                 'peer-hover/menu-button:text-hover-foreground peer-data-[active=true]/menu-button:text-selected-foreground',
                 'peer-data-[size=sm]/menu-button:top-1',
                 'peer-data-[size=default]/menu-button:top-1.5',

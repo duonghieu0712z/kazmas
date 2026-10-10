@@ -25,6 +25,7 @@ const reference = computed(() => {
 });
 
 let interactedOutside = false;
+
 const items = computed(() => toValue(renderedMenu.value?.items) ?? []);
 
 watch(

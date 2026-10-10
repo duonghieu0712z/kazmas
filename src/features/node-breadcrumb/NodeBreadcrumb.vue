@@ -38,16 +38,19 @@ const crumbs = computed(() => {
                         <DropdownMenuTrigger
                             :aria-label="`Navigate from ${item.name}`"
                             as="button"
-                            class="min-w-0 truncate rounded-xs px-0.5 text-content-header-foreground outline-none hover:bg-hover focus-visible:ring-1 focus-visible:ring-focus-ring data-[state=open]:bg-hover"
+                            :class="[
+                                'min-w-0 truncate rounded-xs px-0.5 outline-none',
+                                'text-content-header-foreground',
+                                'hover:bg-hover',
+                                'focus-visible:ring-1 focus-visible:ring-focus-ring',
+                                'data-[state=open]:bg-hover',
+                            ]"
                             :disabled="!item.items.some((node) => node.id !== currentNodeId)"
                             type="button"
                         >
                             {{ item.name }}
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="start"
-                            class="max-w-72 min-w-48 overflow-hidden p-0"
-                        >
+                        <DropdownMenuContent align="start" class="max-w-72 overflow-hidden p-0">
                             <NodeBreadcrumbMenu
                                 :current-node-id="currentNodeId"
                                 :items="item.items"

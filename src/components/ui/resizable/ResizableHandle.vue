@@ -17,6 +17,7 @@ const props = defineProps<
 const emits = defineEmits<SplitterResizeHandleEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'withHandle');
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 const { separation, orientation } = injectResizableContext();
 </script>

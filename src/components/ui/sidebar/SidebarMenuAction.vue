@@ -25,7 +25,9 @@ const props = withDefaults(
         :as-child="asChild"
         :class="
             cn(
-                'absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-sm p-0 text-sidebar-foreground ring-focus-ring outline-hidden transition-transform focus-visible:ring-2',
+                'absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-sm p-0 outline-hidden transition-transform',
+                'text-sidebar-foreground ring-focus-ring',
+                'focus-visible:ring-2',
                 'peer-hover/menu-button:text-hover-foreground peer-data-[active=true]/menu-button:text-selected-foreground',
                 'hover:bg-hover hover:text-hover-foreground active:bg-active active:text-active-foreground',
                 'after:absolute after:-inset-2 md:after:hidden',

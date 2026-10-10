@@ -18,6 +18,7 @@ const props = defineProps<
 const emits = defineEmits<MenubarItemEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class', 'inset', 'variant');
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
@@ -26,7 +27,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         v-bind="forwarded"
         :class="
             cn(
-                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs text-menu-item-foreground outline-hidden select-none',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs outline-hidden select-none',
+                'text-menu-item-foreground',
                 'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground data-inset:pl-6',
                 'data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:text-destructive!',
                 'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',

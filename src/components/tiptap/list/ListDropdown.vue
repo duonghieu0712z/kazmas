@@ -3,6 +3,7 @@ import type { ListDropdownProps, ListType } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
+import { ref } from 'vue';
 
 import { TooltipWrapper } from '@/components/tiptap/tooltip';
 import {
@@ -30,6 +31,7 @@ const emits = defineEmits<{
 }>();
 
 const open = ref(false);
+
 const {
     activeType,
     canToggle,

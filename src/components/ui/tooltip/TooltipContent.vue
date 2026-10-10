@@ -21,6 +21,7 @@ const props = withDefaults(
 const emits = defineEmits<TooltipContentEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class');
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
@@ -30,7 +31,8 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             v-bind="{ ...forwarded, ...$attrs }"
             :class="
                 cn(
-                    'z-50 w-fit animate-in rounded-sm border border-tooltip-border bg-tooltip-background px-3 py-1.5 text-xs text-balance text-tooltip-foreground fade-in-0 zoom-in-95',
+                    'z-50 w-fit animate-in rounded-sm border px-3 py-1.5 text-xs text-balance fade-in-0 zoom-in-95',
+                    'border-tooltip-border bg-tooltip-background text-tooltip-foreground',
                     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
                     props.class,
@@ -41,7 +43,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
             <slot />
 
             <TooltipArrow
-                class="-translate-y-px overflow-visible fill-tooltip-background stroke-tooltip-border stroke-[1px] [stroke-linejoin:round]"
+                :class="[
+                    '-translate-y-px overflow-visible stroke-[1px] [stroke-linejoin:round]',
+                    'fill-tooltip-background stroke-tooltip-border',
+                ]"
             />
         </TooltipContent>
     </TooltipPortal>

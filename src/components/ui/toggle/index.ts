@@ -8,7 +8,8 @@ export { default as Toggle } from './Toggle.vue';
 
 export const toggleVariants = cva(
     [
-        'inline-flex items-center justify-center rounded-sm bg-transparent text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none',
+        'inline-flex items-center justify-center rounded-sm text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none',
+        'bg-transparent',
         'hover:bg-hover hover:text-hover-foreground',
         'active:bg-active active:text-active-foreground',
         'data-[state=on]:bg-selected data-[state=on]:text-selected-foreground',

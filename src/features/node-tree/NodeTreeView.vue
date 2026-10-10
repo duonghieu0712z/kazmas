@@ -25,6 +25,7 @@ const emits = defineEmits<{
 const draft = defineModel<NodeDraft | null>('draft', { default: null });
 const creating = defineModel<boolean>('creating', { default: false });
 const rename = defineModel<NodeRename | null>('rename', { default: null });
+
 const { createName, createError, createdId, cancelName, submitName } = useCreateNode(
     props,
     draft,
@@ -68,8 +69,11 @@ async function blurName(event?: FocusEvent) {
 
 const selected = defineModel<NodeTreeDto>();
 const expanded = defineModel<string[]>('expanded', { default: () => [] });
+
 const nodes = useNodeStore();
+
 const renderedItems = shallowReactive(new Map<string, HTMLElement>());
+
 let focusedRevealSequence = 0;
 
 function setTreeItem(id: string, element: Element | ComponentPublicInstance | null) {
@@ -275,7 +279,10 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                             :ref="focusName"
                             v-model="createName"
                             aria-label="New item name"
-                            class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
+                            :class="[
+                                'h-4 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none',
+                                'focus-visible:ring-0 md:text-xs',
+                            ]"
                             :disabled="creating || !!createdId"
                             placeholder="Untitled"
                             @blur="blurName"
@@ -290,7 +297,10 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                             v-model="rename.name"
                             :aria-invalid="!!rename.error"
                             aria-label="Item name"
-                            class="h-4 min-w-0 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none focus-visible:ring-0 md:text-xs"
+                            :class="[
+                                'h-4 flex-1 rounded-xs bg-background px-1 text-xs text-foreground shadow-none',
+                                'focus-visible:ring-0 md:text-xs',
+                            ]"
                             :readonly="rename.saving"
                             @blur="blurRename"
                             @click.stop

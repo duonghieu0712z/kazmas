@@ -9,19 +9,24 @@ import WorkspaceTabItem from './WorkspaceTabItem.vue';
 const props = defineProps<{ tabs: T[] }>();
 
 const activeTab = defineModel<string>({ required: true });
+
 const tabScrollArea = useTemplateRef<ComponentPublicInstance>('tabScrollArea');
+
 const viewport = computed(() =>
     (tabScrollArea.value?.$el as HTMLElement | undefined)?.querySelector<HTMLElement>(
         '[data-slot="scroll-area-viewport"]',
     ),
 );
 const tabList = computed(() => viewport.value?.querySelector<HTMLElement>('[role="tablist"]'));
+
 const lastTabAtRightEdge = ref(false);
+
 const emit = defineEmits<{
     close: [id: string];
     contextmenu: [event: MouseEvent, tab: T];
     move: [id: string, index: number];
 }>();
+
 const { draggedId, dragPosition, dropTarget } = useTabReorder({
     tabs: () => props.tabs,
     list: tabList,
@@ -29,6 +34,7 @@ const { draggedId, dragPosition, dropTarget } = useTabReorder({
     select: (id) => (activeTab.value = id),
     move: (id, index) => emit('move', id, index),
 });
+
 const draggedTab = computed(() => props.tabs.find((tab) => tab.id === draggedId.value));
 
 defineSlots<{
@@ -134,7 +140,7 @@ onMounted(revealSelectedTab);
         <TabsContent
             v-for="tab in tabs"
             :key="tab.id"
-            class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
+            class="flex min-h-0 min-w-0 flex-col overflow-hidden data-[state=inactive]:hidden"
             force-mount
             :value="tab.id"
         >
@@ -145,7 +151,10 @@ onMounted(revealSelectedTab);
             <div
                 v-if="draggedTab"
                 aria-hidden="true"
-                class="pointer-events-none fixed z-100 flex h-8 max-w-64 items-center gap-2 rounded-md bg-tabs-trigger-selected px-3 text-xs text-tabs-trigger-selected-foreground shadow-lg"
+                :class="[
+                    'pointer-events-none fixed z-100 flex h-8 max-w-64 items-center gap-2 rounded-md px-3 text-xs shadow-lg',
+                    'bg-tabs-trigger-selected text-tabs-trigger-selected-foreground',
+                ]"
                 data-slot="tab-drag-preview"
                 :style="{ left: `${dragPosition.x + 12}px`, top: `${dragPosition.y + 12}px` }"
             >

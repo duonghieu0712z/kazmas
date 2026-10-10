@@ -7,7 +7,10 @@ import { MenubarTrigger, useForwardProps } from 'reka-ui';
 
 import { cn } from '@/lib/utils';
 
-const props = defineProps<MenubarTriggerProps & { class?: HTMLAttributes['class'] }>();
+const props = withDefaults(
+    defineProps<MenubarTriggerProps & { class?: HTMLAttributes['class'] }>(),
+    { as: 'div' },
+);
 
 const delegatedProps = reactiveOmit(props, 'class');
 
@@ -19,7 +22,8 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'flex h-6 items-center rounded-sm px-2 text-xs font-medium text-menu-item-foreground outline-hidden select-none',
+                'flex h-6 items-center rounded-sm px-2 text-xs font-medium outline-hidden select-none',
+                'text-menu-item-foreground',
                 'hover:bg-menu-item-hover hover:text-menu-item-hover-foreground focus:bg-menu-item-hover focus:text-menu-item-hover-foreground',
                 'data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
                 props.class,

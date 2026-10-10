@@ -5,7 +5,9 @@ import { getNodeIcon } from '@/lib/node-icons';
 import { useNodeStore } from '@/stores/nodes';
 
 const props = defineProps<{ items: NodeTreeDto[]; currentNodeId?: string }>();
+
 const nodes = useNodeStore();
+
 const visibleItems = computed(() => props.items.filter((item) => item.id !== props.currentNodeId));
 
 function canOpenFolder(item: NodeTreeDto) {
@@ -22,7 +24,7 @@ function canOpenFolder(item: NodeTreeDto) {
     >
         <template v-for="item in visibleItems" :key="item.id">
             <DropdownMenuSub v-if="item.kind === 'folder' && canOpenFolder(item)">
-                <DropdownMenuSubTrigger class="h-5 py-0 text-xs" :text-value="item.name">
+                <DropdownMenuSubTrigger class="h-5 py-0" :text-value="item.name">
                     <component :is="getNodeIcon(item.kind)" class="size-3.5" />
                     <span class="min-w-0 flex-1 truncate">{{ item.name }}</span>
                 </DropdownMenuSubTrigger>
@@ -34,7 +36,7 @@ function canOpenFolder(item: NodeTreeDto) {
 
             <DropdownMenuItem
                 v-else
-                class="h-5 py-0 text-xs"
+                class="h-5 py-0"
                 :disabled="item.kind === 'folder'"
                 :text-value="item.name"
                 @select="nodes.openNode(item)"

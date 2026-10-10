@@ -7,7 +7,9 @@ import { TabsTrigger, useForwardProps } from 'reka-ui';
 
 import { cn } from '@/lib/utils';
 
-const props = defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>();
+const props = withDefaults(defineProps<TabsTriggerProps & { class?: HTMLAttributes['class'] }>(), {
+    as: 'div',
+});
 
 const delegatedProps = reactiveOmit(props, 'class');
 
@@ -18,7 +20,8 @@ const forwardedProps = useForwardProps(delegatedProps);
     <TabsTrigger
         :class="
             cn(
-                'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-tabs-trigger-foreground transition-[color,box-shadow]',
+                'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow]',
+                'border-transparent text-tabs-trigger-foreground',
                 'hover:bg-tabs-trigger-hover hover:text-tabs-trigger-hover-foreground',
                 'active:bg-active active:text-active-foreground',
                 'aria-selected:bg-tabs-trigger-selected aria-selected:text-tabs-trigger-selected-foreground aria-selected:shadow-sm',

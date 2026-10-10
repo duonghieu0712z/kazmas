@@ -2,6 +2,7 @@
 import type { Editor, EditorOptions } from '@tiptap/vue-3';
 
 import { useEditor } from '@tiptap/vue-3';
+import { readonly, ref, watch } from 'vue';
 
 import { provideTiptapEditorContext } from './context';
 
@@ -14,6 +15,7 @@ defineSlots<{
 }>();
 
 const editor = useEditor(props.options);
+
 const isEditable = ref(false);
 
 function syncEditable() {

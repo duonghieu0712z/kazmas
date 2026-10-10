@@ -19,11 +19,18 @@ export const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default:
-                    'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/80 active:text-primary-foreground',
+                default: [
+                    'bg-primary text-primary-foreground',
+                    'hover:bg-primary/90 hover:text-primary-foreground',
+                    'active:bg-primary/80 active:text-primary-foreground',
+                ],
                 secondary: 'border bg-secondary text-secondary-foreground',
-                destructive:
-                    'bg-destructive text-primary-foreground hover:bg-destructive/90 hover:text-primary-foreground focus-visible:ring-destructive/20 active:bg-destructive/80 active:text-primary-foreground',
+                destructive: [
+                    'bg-destructive text-primary-foreground',
+                    'hover:bg-destructive/90 hover:text-primary-foreground',
+                    'focus-visible:ring-destructive/20',
+                    'active:bg-destructive/80 active:text-primary-foreground',
+                ],
                 outline: 'border bg-background shadow-xs',
                 ghost: null,
                 link: 'text-foreground underline-offset-4 hover:bg-transparent hover:underline active:bg-transparent',

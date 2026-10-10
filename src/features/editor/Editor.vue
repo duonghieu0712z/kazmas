@@ -18,10 +18,12 @@ const emits = defineEmits<{
 
 const world = useWorldStore();
 const nodes = useNodeStore();
+
 const openedNodeId = computed(() => props.nodeId ?? nodes.openedNodeId);
 
 const saveError = shallowRef<string>();
 const document = shallowRef<{ nodeId: string; content: Content }>();
+
 const emptyDocument: Content = { type: 'doc' };
 
 const saves = createDocumentSaveQueue(commands.updateDocument, reportSaveError);

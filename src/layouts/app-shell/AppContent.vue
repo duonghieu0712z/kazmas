@@ -21,8 +21,10 @@ const nodes = useNodeStore();
 const workspace = useWorkspaceStore();
 const world = useWorldStore();
 const { openContextMenu } = useContextMenuProvider();
+
 const { activeTab } = storeToRefs(workspace);
 const tabContents = new Map<string, TabContent>();
+
 const closingTabs = shallowReactive(new Set<string>());
 const closingBatch = ref(false);
 
@@ -151,7 +153,10 @@ async function closeTabs(ids: readonly string[]) {
             <template #default="{ tab, active }">
                 <header
                     v-if="tab.breadcrumbs.length"
-                    class="relative z-40 flex h-5 shrink-0 items-center border-b border-content-header-border bg-content-header-background px-2 text-content-header-foreground"
+                    :class="[
+                        'relative z-40 flex h-5 shrink-0 items-center border-b px-2',
+                        'border-content-header-border bg-content-header-background text-content-header-foreground',
+                    ]"
                 >
                     <NodeBreadcrumb :path="tab.breadcrumbs" />
                 </header>
