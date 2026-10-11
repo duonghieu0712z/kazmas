@@ -1,0 +1,26 @@
+name: Refactor
+description: Record code restructuring without behavior changes.
+labels: ['refactor']
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: What code should be restructured, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the intended structure and scope, if known.
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Describe completion criteria and behavior that must be preserved.
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add relevant code paths, references, or related issues.
