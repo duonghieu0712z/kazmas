@@ -20,6 +20,20 @@ const { openContextMenu } = useContextMenuProvider();
 
 const { query, selected, filteredGroups, expanded, expandGroup, collapseGroup } = useTrashTree();
 
+function clearSelection(event: MouseEvent) {
+    const target = event.target;
+    if (
+        !(target instanceof Element) ||
+        target.closest('[role="treeitem"], [role="separator"], button, input') ||
+        target.closest('[data-slot="scroll-area-scrollbar"], [data-slot="sidebar-group-label"]')
+    ) {
+        return;
+    }
+
+    selected.value = undefined;
+    nodes.selectedNodeId = null;
+}
+
 function showMenu(event: MouseEvent, node: NodeTreeDto) {
     const worldId = world.manifest?.id;
     openContextMenu({
@@ -76,7 +90,13 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
         @restore:all="actions.restoreAll"
     />
 
-    <SidebarContent v-show="active" aria-label="Trash" class="gap-0 overflow-hidden" role="region">
+    <SidebarContent
+        v-show="active"
+        aria-label="Trash"
+        class="gap-0 overflow-hidden"
+        role="region"
+        @click="clearSelection"
+    >
         <div v-if="world.hasWorld && nodes.trashError" class="space-y-2 p-3">
             <p class="text-xs text-destructive" role="alert">{{ nodes.trashError }}</p>
             <Button
