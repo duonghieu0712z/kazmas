@@ -47,6 +47,23 @@ describe('trash actions', () => {
         expect(useWorldStore().isDirty).toBe(false);
     });
 
+    it('restores a nested item while keeping permanent deletion restricted to roots', async () => {
+        const nodes = useNodeStore();
+        nodes.trashNodes = [
+            node({ id: 'folder', kind: 'folder', deletedAt: '2026-01-01T00:00:00Z' }),
+            node({ parentId: 'folder' }),
+        ];
+
+        await useTrashActions().purge('entry-a');
+        expect(tauri.purgeNode).not.toHaveBeenCalled();
+        expect(confirm).not.toHaveBeenCalled();
+
+        tauri.getTrash.mockResolvedValue({ status: 'ok', data: [] });
+        await useTrashActions().restore('entry-a');
+        expect(tauri.restoreNode).toHaveBeenCalledWith('entry-a');
+        expect(nodes.trashNodes).toEqual([]);
+    });
+
     it('restores all trash without a deletion confirmation', async () => {
         tauri.getTrash.mockResolvedValue({ status: 'ok', data: [] });
         await useTrashActions().restoreAll();

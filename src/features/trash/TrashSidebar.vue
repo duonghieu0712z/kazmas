@@ -17,6 +17,7 @@ const nodes = useNodeStore();
 const world = useWorldStore();
 const actions = useTrashActions();
 const { openContextMenu } = useContextMenuProvider();
+
 const { query, selected, filteredGroups, expanded, expandGroup, collapseGroup } = useTrashTree();
 
 function showMenu(event: MouseEvent, node: NodeTreeDto) {
@@ -25,11 +26,9 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
         event,
         items: (): MenuItem[] => {
             const current = nodes.trashNodes.find((item) => item.id === node.id);
-            const enabled =
-                !actions.busy &&
-                world.manifest?.id === worldId &&
-                !!current &&
-                !nodes.trashNodes.some((item) => item.id === current.parentId);
+            const enabled = !actions.busy && world.manifest?.id === worldId && !!current;
+            const canPurge =
+                enabled && !nodes.trashNodes.some((item) => item.id === current.parentId);
             return [
                 {
                     type: 'item',
@@ -50,13 +49,13 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
                     type: 'item',
                     id: 'delete-permanently',
                     text: 'Delete Permanently',
-                    enabled,
+                    enabled: canPurge,
                     variant: 'destructive',
                     command: {
                         type: 'frontend',
                         id: 'delete-permanently',
                         execute: async () => {
-                            if (enabled && world.manifest?.id === worldId) {
+                            if (canPurge && world.manifest?.id === worldId) {
                                 await actions.purge(node.id);
                             }
                         },

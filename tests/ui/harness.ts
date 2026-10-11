@@ -172,11 +172,39 @@ mockIPC(
                 return deleted.length > 0;
             }
             case 'restore_node': {
-                const item = [...entries, ...wikiEntries].find((item) => item.id === data.nodeId);
-                if (!item?.deletedAt) {
+                const all = [...entries, ...wikiEntries];
+                const visible = new Set(visibleEntries(all).map((item) => item.id));
+                const item = all.find((item) => item.id === data.nodeId);
+                if (!item || visible.has(item.id)) {
                     return false;
                 }
-                item.deletedAt = null;
+
+                const restored = new Set([item.id]);
+                const pending = [item.id];
+                while (pending.length) {
+                    const parentId = pending.pop();
+                    for (const child of all.filter((item) => item.parentId === parentId)) {
+                        restored.add(child.id);
+                        pending.push(child.id);
+                    }
+                }
+
+                const ancestors = new Set<string>();
+                let parent = all.find((node) => node.id === item.parentId);
+                while (parent && !visible.has(parent.id)) {
+                    ancestors.add(parent.id);
+                    restored.add(parent.id);
+                    const parentId = parent.parentId;
+                    parent = all.find((node) => node.id === parentId);
+                }
+
+                for (const node of all) {
+                    if (restored.has(node.id)) {
+                        node.deletedAt = null;
+                    } else if (node.parentId && ancestors.has(node.parentId) && !node.deletedAt) {
+                        node.deletedAt = new Date().toISOString();
+                    }
+                }
                 return true;
             }
             case 'purge_node':

@@ -99,9 +99,15 @@ test('groups trash by source and shows the original location of separately delet
     await expect(manuscript.getByRole('treeitem')).toHaveCount(0);
 });
 
-test('restores a trashed branch and confirms permanent deletion', async ({ page, workspace }) => {
+test('restores a branch including earlier deletions and confirms permanent deletion', async ({
+    page,
+    workspace,
+}) => {
     await workspace.open('tree-state');
     const draft = page.getByRole('treeitem', { name: 'Draft', exact: true });
+    await draft.locator('.tree-chevron-icon').click();
+    await page.getByRole('treeitem', { name: 'Chapter A', exact: true }).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Move to Trash', exact: true }).click();
     await draft.click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Move to Trash', exact: true }).click();
     await expect(draft).toHaveCount(0);
@@ -134,6 +140,44 @@ test('restores a trashed branch and confirms permanent deletion', async ({ page,
     await expect(trash.getByText('Trash is empty.')).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Wiki', exact: true })).toBeVisible();
+});
+
+test('restores a nested item with its parent while leaving siblings in Trash', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open('trash-order');
+    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    const trash = page.getByRole('region', { name: 'Trash', exact: true });
+    await trash
+        .getByRole('treeitem', { name: 'apple folder', exact: true })
+        .locator('.tree-chevron-icon')
+        .click();
+    const child = trash.getByRole('treeitem', { name: 'apple child', exact: true });
+    await child.click({ button: 'right' });
+    await expect(page.getByRole('menuitem', { name: 'Restore', exact: true })).toBeEnabled();
+    await expect(
+        page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }),
+    ).toBeDisabled();
+    await page.getByRole('menuitem', { name: 'Restore', exact: true }).click();
+    await expect(child).toHaveCount(0);
+    await expect(trash.getByRole('treeitem', { name: 'apple folder', exact: true })).toHaveCount(0);
+    await expect(trash.getByRole('treeitem', { name: 'Zebra child', exact: true })).toBeVisible();
+    await expect(
+        trash.getByRole('treeitem', { name: 'apple subfolder', exact: true }),
+    ).toBeVisible();
+
+    await page.getByRole('button', { name: 'Manuscript', exact: true }).click();
+    const folder = page
+        .getByRole('tree', { name: 'Manuscript', exact: true })
+        .getByRole('treeitem', { name: 'apple folder', exact: true });
+    await folder.locator('.tree-chevron-icon').click();
+    await expect(page.getByRole('treeitem', { name: 'apple child', exact: true })).toBeVisible();
+    await expect(
+        page
+            .getByRole('tree', { name: 'Manuscript', exact: true })
+            .getByRole('treeitem', { name: 'Zebra child', exact: true }),
+    ).toHaveCount(0);
 });
 
 test('filters descendants within the tree and restores all from the icon toolbar', async ({

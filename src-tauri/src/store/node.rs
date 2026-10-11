@@ -1,5 +1,7 @@
+use std::collections::HashSet;
+
 use chrono::Utc;
-use sqlx::SqliteConnection;
+use sqlx::{Connection, SqliteConnection};
 use uuid::Uuid;
 
 use crate::{
@@ -191,25 +193,56 @@ pub(crate) async fn purge_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasR
 }
 
 pub(crate) async fn restore_node(conn: &mut SqliteConnection, id: Uuid) -> KazmasResult<bool> {
-    let trash = get_trash(conn).await?;
+    let mut tx = conn.begin().await?;
+    let trash = get_trash(&mut tx).await?;
     let Some(node) = trash.iter().find(|node| node.id == id) else {
         return Ok(false);
     };
 
-    if node
-        .parent_id
-        .is_some_and(|parent_id| trash.iter().any(|parent| parent.id == parent_id))
-    {
-        return Ok(false);
+    let mut restored = HashSet::from([id]);
+    let mut pending = vec![id];
+    while let Some(parent_id) = pending.pop() {
+        for child in trash
+            .iter()
+            .filter(|node| node.parent_id == Some(parent_id))
+        {
+            restored.insert(child.id);
+            pending.push(child.id);
+        }
+    }
+
+    let mut ancestors = HashSet::new();
+    let mut parent_id = node.parent_id;
+    while let Some(parent) = parent_id.and_then(|id| trash.iter().find(|node| node.id == id)) {
+        ancestors.insert(parent.id);
+        restored.insert(parent.id);
+        parent_id = parent.parent_id;
     }
 
     let now = Utc::now().timestamp();
-    let result = sqlx::query(RESTORE_NODE)
-        .bind(now)
-        .bind(id)
-        .execute(conn)
-        .await?;
-    Ok(result.rows_affected() == 1)
+    for sibling in trash.iter().filter(|node| {
+        node.deleted_at.is_none()
+            && !restored.contains(&node.id)
+            && node.parent_id.is_some_and(|id| ancestors.contains(&id))
+    }) {
+        sqlx::query(DELETE_NODE)
+            .bind(now)
+            .bind(now)
+            .bind(sibling.id)
+            .execute(&mut *tx)
+            .await?;
+    }
+
+    for id in restored {
+        sqlx::query(RESTORE_NODE)
+            .bind(now)
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+    }
+
+    tx.commit().await?;
+    Ok(true)
 }
 
 pub(crate) async fn get_trash(conn: &mut SqliteConnection) -> KazmasResult<Vec<Node>> {

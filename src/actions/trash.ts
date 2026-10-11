@@ -26,8 +26,18 @@ export const useTrashActions = defineStore('trash-actions', () => {
 
     const run = async (action: 'restore' | 'restore-all' | 'purge' | 'empty', id?: string) => {
         const worldId = world.manifest?.id;
-        if (!worldId || busy.value || (id && !nodes.trashTree.some((node) => node.id === id))) {
+        if (!worldId || busy.value) {
             return;
+        }
+
+        if (id) {
+            const node = nodes.trashNodes.find((node) => node.id === id);
+            if (
+                !node ||
+                (action === 'purge' && nodes.trashNodes.some((item) => item.id === node.parentId))
+            ) {
+                return;
+            }
         }
 
         if ((action === 'empty' || action === 'restore-all') && !nodes.trashNodes.length) {
