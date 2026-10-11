@@ -1,5 +1,7 @@
 import type { NodeTreeDto } from '@/stores/nodes';
 
+import { useSessionStorage } from '@vueuse/core';
+
 import { useNodeStore } from '@/stores/nodes';
 import { useWorldStore } from '@/stores/world';
 
@@ -14,7 +16,19 @@ export function useTrashTree() {
     const world = useWorldStore();
 
     const query = ref('');
-    const treeExpanded = ref<string[]>(['trash:Manuscript', 'trash:Wiki']);
+    const preferences = useSessionStorage<Record<string, string[]>>('trash_tree_expanded', {});
+    const treeExpanded = computed({
+        get: () => {
+            const worldId = world.manifest?.id;
+            return worldId ? (preferences.value[worldId] ?? []) : [];
+        },
+        set: (value: string[]) => {
+            const worldId = world.manifest?.id;
+            if (worldId) {
+                preferences.value[worldId] = value;
+            }
+        },
+    });
     const filteredExpanded = ref<string[]>([]);
     const selected = ref<NodeTreeDto>();
 
@@ -38,7 +52,12 @@ export function useTrashTree() {
         });
     });
     const expanded = computed({
-        get: () => (query.value.trim() ? filteredExpanded.value : treeExpanded.value),
+        get: () => {
+            if (!world.hasWorld) {
+                return [];
+            }
+            return query.value.trim() ? filteredExpanded.value : treeExpanded.value;
+        },
         set: (value: string[]) => {
             if (query.value.trim()) {
                 filteredExpanded.value = value;
@@ -57,12 +76,15 @@ export function useTrashTree() {
 
     watch(
         () => world.manifest?.id,
-        () => {
+        (worldId) => {
             query.value = '';
-            treeExpanded.value = ['trash:Manuscript', 'trash:Wiki'];
+            if (worldId && !preferences.value[worldId]) {
+                treeExpanded.value = ['trash:Manuscript', 'trash:Wiki'];
+            }
             filteredExpanded.value = [];
             selected.value = undefined;
         },
+        { immediate: true, flush: 'sync' },
     );
 
     return {

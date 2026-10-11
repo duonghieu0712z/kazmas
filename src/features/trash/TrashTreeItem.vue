@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NodeTreeDto } from '@/stores/nodes';
-import type { FlattenedItem } from 'reka-ui';
+import type { FlattenedItem, TreeItemSelectEvent } from 'reka-ui';
 
 import { getNodeIcon } from '@/lib/node-icons';
 import { useNodeStore } from '@/stores/nodes';
@@ -10,6 +10,13 @@ defineProps<{ item: FlattenedItem<NodeTreeDto> }>();
 const emits = defineEmits<{ 'contextmenu:node': [event: MouseEvent, node: NodeTreeDto] }>();
 
 const nodes = useNodeStore();
+
+function selectNode(event: TreeItemSelectEvent<NodeTreeDto>) {
+    const node = event.detail.value;
+    if (node) {
+        nodes.selectNode(node);
+    }
+}
 </script>
 
 <template>
@@ -18,6 +25,9 @@ const nodes = useNodeStore();
         v-bind="item.bind"
         :aria-label="item.value.name"
         @contextmenu="emits('contextmenu:node', $event, item.value)"
+        @dblclick="nodes.openNode(item.value)"
+        @keydown.enter="nodes.openNode(item.value)"
+        @select="selectNode"
     >
         <span class="inline-flex min-w-0 flex-1 items-center gap-2">
             <component :is="getNodeIcon(item.value.kind, isExpanded)" class="size-3.5 shrink-0" />
@@ -28,20 +38,10 @@ const nodes = useNodeStore();
                 </TooltipTrigger>
 
                 <TooltipContent class="max-w-80 wrap-break-word" side="right">
-                    {{ item.value.name }}
-                </TooltipContent>
-            </Tooltip>
-
-            <Tooltip v-if="item.level === 1 && nodes.trashLocations.get(item.value.id)?.path">
-                <TooltipTrigger
-                    as="span"
-                    class="ml-auto max-w-1/2 truncate text-[10px] text-muted-foreground"
-                >
-                    {{ nodes.trashLocations.get(item.value.id)?.path }}
-                </TooltipTrigger>
-
-                <TooltipContent class="max-w-80 wrap-break-word" side="right">
-                    Original location: {{ nodes.trashLocations.get(item.value.id)?.path }}
+                    <p>{{ item.value.name }}</p>
+                    <p v-if="nodes.trashLocations.get(item.value.id)?.path">
+                        Original location: {{ nodes.trashLocations.get(item.value.id)?.path }}
+                    </p>
                 </TooltipContent>
             </Tooltip>
         </span>

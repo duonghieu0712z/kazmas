@@ -5,7 +5,7 @@ import type { NodeTreeDto } from '@/stores/nodes';
 import TrashGroupHeader from './TrashGroupHeader.vue';
 import TrashTreeItem from './TrashTreeItem.vue';
 
-const props = defineProps<{ group: TrashGroup }>();
+const props = defineProps<{ group: TrashGroup; disabled: boolean }>();
 const emits = defineEmits<{
     'contextmenu:node': [event: MouseEvent, node: NodeTreeDto];
     'expand:group': [group: TrashGroup];
@@ -32,6 +32,7 @@ function getChildren(node: NodeTreeDto) {
     <SidebarGroup :aria-label="group.name" class="h-full min-h-0 p-0" role="group">
         <TrashGroupHeader
             v-model="open"
+            :disabled="disabled"
             :group="group"
             @collapse:tree="emits('collapse:group', group)"
             @expand:tree="emits('expand:group', group)"

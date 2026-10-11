@@ -8,13 +8,17 @@ import { provideTiptapEditorContext } from './context';
 
 const props = defineProps<{
     options?: Partial<EditorOptions>;
+    readOnly?: boolean;
 }>();
 
 defineSlots<{
     default?: (props: { editor?: Editor }) => any;
 }>();
 
-const editor = useEditor(props.options);
+const editor = useEditor({
+    ...props.options,
+    ...(props.readOnly ? { editable: false } : {}),
+});
 
 const isEditable = ref(false);
 
@@ -24,7 +28,7 @@ function syncEditable() {
 
 function setEditable(editable: boolean, emitUpdate = true) {
     const currentEditor = editor.value;
-    if (!currentEditor || currentEditor.isDestroyed) {
+    if (!currentEditor || currentEditor.isDestroyed || (editable && props.readOnly)) {
         return false;
     }
 
@@ -32,6 +36,12 @@ function setEditable(editable: boolean, emitUpdate = true) {
     syncEditable();
     return true;
 }
+
+watch(
+    () => props.readOnly,
+    (readOnly) => setEditable(!readOnly, false),
+    { flush: 'sync' },
+);
 
 watch(
     editor,

@@ -30,15 +30,18 @@ const closingBatch = ref(false);
 
 const tabs = computed<ContentTab[]>(() =>
     workspace.tabs.map((tab) => {
-        const node = nodes.getNode(tab.nodeId);
+        const trashedNode = nodes.getTrashedNode(tab.nodeId);
+        const node = nodes.getNode(tab.nodeId) ?? trashedNode;
         return {
             id: tab.id,
             title: node?.name ?? 'Untitled',
+            deleted: !!trashedNode,
             icon: getNodeIcon(node?.kind),
             breadcrumbs: nodes.getNodePath(tab.nodeId),
             component: Editor,
             props: {
                 nodeId: tab.nodeId,
+                readOnly: !!trashedNode,
                 'onError:save': () => {
                     if (
                         workspace.tabs.includes(tab) &&

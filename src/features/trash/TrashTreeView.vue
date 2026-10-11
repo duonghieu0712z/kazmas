@@ -4,7 +4,7 @@ import type { NodeTreeDto } from '@/stores/nodes';
 
 import TrashTreeGroup from './TrashTreeGroup.vue';
 
-const props = defineProps<{ groups: TrashGroup[] }>();
+const props = defineProps<{ groups: TrashGroup[]; disabled: boolean }>();
 
 const emits = defineEmits<{
     'contextmenu:node': [event: MouseEvent, node: NodeTreeDto];
@@ -41,6 +41,7 @@ const openGroupCount = computed(
                 <TrashTreeGroup
                     v-model="selected"
                     v-model:expanded="expanded"
+                    :disabled="disabled"
                     :group="group"
                     @collapse:group="emits('collapse:group', $event)"
                     @contextmenu:node="(event, node) => emits('contextmenu:node', event, node)"

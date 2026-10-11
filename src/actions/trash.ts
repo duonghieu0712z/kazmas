@@ -8,11 +8,13 @@ import {
     openAlertDialog,
 } from '@/providers/dialog';
 import { useNodeStore } from '@/stores/nodes';
+import { useWorkspaceStore } from '@/stores/workspace';
 import { useWorldStore } from '@/stores/world';
 
 export const useTrashActions = defineStore('trash-actions', () => {
     const world = useWorldStore();
     const nodes = useNodeStore();
+    const workspace = useWorkspaceStore();
 
     const busy = ref(false);
     const error = ref('');
@@ -97,8 +99,17 @@ export const useTrashActions = defineStore('trash-actions', () => {
 
             changed = true;
             world.markDirty();
+            const trashedIds = new Set(nodes.trashNodes.map((node) => node.id));
             if (!(await nodes.reloadNodes()) && world.manifest?.id === worldId) {
                 throw new Error('Trash refresh failed');
+            }
+
+            if (world.manifest?.id === worldId && (action === 'purge' || action === 'empty')) {
+                for (const tab of [...workspace.tabs]) {
+                    if (trashedIds.has(tab.nodeId) && !nodes.getTrashedNode(tab.nodeId)) {
+                        workspace.closeTab(tab.id);
+                    }
+                }
             }
         } catch {
             if (world.manifest?.id === worldId) {

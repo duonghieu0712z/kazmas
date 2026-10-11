@@ -3,7 +3,7 @@ import type { TrashGroup } from './use-trash-tree';
 
 import { ChevronRightIcon, ChevronsDownUpIcon, ChevronsUpDownIcon } from '@lucide/vue';
 
-const props = defineProps<{ group: TrashGroup }>();
+const props = defineProps<{ group: TrashGroup; disabled: boolean }>();
 const emits = defineEmits<{ 'expand:tree': []; 'collapse:tree': [] }>();
 const open = defineModel<boolean>({ required: true });
 
@@ -25,6 +25,7 @@ const actions = [
                 'h-6 min-w-0 flex-1 justify-start gap-2 rounded-none p-0 text-xs',
                 'hover:bg-transparent hover:text-inherit active:bg-transparent active:text-inherit',
             ]"
+            :disabled="disabled"
             variant="ghost"
             @click="open = !open"
         >

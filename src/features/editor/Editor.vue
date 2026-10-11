@@ -10,7 +10,10 @@ import { useWorldStore } from '@/stores/world';
 import EditorToolbar from './EditorToolbar.vue';
 import { createEditorExtensions } from './options';
 
-const props = withDefaults(defineProps<{ nodeId?: string; active?: boolean }>(), { active: true });
+const props = withDefaults(
+    defineProps<{ nodeId?: string; active?: boolean; readOnly?: boolean }>(),
+    { active: true },
+);
 
 const emits = defineEmits<{
     'error:save': [];
@@ -61,7 +64,7 @@ watch(
     () => props.active,
     (active) => {
         if (!active) {
-            void flushDocumentSave();
+            return flushDocumentSave();
         }
     },
 );
@@ -69,11 +72,12 @@ watch(
 const options = computed(() =>
     createEditorOptions({
         content: document.value?.content,
+        editable: !props.readOnly,
         autofocus: props.active ? 'end' : false,
         extensions: createEditorExtensions(),
         onUpdate: ({ editor }) => {
             const nodeId = document.value?.nodeId;
-            if (nodeId) {
+            if (nodeId && !props.readOnly) {
                 saveError.value = undefined;
                 world.markDirty();
                 saves.schedule(nodeId, JSON.stringify(editor.getJSON()));
@@ -127,8 +131,13 @@ onBeforeUnmount(async () => {
         <p v-if="saveError" class="px-2 py-1 text-sm text-destructive" role="alert">
             {{ saveError }}
         </p>
-        <EditorProvider v-if="document" :key="document.nodeId" :options="options">
-            <EditorToolbar />
+        <EditorProvider
+            v-if="document"
+            :key="document.nodeId"
+            :options="options"
+            :read-only="readOnly"
+        >
+            <EditorToolbar v-if="!readOnly" />
 
             <ScrollArea class="min-h-0 min-w-0 flex-1 overflow-hidden" orientation="both">
                 <div class="flex min-h-full w-full min-w-max items-stretch justify-center p-2">

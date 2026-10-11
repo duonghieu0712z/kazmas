@@ -1,5 +1,137 @@
 import { expect, test } from './fixtures';
 
+test('retains trash group and branch expansion after reloading a world', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open('trash-order');
+    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    const trash = page.getByRole('region', { name: 'Trash', exact: true });
+    const manuscript = trash.getByRole('button', { name: 'Toggle Manuscript trash', exact: true });
+    const wiki = trash.getByRole('button', { name: 'Toggle Wiki trash', exact: true });
+    const folder = trash.getByRole('treeitem', { name: 'apple folder', exact: true });
+    await folder.locator('.tree-chevron-icon').click();
+    await wiki.click();
+
+    await workspace.open('empty');
+    if (!(await trash.isVisible())) {
+        await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    }
+    await expect(manuscript).toBeDisabled();
+    await expect(manuscript).toHaveAttribute('aria-expanded', 'false');
+    await expect(wiki).toBeDisabled();
+    await expect(wiki).toHaveAttribute('aria-expanded', 'false');
+    await expect(trash.locator('p')).toHaveCount(0);
+
+    await workspace.open('trash-order');
+    if (!(await trash.isVisible())) {
+        await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    }
+    await expect(manuscript).toBeEnabled();
+    await expect(manuscript).toHaveAttribute('aria-expanded', 'true');
+    await expect(wiki).toBeEnabled();
+    await expect(wiki).toHaveAttribute('aria-expanded', 'false');
+    await expect(folder).toHaveAttribute('aria-expanded', 'true');
+    await expect(trash.getByRole('treeitem', { name: 'apple child', exact: true })).toBeVisible();
+});
+
+test('opens deleted descendants read-only and enables editing after restoration', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open('trash-order');
+    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    const trash = page.getByRole('region', { name: 'Trash', exact: true });
+    await trash
+        .getByRole('treeitem', { name: 'apple folder', exact: true })
+        .locator('.tree-chevron-icon')
+        .click();
+    const child = trash.getByRole('treeitem', { name: 'apple child', exact: true });
+    await child.focus();
+    await page.keyboard.press('Enter');
+    await expect(
+        page.getByRole('tab', { name: 'apple child (deleted) Close apple child', exact: true }),
+    ).toBeVisible();
+    const editor = page.locator('.tiptap:visible');
+    await expect(editor).toContainText('Second chapter content.');
+    await expect(editor).toHaveAttribute('contenteditable', 'false');
+    await expect(page.getByRole('button', { name: 'Enable editing', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Bold', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('tab').getByText('(deleted)', { exact: true })).toHaveCSS(
+        'font-style',
+        'italic',
+    );
+    await editor.click();
+    await page.keyboard.type('Blocked edit');
+    await expect(editor).not.toContainText('Blocked edit');
+    await expect
+        .poll(
+            async () =>
+                await page.evaluate(
+                    () =>
+                        window.__kazmasTest.calls.filter(
+                            (call) => call.command === 'update_document',
+                        ).length,
+                ),
+        )
+        .toBe(0);
+
+    await page.reload();
+    await page.waitForFunction(() => Boolean(window.__kazmasTest));
+    await expect(
+        page.getByRole('tab', { name: 'apple child (deleted) Close apple child', exact: true }),
+    ).toBeVisible();
+    await expect(editor).toHaveAttribute('contenteditable', 'false');
+    if (!(await trash.isVisible())) {
+        await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    }
+    await child.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Restore', exact: true }).click();
+    await expect(editor).toHaveAttribute('contenteditable', 'true');
+    await expect(page.getByRole('tab').getByText('(deleted)', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeVisible();
+    await expect(
+        page.getByRole('tab', { name: 'apple child Close apple child', exact: true }),
+    ).toBeVisible();
+    await editor.click();
+    await page.keyboard.type('Restored edit');
+    await expect(editor).toContainText('Restored edit');
+});
+
+test('opens trash files with a pointer and closes their tabs after permanent deletion', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open('trash-order');
+    await page.getByRole('button', { name: 'Trash', exact: true }).click();
+    const trash = page.getByRole('region', { name: 'Trash', exact: true });
+    const file = trash.getByRole('treeitem', { name: 'apple file', exact: true });
+    await file.dblclick();
+    await expect(
+        page.getByRole('tab', { name: 'apple file (deleted) Close apple file', exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('.tiptap:visible')).toHaveAttribute('contenteditable', 'false');
+    await trash.getByRole('treeitem', { name: 'apple page', exact: true }).dblclick();
+    await expect(
+        page.getByRole('tab', { name: 'apple page (deleted) Close apple page', exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('.tiptap:visible')).toHaveAttribute('contenteditable', 'false');
+    await file.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
+    await expect(
+        page.getByRole('tab', { name: 'apple file (deleted) Close apple file', exact: true }),
+    ).toHaveCount(0);
+    await expect(
+        page.getByRole('tab', { name: 'apple page (deleted) Close apple page', exact: true }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Empty Trash', exact: true }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
+    await expect(
+        page.getByRole('tab', { name: 'apple page (deleted) Close apple page', exact: true }),
+    ).toHaveCount(0);
+});
+
 test('sorts folders before files alphabetically at every level within each source', async ({
     page,
     workspace,
@@ -55,15 +187,13 @@ test('groups trash by source and shows the original location of separately delet
     await expect(wiki).toBeVisible();
     const chapter = trash.getByRole('treeitem', { name: 'Chapter A', exact: true });
     await expect(chapter).toHaveAttribute('aria-level', '1');
-    await expect(chapter.getByText('Manuscript / Draft', { exact: true })).toBeVisible();
+    await expect(chapter.getByText('Manuscript / Draft', { exact: true })).toHaveCount(0);
     await chapter.getByText('Chapter A', { exact: true }).hover();
-    await expect(page.getByRole('tooltip', { includeHidden: true })).toHaveText('Chapter A');
-    await page.mouse.move(1100, 700);
-    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveCount(0);
-    await chapter.getByText('Manuscript / Draft', { exact: true }).hover();
-    await expect(page.getByRole('tooltip', { includeHidden: true })).toHaveText(
-        'Original location: Manuscript / Draft',
-    );
+    const tooltip = page.getByRole('tooltip', { includeHidden: true });
+    await expect(tooltip.getByText('Chapter A', { exact: true })).toBeVisible();
+    await expect(
+        tooltip.getByText('Original location: Manuscript / Draft', { exact: true }),
+    ).toBeVisible();
     await page.mouse.move(1100, 700);
     await expect(page.locator('[data-slot="tooltip-content"]')).toHaveCount(0);
     await expect(trash.getByRole('treeitem', { name: 'Characters', exact: true })).toHaveAttribute(
@@ -120,7 +250,7 @@ test('restores a branch including earlier deletions and confirms permanent delet
     await expect(trash.getByRole('treeitem', { name: 'Chapter A', exact: true })).toBeVisible();
     await trashedDraft.click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Restore', exact: true }).click();
-    await expect(trash.getByText('Trash is empty.')).toBeVisible();
+    await expect(trash.getByRole('treeitem')).toHaveCount(0);
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Wiki', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Manuscript', exact: true }).click();
@@ -137,7 +267,7 @@ test('restores a branch including earlier deletions and confirms permanent delet
     await trashedDraft.click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
-    await expect(trash.getByText('Trash is empty.')).toBeVisible();
+    await expect(trash.getByRole('treeitem')).toHaveCount(0);
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Wiki', exact: true })).toBeVisible();
 });
@@ -216,7 +346,7 @@ test('filters descendants within the tree and restores all from the icon toolbar
     await expect(restore).toHaveText('');
     await expect(empty).toHaveText('');
     await restore.click();
-    await expect(trash.getByText('Trash is empty.')).toBeVisible();
+    await expect(trash.getByRole('treeitem')).toHaveCount(0);
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Wiki', exact: true })).toBeVisible();
     await expect(restore).toBeDisabled();
@@ -251,7 +381,7 @@ test('filters trash and empties it through the application command', async ({
         await page.getByRole('menuitem', { name: 'Empty Trash', exact: true }).click();
     }
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
-    await expect(trash.getByText('Trash is empty.')).toBeVisible();
+    await expect(trash.getByRole('treeitem')).toHaveCount(0);
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
     await expect(trash.getByRole('group', { name: 'Wiki', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Empty Trash', exact: true })).toBeDisabled();

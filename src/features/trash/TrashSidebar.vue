@@ -77,11 +77,7 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
     />
 
     <SidebarContent v-show="active" aria-label="Trash" class="gap-0 overflow-hidden" role="region">
-        <p v-if="!world.hasWorld" class="p-3 text-xs text-muted-foreground">
-            Open a world to view Trash.
-        </p>
-
-        <div v-else-if="nodes.trashError" class="space-y-2 p-3">
+        <div v-if="world.hasWorld && nodes.trashError" class="space-y-2 p-3">
             <p class="text-xs text-destructive" role="alert">{{ nodes.trashError }}</p>
             <Button
                 class="h-6 text-xs"
@@ -93,12 +89,12 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
             </Button>
         </div>
 
-        <p v-else-if="!nodes.trashNodes.length" class="p-3 text-xs text-muted-foreground">
-            Trash is empty.
-        </p>
-
         <p
-            v-else-if="!filteredGroups.some((group) => group.items.length)"
+            v-else-if="
+                world.hasWorld &&
+                nodes.trashNodes.length &&
+                !filteredGroups.some((group) => group.items.length)
+            "
             class="p-3 text-xs text-muted-foreground"
         >
             No matching items.
@@ -107,6 +103,7 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
         <TrashTreeView
             v-model="selected"
             v-model:expanded="expanded"
+            :disabled="!world.hasWorld"
             :groups="filteredGroups"
             @collapse:group="collapseGroup"
             @contextmenu:node="showMenu"

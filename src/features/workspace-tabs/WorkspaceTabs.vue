@@ -164,6 +164,7 @@ onMounted(revealSelectedTab);
                     class="size-3.5 shrink-0 text-tabs-trigger-icon-foreground"
                 />
                 <span class="truncate">{{ draggedTab.title }}</span>
+                <span v-if="draggedTab.deleted" class="shrink-0 italic">(deleted)</span>
             </div>
         </Teleport>
     </Tabs>

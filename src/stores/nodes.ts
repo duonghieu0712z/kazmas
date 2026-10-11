@@ -72,12 +72,21 @@ export const useNodeStore = defineStore('nodes', () => {
         manuscriptNodes.value.find((node) => node.id === nodeId) ??
         wikiNodes.value.find((node) => node.id === nodeId);
 
+    const getTrashedNode = (nodeId: string) => trashNodes.value.find((node) => node.id === nodeId);
+
     const getNodePath = (nodeId: string) => {
-        return (
+        const path =
             buildNodePath('Manuscript', manuscriptNodes.value, nodeId) ??
-            buildNodePath('Wiki', wikiNodes.value, nodeId) ??
-            []
-        );
+            buildNodePath('Wiki', wikiNodes.value, nodeId);
+        if (path) {
+            return path;
+        }
+
+        const trashPath = buildNodePath('Trash', trashNodes.value, nodeId);
+        const section = trashLocations.value.get(nodeId)?.section;
+        return trashPath && section
+            ? [trashPath[0]!, { id: `trash:${section}`, name: section }, ...trashPath.slice(1)]
+            : [];
     };
 
     watch(
@@ -193,6 +202,7 @@ export const useNodeStore = defineStore('nodes', () => {
         openedNodeId,
         openedNodePath,
         getNode,
+        getTrashedNode,
         getNodePath,
         clearNodes,
         selectNode,
