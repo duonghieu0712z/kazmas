@@ -81,21 +81,16 @@ pub(super) fn unpack_world(
 
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index)?;
-        let normalized = entry.name().replace('\\', "/");
+        let name = entry.name()?;
+        let normalized = name.replace('\\', "/");
         if normalized.starts_with('/')
             || normalized.contains(':')
             || normalized.split('/').any(|part| part == "..")
         {
-            return Err(KazmasError::Invalid(format!(
-                "unsafe archive entry {}",
-                entry.name()
-            )));
+            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
         }
         let Some(enclosed_name) = entry.enclosed_name() else {
-            return Err(KazmasError::Invalid(format!(
-                "unsafe archive entry {}",
-                entry.name()
-            )));
+            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
         };
 
         let output_path = workspace.as_ref().join(enclosed_name);
