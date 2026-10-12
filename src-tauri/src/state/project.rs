@@ -150,10 +150,14 @@ impl ProjectManager {
         id: Uuid,
         name: Option<&str>,
         parent_id: Option<Uuid>,
+        parent_kind: NodeKind,
     ) -> KazmasResult<Option<Uuid>> {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(&id) {
-            return project.create_folder(name, parent_id).await.map(Some);
+            return project
+                .create_folder(name, parent_id, parent_kind)
+                .await
+                .map(Some);
         }
         Ok(None)
     }

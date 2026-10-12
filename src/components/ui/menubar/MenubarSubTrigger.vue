@@ -13,6 +13,7 @@ const props = defineProps<
 >();
 
 const delegatedProps = reactiveOmit(props, 'class', 'inset');
+
 const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
@@ -21,10 +22,12 @@ const forwardedProps = useForwardProps(delegatedProps);
         v-bind="forwardedProps"
         :class="
             cn(
-                'flex h-6 cursor-default items-center rounded-xs px-2 text-xs outline-none select-none',
-                'focus:bg-accent focus:text-accent-foreground data-inset:pl-6',
-                'data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-                'data-disabled:pointer-events-none data-disabled:opacity-50',
+                'relative flex h-6 cursor-default items-center gap-2 rounded-xs px-2 text-xs outline-hidden select-none',
+                'text-menu-item-foreground',
+                'focus:bg-menu-item-hover focus:text-menu-item-hover-foreground data-inset:pl-6',
+                'data-[state=open]:bg-menu-item-selected data-[state=open]:text-menu-item-selected-foreground',
+                'data-disabled:pointer-events-none data-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground! data-disabled:[&_svg]:text-disabled-foreground!',
+                `[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-menu-item-icon-foreground`,
                 props.class,
             )
         "

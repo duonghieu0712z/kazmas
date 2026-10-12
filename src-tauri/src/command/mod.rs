@@ -3,6 +3,9 @@ mod menu;
 mod node;
 mod world;
 
+#[cfg(feature = "desktop-tests")]
+pub(crate) mod testing;
+
 use tauri_specta::{Commands, collect_commands};
 
 #[allow(clippy::items_after_statements)]

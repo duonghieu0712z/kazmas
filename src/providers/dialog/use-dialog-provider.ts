@@ -1,4 +1,5 @@
 import { createGlobalState } from '@vueuse/core';
+import { markRaw, readonly, shallowRef } from 'vue';
 
 type DialogComponent = new (...args: any[]) => { $props: any };
 
@@ -44,6 +45,17 @@ type ActiveDialogEntry = DialogProviderEntry;
 
 function createDialogProvider() {
     const activeDialog = shallowRef<ActiveDialogEntry | null>(null);
+    let focusTarget: HTMLElement | null = null;
+
+    const restoreFocus = (event: Event) => {
+        const target = focusTarget?.isConnected
+            ? focusTarget
+            : document.querySelector<HTMLElement>('[data-slot="menubar-trigger"][tabindex="0"]');
+        if (target) {
+            event.preventDefault();
+            target.focus({ preventScroll: true });
+        }
+    };
 
     const dismissActiveDialog = () => {
         const currentDialog = activeDialog.value;
@@ -59,6 +71,13 @@ function createDialogProvider() {
     const openDialog = <TComponent extends DialogComponent>(
         entry: DialogProviderOpenEntry<TComponent>,
     ) => {
+        if (!activeDialog.value) {
+            focusTarget =
+                document.activeElement instanceof HTMLElement &&
+                document.activeElement !== document.body
+                    ? document.activeElement
+                    : null;
+        }
         dismissActiveDialog();
 
         return new Promise<DialogResult<TComponent> | null>((resolve) => {
@@ -92,6 +111,7 @@ function createDialogProvider() {
         openDialog,
         closeDialog,
         resolveDialog,
+        restoreFocus,
     };
 }
 

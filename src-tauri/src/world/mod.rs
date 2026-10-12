@@ -3,4 +3,4 @@ mod manifest;
 mod project;
 
 pub(crate) use manifest::{WorldManifest, read_manifest};
-pub(crate) use project::{EXTENSION, WorldProject};
+pub(crate) use project::{EXTENSION, WorldProject, is_world_path};

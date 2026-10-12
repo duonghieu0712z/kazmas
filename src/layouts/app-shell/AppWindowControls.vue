@@ -7,6 +7,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 const window = getCurrentWindow();
 
 const isMaximized = ref(false);
+
 let unlistenResize: UnlistenFn | null = null;
 
 async function minimizeWindow() {
@@ -37,7 +38,7 @@ onBeforeUnmount(() => {
     <div class="flex">
         <Button
             aria-label="Minimize window"
-            class="rounded-none [&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground"
+            class="rounded-none text-muted-foreground focus:text-foreground"
             size="icon"
             variant="ghost"
             @click.stop.prevent="minimizeWindow"
@@ -46,7 +47,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Toggle maximize window"
-            class="rounded-none [&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground"
+            class="rounded-none text-muted-foreground focus:text-foreground"
             size="icon"
             variant="ghost"
             @click.prevent="toggleMaximizeWindow"
@@ -56,10 +57,7 @@ onBeforeUnmount(() => {
         </Button>
         <Button
             aria-label="Close window"
-            :class="[
-                'rounded-none hover:bg-destructive/90 dark:hover:bg-destructive/90',
-                '[&_svg]:stroke-muted-foreground hover:[&_svg]:stroke-foreground focus:[&_svg]:stroke-foreground active:[&_svg]:stroke-foreground',
-            ]"
+            class="rounded-none text-muted-foreground hover:bg-destructive focus:text-foreground active:bg-destructive"
             size="icon"
             variant="ghost"
             @click.prevent="closeWindow"

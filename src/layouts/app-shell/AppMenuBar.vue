@@ -1,21 +1,16 @@
 <script setup lang="ts">
 import { useAppMenu } from '@/composables/use-app-menu';
-import AppMenuItem from '@/layouts/app-shell/AppMenuItem.vue';
+import { MenubarItemRenderer } from '@/menus';
 
-const { menu, executeMenuCommand } = useAppMenu();
+const { menu } = useAppMenu();
 </script>
 
 <template>
-    <Menubar class="border-b">
+    <Menubar class="bg-title-bar-background">
         <MenubarMenu v-for="section in menu" :key="section.id">
             <MenubarTrigger>{{ section.text }}</MenubarTrigger>
             <MenubarContent>
-                <AppMenuItem
-                    v-for="item in section.items"
-                    :key="item.id"
-                    :item="item"
-                    @select="executeMenuCommand"
-                />
+                <MenubarItemRenderer v-for="item in section.items" :key="item.id" :item="item" />
             </MenubarContent>
         </MenubarMenu>
     </Menubar>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import { AlertDialog } from '@/components/ui/alert-dialog';
 import { Dialog } from '@/components/ui/dialog';
 
 import { useDialogProvider } from './use-dialog-provider';
 
-const { activeDialog, closeDialog, resolveDialog } = useDialogProvider();
+const { activeDialog, closeDialog, resolveDialog, restoreFocus } = useDialogProvider();
 
 const rootComponent = computed(() => (activeDialog.value?.type === 'alert' ? AlertDialog : Dialog));
 
@@ -24,6 +26,7 @@ function updateOpen(open: boolean) {
             v-if="activeDialog"
             :key="activeDialog.key"
             :payload="activeDialog.payload"
+            @close-auto-focus="restoreFocus"
             @close:dialog="closeDialog"
             @resolve:dialog="resolveDialog"
         />

@@ -1,0 +1,42 @@
+name: Bug Report
+description: Record incorrect behavior to fix.
+labels: ['bug']
+body:
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Describe the problem and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Describe the steps, or the observed circumstances if reproduction is uncertain.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What happens instead?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Add the app version or commit, operating system, and relevant configuration.
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add logs, screenshots, related issues, or a temporary workaround.

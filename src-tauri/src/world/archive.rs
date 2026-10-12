@@ -4,6 +4,10 @@ use std::{
     path::Path,
 };
 
+#[cfg(test)]
+#[path = "archive_tests.rs"]
+mod tests;
+
 use tempfile::NamedTempFile;
 use walkdir::WalkDir;
 use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
@@ -77,6 +81,16 @@ pub(super) fn unpack_world(
 
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index)?;
+        let normalized = entry.name().replace('\\', "/");
+        if normalized.starts_with('/')
+            || normalized.contains(':')
+            || normalized.split('/').any(|part| part == "..")
+        {
+            return Err(KazmasError::Invalid(format!(
+                "unsafe archive entry {}",
+                entry.name()
+            )));
+        }
         let Some(enclosed_name) = entry.enclosed_name() else {
             return Err(KazmasError::Invalid(format!(
                 "unsafe archive entry {}",

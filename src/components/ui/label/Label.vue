@@ -18,8 +18,8 @@ const delegatedProps = reactiveOmit(props, 'class');
         :class="
             cn(
                 'flex items-center gap-2 text-sm leading-none font-medium select-none',
-                'group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50',
-                'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+                'group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:text-disabled-foreground!',
+                'peer-disabled:cursor-not-allowed peer-disabled:text-disabled-foreground! disabled:[&_svg]:text-disabled-foreground!',
                 props.class,
             )
         "

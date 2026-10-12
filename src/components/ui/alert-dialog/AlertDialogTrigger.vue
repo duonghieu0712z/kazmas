@@ -3,7 +3,7 @@ import type { AlertDialogTriggerProps } from 'reka-ui';
 
 import { AlertDialogTrigger } from 'reka-ui';
 
-const props = defineProps<AlertDialogTriggerProps>();
+const props = withDefaults(defineProps<AlertDialogTriggerProps>(), { as: 'div' });
 </script>
 
 <template>

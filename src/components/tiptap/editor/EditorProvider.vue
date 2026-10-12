@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import type { Editor, EditorOptions } from '@tiptap/vue-3';
-import type { HTMLAttributes } from 'vue';
 
 import { useEditor } from '@tiptap/vue-3';
+import { readonly, ref, watch } from 'vue';
 
-import { cn } from '@/lib/utils';
-
-import { provideTiptapEditorContext } from './utils';
+import { provideTiptapEditorContext } from './context';
 
 const props = defineProps<{
-    class?: HTMLAttributes['class'];
     options?: Partial<EditorOptions>;
 }>();
 
@@ -19,11 +16,40 @@ defineSlots<{
 
 const editor = useEditor(props.options);
 
-provideTiptapEditorContext({ editor });
+const isEditable = ref(false);
+
+function syncEditable() {
+    isEditable.value = editor.value?.isEditable ?? false;
+}
+
+function setEditable(editable: boolean, emitUpdate = true) {
+    const currentEditor = editor.value;
+    if (!currentEditor || currentEditor.isDestroyed) {
+        return false;
+    }
+
+    currentEditor.setEditable(editable, emitUpdate);
+    syncEditable();
+    return true;
+}
+
+watch(
+    editor,
+    (currentEditor, _previousEditor, onCleanup) => {
+        syncEditable();
+        currentEditor?.on('update', syncEditable);
+        onCleanup(() => currentEditor?.off('update', syncEditable));
+    },
+    { immediate: true },
+);
+
+provideTiptapEditorContext({
+    editor,
+    isEditable: readonly(isEditable),
+    setEditable,
+});
 </script>
 
 <template>
-    <div v-bind="$attrs" :class="cn('min-h-0 w-full', props.class)" data-slot="editor-wrapper">
-        <slot :editor="editor" />
-    </div>
+    <slot :editor="editor" />
 </template>

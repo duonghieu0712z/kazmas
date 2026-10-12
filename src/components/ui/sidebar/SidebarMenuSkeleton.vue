@@ -22,7 +22,7 @@ const width = computed(() => {
         data-sidebar="menu-skeleton"
         data-slot="sidebar-menu-skeleton"
     >
-        <Skeleton v-if="showIcon" class="size-4 rounded-sm" data-sidebar="menu-skeleton-icon" />
+        <Skeleton v-if="showIcon" class="size-4" data-sidebar="menu-skeleton-icon" />
 
         <Skeleton
             class="h-4 max-w-(--skeleton-width) flex-1"

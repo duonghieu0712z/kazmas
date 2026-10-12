@@ -1,0 +1,26 @@
+name: Enhancement
+description: Record an improvement to an existing feature.
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: What is inconvenient, and how should it improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe an implementation idea, if available.
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What observable results would make this complete?
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add examples, screenshots, references, or related issues.

@@ -8,3 +8,5 @@ pub(crate) use node::{
     create_node, delete_node, get_node, get_node_by_kind, get_node_descendants_by_kind, purge_node,
     restore_node, update_node, update_node_modified_at,
 };
+#[cfg(test)]
+mod tests;

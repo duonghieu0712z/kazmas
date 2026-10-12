@@ -45,6 +45,7 @@ pub(crate) enum MenuCommand {
     Quit,
     Redo,
     RecentWorlds,
+    ReloadWindow,
     Save,
     SaveAs,
     Settings,
@@ -72,9 +73,11 @@ impl MenuCommand {
         match self {
             #[cfg(not(target_os = "macos"))]
             Self::CloseWindow | Self::Quit => MenuCommandOwner::Backend,
-            Self::NewWindow | Self::Save | Self::SaveAs | Self::ToggleDevtools => {
-                MenuCommandOwner::Backend
-            },
+            Self::NewWindow
+            | Self::ReloadWindow
+            | Self::Save
+            | Self::SaveAs
+            | Self::ToggleDevtools => MenuCommandOwner::Backend,
             Self::About
             | Self::CloseWorld
             | Self::NewFolder
@@ -114,6 +117,7 @@ impl MenuCommand {
             Self::Quit => Some(format!("Quit {app_name}")),
             Self::Redo => Some("Redo".into()),
             Self::RecentWorlds => Some("Recent Worlds".into()),
+            Self::ReloadWindow => Some("Reload Window".into()),
             Self::Save => Some("Save".into()),
             Self::SaveAs => Some("Save As...".into()),
             Self::Settings => Some("Settings...".into()),
@@ -138,6 +142,7 @@ impl MenuCommand {
             Self::Paste => Some("CmdOrCtrl+V".into()),
             Self::ProjectSettings => Some("CmdOrCtrl+Shift+,".into()),
             Self::Redo => Some("CmdOrCtrl+Shift+Z".into()),
+            Self::ReloadWindow => Some("CmdOrCtrl+R".into()),
             Self::Save => Some("CmdOrCtrl+S".into()),
             Self::SaveAs => Some("CmdOrCtrl+Shift+S".into()),
             Self::Settings => Some("CmdOrCtrl+,".into()),

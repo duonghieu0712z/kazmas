@@ -11,7 +11,7 @@ const props = defineProps<{
 
 <template>
     <Input
-        :class="cn('h-8 w-full bg-background shadow-none', props.class)"
+        :class="cn('bg-background shadow-none', props.class)"
         data-sidebar="input"
         data-slot="sidebar-input"
     >

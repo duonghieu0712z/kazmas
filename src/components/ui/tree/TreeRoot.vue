@@ -26,6 +26,7 @@ import type { HTMLAttributes } from 'vue';
 
 import { reactiveOmit } from '@vueuse/core';
 import { TreeRoot, useForwardPropsEmits } from 'reka-ui';
+import { computed } from 'vue';
 
 import { cn } from '@/lib/utils';
 
@@ -54,6 +55,7 @@ const delegatedProps = reactiveOmit(
     'expandOnChevronOnly',
     'indentGuide',
 );
+
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
 provideTreeContext({

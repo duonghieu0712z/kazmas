@@ -1,6 +1,6 @@
 {
     "extends": "@vue/tsconfig/tsconfig.dom.json",
-    "include": ["src/**/*", "src/**/*.vue"],
+    "include": ["src/**/*", "src/**/*.vue", "tests/**/*.ts"],
     "compilerOptions": {
         "noUncheckedIndexedAccess": true,
         "paths": {

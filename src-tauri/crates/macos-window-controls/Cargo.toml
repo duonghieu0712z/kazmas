@@ -5,7 +5,11 @@ edition = "2024"
 publish = false
 
 [dependencies]
-objc2-app-kit = { version = "0.3", default-features = false, features = ["NSButton", "NSView", "NSWindow"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = [
+    "NSButton",
+    "NSView",
+    "NSWindow",
+] }
 tauri = { version = "2.11.6", default-features = false }
 
 [lints.rust]

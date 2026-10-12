@@ -1,5 +1,9 @@
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
+#[path = "project_tests.rs"]
+mod tests;
+
 use sqlx::{Acquire, SqliteConnection};
 use tokio::fs;
 use uuid::Uuid;
@@ -16,6 +20,12 @@ use crate::{
 };
 
 pub(crate) const EXTENSION: &str = "kazmas";
+
+pub(crate) fn is_world_path(path: impl AsRef<Path>) -> bool {
+    path.as_ref()
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case(EXTENSION))
+}
 
 #[derive(Debug)]
 pub(crate) struct WorldProject {
@@ -81,7 +91,7 @@ impl WorldProject {
         temp_dir: impl AsRef<Path>,
     ) -> KazmasResult<Self> {
         let package_path = path.as_ref().to_path_buf();
-        if package_path.extension() != Some(EXTENSION.as_ref()) {
+        if !is_world_path(&package_path) {
             return Err(KazmasError::Invalid(format!(
                 "expected .{EXTENSION} file: {}",
                 package_path.to_string_lossy()
@@ -106,6 +116,15 @@ impl WorldProject {
 
         let workspace_path = create_workspace_path(manifest.id, &temp_dir).await?;
         unpack_world(&package_path, &workspace_path)?;
+
+        let database_path = workspace_path.join(manifest.world_path());
+        if !fs::try_exists(&database_path).await? || !fs::metadata(&database_path).await?.is_file()
+        {
+            let _ = fs::remove_dir_all(&workspace_path).await;
+            return Err(KazmasError::Invalid(
+                "world package has no database file".into(),
+            ));
+        }
 
         let world_db = create_world_url(&manifest, &workspace_path).await?;
         let mut conn = database::open_database(world_db).await?;
@@ -176,9 +195,20 @@ impl WorldProject {
         &mut self,
         name: Option<&str>,
         parent_id: Option<Uuid>,
+        parent_kind: NodeKind,
     ) -> KazmasResult<Uuid> {
+        if !matches!(parent_kind, NodeKind::Manuscript | NodeKind::Wiki) {
+            return Err(KazmasError::Invalid(
+                "folder section must be manuscript or wiki".into(),
+            ));
+        }
+
         let mut tx = self.conn.begin().await?;
 
+        let parent_id = match parent_id {
+            Some(parent_id) => Some(parent_id),
+            None => Some(store::get_node_by_kind(&mut tx, parent_kind).await?.id),
+        };
         let node = Node::new(NodeKind::Folder, name, parent_id);
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;

@@ -10,7 +10,14 @@ export default defineConfigWithVueTs(
         files: ['**/*.{vue,ts,mts,tsx}'],
     },
 
-    globalIgnores(['dist/**', 'src/generated/**', 'src-tauri/target/**']),
+    globalIgnores([
+        'dist/**',
+        'temp/**',
+        '.artifacts/**',
+        'src/generated/**',
+        'src-tauri/target/**',
+        'src-tauri/gen/**',
+    ]),
 
     ...pluginVue.configs['flat/essential'],
     vueTsConfigs.recommended,
@@ -23,6 +30,15 @@ export default defineConfigWithVueTs(
         rules: {
             '@typescript-eslint/no-empty-object-type': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
+
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector:
+                        'FunctionDeclaration[parent.type!="Program"][parent.type!="ExportNamedDeclaration"][parent.type!="ExportDefaultDeclaration"]',
+                    message: 'Use arrow functions for nested functions.',
+                },
+            ],
 
             'vue/attributes-order': ['error', { alphabetical: true }],
             'vue/multi-word-component-names': 'off',
