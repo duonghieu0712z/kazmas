@@ -1,11 +1,11 @@
 use std::path::Path;
 
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri::{
     AppHandle, State, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
     async_runtime::spawn,
 };
-#[cfg(target_os = "macos")]
-use tauri::{LogicalPosition, TitleBarStyle};
 use uuid::Uuid;
 
 use super::error::{KazmasError, KazmasResult};
@@ -22,10 +22,6 @@ const WINDOW_HEIGHT: f64 = 800.0;
 const WINDOW_MIN_WIDTH: f64 = 420.0;
 const WINDOW_MIN_HEIGHT: f64 = 300.0;
 
-pub(crate) const TITLE_BAR_HEIGHT: f64 = 32.0;
-#[cfg(target_os = "macos")]
-const TRAFFIC_LIGHT_BUTTON_HEIGHT: f64 = 14.0;
-
 pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
     let label = window_label(window_id);
@@ -39,10 +35,6 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
     #[cfg(target_os = "macos")]
     let builder = builder
         .title_bar_style(TitleBarStyle::Overlay)
-        .traffic_light_position(LogicalPosition::new(
-            12.0,
-            TITLE_BAR_HEIGHT - TRAFFIC_LIGHT_BUTTON_HEIGHT,
-        ))
         .hidden_title(true);
 
     #[cfg(not(target_os = "macos"))]
