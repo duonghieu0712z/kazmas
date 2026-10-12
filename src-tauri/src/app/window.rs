@@ -22,10 +22,6 @@ const WINDOW_HEIGHT: f64 = 800.0;
 const WINDOW_MIN_WIDTH: f64 = 420.0;
 const WINDOW_MIN_HEIGHT: f64 = 300.0;
 
-pub(crate) const TITLE_BAR_HEIGHT: f64 = 32.0;
-#[cfg(target_os = "macos")]
-const TRAFFIC_LIGHT_LEADING_INSET: f64 = 12.0;
-
 pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> KazmasResult<()> {
     let window_id = Uuid::now_v7();
     let label = window_label(window_id);
@@ -46,22 +42,10 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
 
     let window = builder.build()?;
 
-    #[cfg(target_os = "macos")]
-    center_traffic_lights(&window)?;
-
     let event_window = window.clone();
     window.on_window_event(move |event| {
         let window = event_window.clone();
         let event = event.clone();
-
-        #[cfg(target_os = "macos")]
-        if matches!(
-            event,
-            WindowEvent::Resized(_) | WindowEvent::ScaleFactorChanged { .. }
-        ) && let Err(error) = center_traffic_lights(&window)
-        {
-            log::error!("{error}");
-        }
 
         spawn(async move {
             if let Err(error) = handle_webview_window_event(&window, &event).await {
@@ -91,19 +75,7 @@ pub(crate) async fn spawn_window(app: &AppHandle, project_id: Option<Uuid>) -> K
 
 pub(crate) fn focus_window(window: &WebviewWindow) -> KazmasResult<()> {
     window.show()?;
-    #[cfg(target_os = "macos")]
-    center_traffic_lights(window)?;
     window.set_focus()?;
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn center_traffic_lights(window: &WebviewWindow) -> KazmasResult<()> {
-    macos_window_controls::center_traffic_lights(
-        window,
-        TRAFFIC_LIGHT_LEADING_INSET,
-        TITLE_BAR_HEIGHT,
-    )?;
     Ok(())
 }
 

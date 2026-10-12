@@ -87,9 +87,6 @@ redundant_clone = "warn"
 unwrap_used = "warn"
 wildcard_imports = "warn"
 
-[target.'cfg(target_os = "macos")'.dependencies]
-macos-window-controls = { path = "crates/macos-window-controls" }
-
 [profile.dev]
 incremental = true
 
