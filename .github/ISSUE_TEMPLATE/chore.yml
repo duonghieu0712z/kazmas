@@ -1,0 +1,26 @@
+name: Chore
+description: Record maintenance, dependency, or configuration work.
+labels: ['chore']
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: What maintenance is needed, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the intended changes, if known.
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What results or checks would make this complete?
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add references or related issues.

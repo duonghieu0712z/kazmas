@@ -21,6 +21,20 @@ async function openChapterA() {
     await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
 }
 
+async function waitForDocumentEditor(title: string) {
+    const tab = $(`//*[@role="tab"][normalize-space(.)="${title}"]`);
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    const panelId = await tab.getAttribute('aria-controls');
+    if (!panelId) {
+        throw new Error(`Document tab ${title} has no associated panel.`);
+    }
+    const editor = $(
+        `[role="tabpanel"][id="${panelId}"][data-state="active"] .tiptap[contenteditable="true"]`,
+    );
+    await editor.waitForDisplayed();
+    return editor;
+}
+
 async function expectDocumentText(expected: string) {
     await browser.waitUntil(
         async () =>
@@ -174,15 +188,18 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.keys('Enter');
         await expect(entry).toHaveAttribute('aria-selected', 'true');
         await expect(entry).toHaveAttribute('aria-level', '2');
-        await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
-            'Nested chapter content',
-        );
+        const editor = await waitForDocumentEditor('New chapter');
+        await editor.click();
+        await expect(editor).toBeFocused();
+        await editor.setValue('Nested chapter content');
+        await expectDocumentText('Nested chapter content');
 
         await $('button[aria-label="New manuscript entry"]').click();
         await $('input[aria-label="New item name"]').setValue('Sibling chapter');
         await browser.keys('Enter');
         await expect(sibling).toHaveAttribute('aria-selected', 'true');
         await expect(sibling).toHaveAttribute('aria-level', '2');
+        await waitForDocumentEditor('Sibling chapter');
 
         await browser.execute(() => window.__kazmasDesktopTest.save());
         await browser.execute(() => window.__kazmasDesktopTest.close());
@@ -197,6 +214,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
         await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
         await reopenedEntry.click();
+        await waitForDocumentEditor('New chapter');
         await expectDocumentText('Nested chapter content');
     });
 
