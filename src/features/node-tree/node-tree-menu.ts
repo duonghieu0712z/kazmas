@@ -59,7 +59,6 @@ export function createNodeTreeMenuItems(
             { type: 'separator', id: 'node-trash-separator' },
             item('move-to-trash', 'Move to Trash', async () => await actions.trash(node.id), {
                 enabled: canModify,
-                variant: 'destructive',
             }),
         );
     }

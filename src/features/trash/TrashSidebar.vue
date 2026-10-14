@@ -62,9 +62,8 @@ function showMenu(event: MouseEvent, node: NodeTreeDto) {
                 {
                     type: 'item',
                     id: 'delete-permanently',
-                    text: 'Delete Permanently',
+                    text: 'Delete',
                     enabled: canPurge,
-                    variant: 'destructive',
                     command: {
                         type: 'frontend',
                         id: 'delete-permanently',

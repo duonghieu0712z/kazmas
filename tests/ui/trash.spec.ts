@@ -117,7 +117,7 @@ test('opens trash files with a pointer and closes their tabs after permanent del
     ).toBeVisible();
     await expect(page.locator('.tiptap:visible')).toHaveAttribute('contenteditable', 'false');
     await file.click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
     await expect(
         page.getByRole('tab', { name: 'apple file (deleted) Close apple file', exact: true }),
@@ -261,11 +261,11 @@ test('restores a branch including earlier deletions and confirms permanent delet
     await expect(draft).toHaveCount(0);
     await page.getByRole('button', { name: 'Trash', exact: true }).click();
     await trashedDraft.click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Cancel' }).click();
     await expect(trash.getByText('Draft', { exact: true })).toBeVisible();
     await trashedDraft.click({ button: 'right' });
-    await page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Permanently' }).click();
     await expect(trash.getByRole('treeitem')).toHaveCount(0);
     await expect(trash.getByRole('group', { name: 'Manuscript', exact: true })).toBeVisible();
@@ -286,9 +286,7 @@ test('restores a nested item with its parent while leaving siblings in Trash', a
     const child = trash.getByRole('treeitem', { name: 'apple child', exact: true });
     await child.click({ button: 'right' });
     await expect(page.getByRole('menuitem', { name: 'Restore', exact: true })).toBeEnabled();
-    await expect(
-        page.getByRole('menuitem', { name: 'Delete Permanently', exact: true }),
-    ).toBeDisabled();
+    await expect(page.getByRole('menuitem', { name: 'Delete', exact: true })).toBeDisabled();
     await page.getByRole('menuitem', { name: 'Restore', exact: true }).click();
     await expect(child).toHaveCount(0);
     await expect(trash.getByRole('treeitem', { name: 'apple folder', exact: true })).toHaveCount(0);
