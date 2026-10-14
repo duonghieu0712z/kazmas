@@ -81,6 +81,35 @@ for (const item of wikiEntries) {
     item.parentId ??= 'wiki-root';
 }
 
+const sortIndexes = new Map<string, number>();
+const siblingCounts = new Map<string | null, number>();
+for (const item of [...entries, ...wikiEntries]) {
+    const index = siblingCounts.get(item.parentId) ?? 0;
+    sortIndexes.set(item.id, index);
+    siblingCounts.set(item.parentId, index + 1);
+}
+if (scenario === 'trash-order') {
+    sortIndexes.set('z-file', 0);
+    sortIndexes.set('a-file', 0);
+    entries.find((item) => item.id === 'a-file')!.createdAt = '2026-01-02T00:00:00Z';
+    sortIndexes.set('a-folder', 1);
+    sortIndexes.set('z-folder', 2);
+    sortIndexes.set('nested-a-file', 0);
+    sortIndexes.set('nested-z-file', 0);
+    sortIndexes.set('nested-z-folder', 1);
+    sortIndexes.set('nested-a-folder', 2);
+}
+
+function compareOrder(first: ReturnType<typeof node>, second: ReturnType<typeof node>) {
+    const firstIndex = sortIndexes.get(first.id) ?? Number.MAX_SAFE_INTEGER;
+    const secondIndex = sortIndexes.get(second.id) ?? Number.MAX_SAFE_INTEGER;
+    return (
+        firstIndex - secondIndex ||
+        first.createdAt.localeCompare(second.createdAt) ||
+        first.id.localeCompare(second.id)
+    );
+}
+
 const documents = new Map(
     entries.map((entry) => [
         entry.id,
@@ -156,13 +185,13 @@ mockIPC(
             case 'get_world':
                 return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
             case 'get_manuscripts':
-                return visibleEntries(entries);
+                return visibleEntries(entries).sort(compareOrder);
             case 'get_wikis':
-                return visibleEntries(wikiEntries);
+                return visibleEntries(wikiEntries).sort(compareOrder);
             case 'get_trash': {
                 const all = [...entries, ...wikiEntries];
                 const visible = new Set(visibleEntries(all).map((item) => item.id));
-                return all.filter((item) => !visible.has(item.id));
+                return all.filter((item) => !visible.has(item.id)).sort(compareOrder);
             }
             case 'restore_trash': {
                 const deleted = [...entries, ...wikiEntries].filter((item) => item.deletedAt);
@@ -283,6 +312,38 @@ mockIPC(
                 }
                 item.name = update.name;
                 item.parentId = update.parentId;
+                return true;
+            }
+            case 'move_manuscript_node': {
+                if (scenario === 'move-error') {
+                    return false;
+                }
+                const item = entries.find((item) => item.id === data.nodeId);
+                const target = [...entries, ...sectionRoots].find(
+                    (item) => item.id === data.targetId,
+                );
+                if (!item || !target) {
+                    return false;
+                }
+                const parentId = data.placement === 'inside' ? target.id : target.parentId;
+                const siblings = entries
+                    .filter(
+                        (entry) =>
+                            entry.id !== item.id && entry.parentId === parentId && !entry.deletedAt,
+                    )
+                    .sort(compareOrder);
+                const targetIndex = siblings.findIndex((entry) => entry.id === target.id);
+                const index =
+                    data.placement === 'inside'
+                        ? siblings.length
+                        : targetIndex + Number(data.placement === 'after');
+                siblings.splice(index, 0, item);
+                item.parentId = parentId;
+                for (const [index, sibling] of siblings.entries()) {
+                    sortIndexes.set(sibling.id, index);
+                }
+                const other = entries.filter((entry) => !siblings.includes(entry));
+                entries.splice(0, entries.length, ...other, ...siblings);
                 return true;
             }
             case 'delete_node': {

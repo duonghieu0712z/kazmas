@@ -48,6 +48,7 @@ export const commands = {
 	createManuscriptEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_manuscript_entry", { name, parentId })),
 	createWikiEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_wiki_entry", { name, parentId })),
 	updateNode: (node: UpdateNodeDto) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_node", { node })),
+	moveManuscriptNode: (nodeId: string, targetId: string, placement: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("move_manuscript_node", { nodeId, targetId, placement })),
 	updateMetadata: (nodeId: string, data: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_metadata", { nodeId, data })),
 	updateDocument: (nodeId: string, content: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_document", { nodeId, content })),
 	deleteNode: (nodeId: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("delete_node", { nodeId })),

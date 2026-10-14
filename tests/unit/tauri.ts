@@ -19,6 +19,7 @@ const tauri = vi.hoisted(() => ({
     closeWorld: vi.fn(),
     updateDocument: vi.fn(),
     updateNode: vi.fn(),
+    moveManuscriptNode: vi.fn(),
     deleteNode: vi.fn(),
     executeMenuCommand: vi.fn(),
     listen: vi.fn(),
@@ -58,6 +59,7 @@ export function resetTauri() {
     tauri.getDocument.mockResolvedValue({ status: 'ok', data: null });
     tauri.updateDocument.mockResolvedValue({ status: 'ok', data: true });
     tauri.updateNode.mockResolvedValue({ status: 'ok', data: true });
+    tauri.moveManuscriptNode.mockResolvedValue({ status: 'ok', data: true });
     tauri.deleteNode.mockResolvedValue({ status: 'ok', data: true });
     tauri.closeWorld.mockResolvedValue({ status: 'ok', data: null });
     tauri.executeMenuCommand.mockResolvedValue({ status: 'ok', data: null });

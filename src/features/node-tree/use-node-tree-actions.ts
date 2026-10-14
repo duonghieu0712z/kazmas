@@ -33,6 +33,7 @@ export function useNodeTreeActions(tree: () => NodeTreeDto[]) {
         if (!worldId || busy.value) {
             return;
         }
+
         busy.value = true;
         error.value = '';
         let deleted = false;
@@ -78,7 +79,49 @@ export function useNodeTreeActions(tree: () => NodeTreeDto[]) {
         }
     };
 
-    return { open, trash, busy, error };
+    const move = async (id: string, targetId: string, placement: 'before' | 'after' | 'inside') => {
+        const worldId = world.manifest?.id;
+        if (!worldId || busy.value) {
+            return;
+        }
+        busy.value = true;
+        error.value = '';
+        let moved = false;
+
+        try {
+            await world.waitForCreations();
+            if (world.manifest?.id !== worldId || !nodes.getNode(id)) {
+                return;
+            }
+
+            const result = await world.trackCreation(
+                commands.moveManuscriptNode(id, targetId, placement),
+            );
+            if (world.manifest?.id !== worldId) {
+                return;
+            }
+            if (result.status !== 'ok' || result.data !== true) {
+                error.value = 'The item could not be moved.';
+                return;
+            }
+
+            world.markDirty();
+            moved = true;
+            if (!(await nodes.reloadNodes()) && world.manifest?.id === worldId) {
+                error.value = 'The item was moved, but the tree could not be refreshed.';
+            }
+        } catch {
+            if (world.manifest?.id === worldId) {
+                error.value = moved
+                    ? 'The item was moved, but the tree could not be refreshed.'
+                    : 'The item could not be moved.';
+            }
+        } finally {
+            busy.value = false;
+        }
+    };
+
+    return { open, trash, move, busy, error };
 }
 
 function findNode(tree: NodeTreeDto[], id: string): NodeTreeDto | undefined {

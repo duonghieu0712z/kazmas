@@ -28,6 +28,7 @@ pub(crate) fn commands() -> Commands<tauri::Wry> {
         node::create_manuscript_entry,
         node::create_wiki_entry,
         node::update_node,
+        node::move_manuscript_node,
         node::update_metadata,
         node::update_document,
         node::delete_node,

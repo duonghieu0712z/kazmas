@@ -179,6 +179,8 @@ function startNode(type: NodeDraft['type']) {
             v-model:expanded="visibleExpanded"
             v-model:rename="rename"
             :active="active"
+            :busy="actions.busy.value"
+            :filtered="!!query.trim()"
             :section="section"
             :tree="filteredTree"
             @cancel:rename="cancelRename"

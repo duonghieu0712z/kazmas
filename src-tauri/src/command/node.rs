@@ -378,6 +378,31 @@ pub(super) async fn restore_trash(
     Ok(restored)
 }
 
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn move_manuscript_node(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+    node_id: Uuid,
+    target_id: Uuid,
+    placement: &str,
+) -> CommandResult<Option<bool>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+
+    let manager = state.project_manager();
+    let moved = manager
+        .move_manuscript_node(project_id, node_id, target_id, placement)
+        .await?;
+
+    if moved == Some(true) {
+        emit_world_changed(&window, manager.project_dirty(project_id).await)?;
+    }
+
+    Ok(moved)
+}
+
 async fn current_project_id(
     state: &State<'_, AppState>,
     window: &WebviewWindow,

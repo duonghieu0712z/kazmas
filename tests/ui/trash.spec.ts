@@ -132,7 +132,7 @@ test('opens trash files with a pointer and closes their tabs after permanent del
     ).toHaveCount(0);
 });
 
-test('sorts folders before files alphabetically at every level within each source', async ({
+test('sorts manuscript trash by index, creation time and ID while Wiki remains alphabetical', async ({
     page,
     workspace,
 }) => {
@@ -151,14 +151,14 @@ test('sorts folders before files alphabetically at every level within each sourc
                     .evaluateAll((items) => items.map((item) => item.getAttribute('aria-label'))),
         )
         .toEqual([
+            'Zebra file',
+            'apple file',
             'apple folder',
-            'apple subfolder',
-            'Zebra subfolder',
             'apple child',
             'Zebra child',
+            'Zebra subfolder',
+            'apple subfolder',
             'Zebra folder',
-            'apple file',
-            'Zebra file',
             'apple topics',
             'Zebra topics',
             'apple page',

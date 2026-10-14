@@ -223,6 +223,24 @@ impl ProjectManager {
         Ok(None)
     }
 
+    pub(crate) async fn move_manuscript_node(
+        &self,
+        id: Uuid,
+        node_id: Uuid,
+        target_id: Uuid,
+        placement: &str,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project
+                .move_manuscript_node(node_id, target_id, placement)
+                .await
+                .map(Some);
+        }
+
+        Ok(None)
+    }
+
     pub(crate) async fn update_metadata(
         &self,
         id: Uuid,

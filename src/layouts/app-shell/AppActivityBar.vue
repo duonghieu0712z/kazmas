@@ -4,6 +4,7 @@ import type { LucideIcon } from '@lucide/vue';
 import { ImagesIcon, LibraryIcon, ScrollTextIcon, SettingsIcon, Trash2Icon } from '@lucide/vue';
 
 import { useSidebar } from '@/components/ui/sidebar';
+import { useNodeDrag } from '@/features/node-tree';
 
 export type ActivityBarItemName = 'Manuscript' | 'Wiki' | 'Assets' | 'Trash' | 'Settings';
 
@@ -44,6 +45,7 @@ const FOOTERS = [
 ] satisfies ItemType[];
 
 const { open, setOpen } = useSidebar();
+const drag = useNodeDrag();
 
 function selectItem(item: ItemType) {
     if (open.value && props.modelValue === item.name) {
@@ -81,6 +83,12 @@ onMounted(() => {
                     <SidebarMenuButton
                         always-show-tooltip
                         class="size-8 justify-center p-0 text-activity-bar-foreground"
+                        :class="
+                            item.name === 'Trash' &&
+                            drag.target?.kind === 'trash' &&
+                            'bg-selected outline-1 -outline-offset-1 outline-ring'
+                        "
+                        :data-node-drop="item.name === 'Trash' ? 'trash' : undefined"
                         :is-active="open && modelValue === item.name"
                         :tooltip="item.name"
                         @click="selectItem(item)"

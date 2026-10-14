@@ -34,11 +34,10 @@ export function useTrashTree() {
 
     const grouped = computed<TrashGroup[]>(() =>
         ['Manuscript', 'Wiki'].map((section) => {
-            const items = sortTree(
-                nodes.trashTree.filter(
-                    (node) => nodes.trashLocations.get(node.id)?.section === section,
-                ),
+            const tree = nodes.trashTree.filter(
+                (node) => nodes.trashLocations.get(node.id)?.section === section,
             );
+            const items = section === 'Manuscript' ? tree : sortTree(tree);
             return { id: `trash:${section}`, name: section, items };
         }),
     );

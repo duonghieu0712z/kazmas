@@ -8,6 +8,94 @@ use crate::{
     test_support::{TestResult, database, temp_dir},
 };
 
+const REJECT_ORDER_UPDATE: &str = r"
+CREATE TRIGGER reject_order BEFORE UPDATE OF data ON node_metadata
+BEGIN
+    SELECT RAISE(ABORT, 'injected failure');
+END
+";
+
+#[tokio::test]
+async fn trash_order_uses_index_then_creation_time_then_id_with_legacy_nodes_last() -> TestResult {
+    let dir = temp_dir()?;
+    let mut conn = database(&dir.path().join("trash-order.db")).await?;
+    let root = Node::new(NodeKind::Manuscript, None, None);
+    create_node(&mut conn, &root).await?;
+
+    let mut nodes = Vec::new();
+    for (id, index, timestamp) in [
+        (1, Some(2), 1),
+        (2, Some(1), 3),
+        (3, Some(1), 2),
+        (4, Some(1), 2),
+        (5, None, 1),
+    ] {
+        let mut node = Node::new(NodeKind::ManuscriptEntry, None, Some(root.id));
+        node.id = Uuid::from_u128(id);
+        node.created_at =
+            chrono::DateTime::from_timestamp(timestamp, 0).ok_or("invalid test timestamp")?;
+        create_node(&mut conn, &node).await?;
+        let data = index.map_or_else(|| json!({}), |index| json!({"sortIndex": index}));
+        create_metadata(&mut conn, &NodeMetadata::new(node.id, data)).await?;
+        nodes.push(node);
+    }
+
+    for node in &nodes {
+        assert!(delete_node(&mut conn, node.id).await?);
+    }
+
+    let ids: Vec<Uuid> = get_trash(&mut conn)
+        .await?
+        .into_iter()
+        .map(|node| node.id)
+        .collect();
+    assert_eq!(ids, [3, 4, 2, 1, 5].map(Uuid::from_u128));
+
+    close_database(conn).await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn failed_restore_rolls_back_flags_order_and_saved_anchors() -> TestResult {
+    let dir = temp_dir()?;
+    let mut conn = database(&dir.path().join("restore-rollback.db")).await?;
+    let root = Node::new(NodeKind::Manuscript, None, None);
+    let first = Node::new(NodeKind::ManuscriptEntry, None, Some(root.id));
+    let second = Node::new(NodeKind::ManuscriptEntry, None, Some(root.id));
+    let third = Node::new(NodeKind::ManuscriptEntry, None, Some(root.id));
+    for (index, node) in [&root, &first, &second, &third].iter().enumerate() {
+        create_node(&mut conn, node).await?;
+        create_metadata(
+            &mut conn,
+            &NodeMetadata::new(node.id, json!({"sortIndex": index, "tags": ["keep"]})),
+        )
+        .await?;
+    }
+
+    assert!(delete_node(&mut conn, second.id).await?);
+    let before = get_metadata(&mut conn, second.id).await?.data;
+
+    sqlx::raw_sql(REJECT_ORDER_UPDATE)
+        .execute(&mut conn)
+        .await?;
+
+    assert!(restore_node(&mut conn, second.id).await.is_err());
+
+    assert!(get_node(&mut conn, second.id).await?.deleted_at.is_some());
+    assert_eq!(get_metadata(&mut conn, second.id).await?.data, before);
+    assert_eq!(
+        get_metadata(&mut conn, first.id).await?.data["sortIndex"],
+        1
+    );
+    assert_eq!(
+        get_metadata(&mut conn, third.id).await?.data["sortIndex"],
+        3
+    );
+
+    close_database(conn).await?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn document_and_metadata_round_trip_unicode_and_nested_json() -> TestResult {
     let dir = temp_dir()?;

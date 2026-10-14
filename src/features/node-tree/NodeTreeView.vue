@@ -12,10 +12,18 @@ import { useNodeStore } from '@/stores/nodes';
 
 import NodeTreeLabel from './NodeTreeLabel.vue';
 import { useCreateNode } from './use-create-node';
+import { useNodeDrag } from './use-node-drag';
 
 type TreeNode = NodeTreeDto | NodeDraft;
 
-const props = defineProps<{ tree: NodeTreeDto[]; section: NodeTreeSection; active: boolean }>();
+const props = defineProps<{
+    tree: NodeTreeDto[];
+    section: NodeTreeSection;
+    active: boolean;
+    filtered?: boolean;
+    busy?: boolean;
+}>();
+
 const emits = defineEmits<{
     'create:node': [id: string];
     'contextmenu:node': [event: MouseEvent, node: NodeTreeDto];
@@ -71,6 +79,22 @@ const selected = defineModel<NodeTreeDto>();
 const expanded = defineModel<string[]>('expanded', { default: () => [] });
 
 const nodes = useNodeStore();
+const drag = useNodeDrag();
+
+function beginDrag(event: PointerEvent, node: TreeNode) {
+    if (node.kind === 'draft' || draft.value || rename.value || creating.value || props.busy) {
+        return;
+    }
+    drag.begin(event, node, (id) => {
+        expanded.value = [...new Set([...expanded.value, id])];
+    });
+}
+
+function dropPlacement(id: string) {
+    return drag.target?.kind === 'tree' && drag.target.id === id
+        ? drag.target.placement
+        : undefined;
+}
 
 const renderedItems = shallowReactive(new Map<string, HTMLElement>());
 
@@ -155,16 +179,16 @@ function getKey(node: TreeNode) {
 }
 
 function getIcon(node: TreeNode, expanded: boolean) {
-    const kind =
-        node.kind !== 'draft'
-            ? node.kind
-            : node.type === 'folder'
-              ? 'folder'
-              : node.entryKind
-                ? node.entryKind
-                : props.section === 'Wiki'
-                  ? 'wiki_entry'
-                  : 'manuscript_entry';
+    if (node.kind !== 'draft') {
+        return getNodeIcon(node.kind, expanded);
+    }
+
+    if (node.type === 'folder') {
+        return getNodeIcon('folder', expanded);
+    }
+
+    const kind = node.entryKind ?? (props.section === 'Wiki' ? 'wiki_entry' : 'manuscript_entry');
+
     return getNodeIcon(kind, expanded);
 }
 
@@ -244,7 +268,10 @@ function focusName(element: Element | ComponentPublicInstance | null) {
             :aria-label="section"
             as-child
             chevron
-            class="h-auto"
+            class="h-auto min-h-full"
+            :data-node-tree="section"
+            :data-reorder="!filtered && !draft && !rename && !creating && !busy && !drag.busy"
+            :data-root-id="tree[0]?.parentId"
             expand-on-chevron-only
             :get-children="getChildren"
             :get-key="getKey"
@@ -265,9 +292,29 @@ function focusName(element: Element | ComponentPublicInstance | null) {
                     :key="item._id"
                     :ref="(element) => setTreeItem(item._id, element)"
                     v-slot="{ isExpanded }"
+                    :class="[
+                        drag.draggedId === item.value.id && 'opacity-50',
+                        dropPlacement(item.value.id) === 'inside' &&
+                            'bg-tree-item-selected outline-1 -outline-offset-1 outline-ring',
+                    ]"
+                    :data-drop-placement="dropPlacement(item.value.id)"
+                    :data-node-id="item.value.id"
                     @contextmenu="showContextMenu($event, item.value)"
+                    @dragstart.prevent
+                    @pointerdown.capture="beginDrag($event, item.value)"
                     @select="selectNode"
                 >
+                    <span
+                        v-if="
+                            dropPlacement(item.value.id) === 'before' ||
+                            dropPlacement(item.value.id) === 'after'
+                        "
+                        aria-hidden="true"
+                        :class="[
+                            'pointer-events-none absolute inset-x-0 z-10 h-px bg-ring',
+                            dropPlacement(item.value.id) === 'before' ? 'top-0' : 'bottom-0',
+                        ]"
+                    />
                     <span class="inline-flex min-w-0 flex-1 items-center gap-2">
                         <component
                             :is="getIcon(item.value, isExpanded)"
