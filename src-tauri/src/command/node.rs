@@ -331,6 +331,78 @@ pub(super) async fn purge_node(
     Ok(purged)
 }
 
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn get_trash(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<Vec<NodeDto>>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+    let nodes = state.project_manager().get_trash(project_id).await?;
+    Ok(nodes.map(|nodes| nodes.into_iter().map(Into::into).collect()))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn empty_trash(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<bool>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+    let manager = state.project_manager();
+    let emptied = manager.empty_trash(project_id).await?;
+    if emptied == Some(true) {
+        emit_world_changed(&window, manager.project_dirty(project_id).await)?;
+    }
+    Ok(emptied)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn restore_trash(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+) -> CommandResult<Option<bool>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+    let manager = state.project_manager();
+    let restored = manager.restore_trash(project_id).await?;
+    if restored == Some(true) {
+        emit_world_changed(&window, manager.project_dirty(project_id).await)?;
+    }
+    Ok(restored)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub(super) async fn move_manuscript_node(
+    state: State<'_, AppState>,
+    window: WebviewWindow,
+    node_id: Uuid,
+    target_id: Uuid,
+    placement: &str,
+) -> CommandResult<Option<bool>> {
+    let Some(project_id) = current_project_id(&state, &window).await? else {
+        return Ok(None);
+    };
+
+    let manager = state.project_manager();
+    let moved = manager
+        .move_manuscript_node(project_id, node_id, target_id, placement)
+        .await?;
+
+    if moved == Some(true) {
+        emit_world_changed(&window, manager.project_dirty(project_id).await)?;
+    }
+
+    Ok(moved)
+}
+
 async fn current_project_id(
     state: &State<'_, AppState>,
     window: &WebviewWindow,

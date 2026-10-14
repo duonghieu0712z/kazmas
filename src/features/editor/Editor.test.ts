@@ -63,6 +63,19 @@ describe('editor persistence', () => {
         );
     });
 
+    it('does not mark dirty or save updates from a read-only document', async () => {
+        const wrapper = createEditor();
+        await wrapper.setProps({ readOnly: true });
+        await flushPromises();
+
+        expect(wrapper.findComponent(provider).props('options').editable).toBe(false);
+        edit(wrapper, 'blocked edit');
+        await flushDocumentSaves();
+
+        expect(useWorldStore().isDirty).toBe(false);
+        expect(tauri.updateDocument).not.toHaveBeenCalled();
+    });
+
     it('saves the previous document before loading the next one', async () => {
         const wrapper = createEditor();
         await flushPromises();

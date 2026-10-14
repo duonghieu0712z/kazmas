@@ -47,6 +47,19 @@ const canCreate = computed(
 
 const { openContextMenu } = useContextMenuProvider();
 
+function clearSelection(event: MouseEvent) {
+    const target = event.target;
+    if (
+        !(target instanceof Element) ||
+        target.closest('[role="treeitem"], button, input, [data-slot="scroll-area-scrollbar"]')
+    ) {
+        return;
+    }
+
+    selected.value = undefined;
+    nodes.selectedNodeId = null;
+}
+
 function showMenu(event: MouseEvent, node?: NodeTreeDto) {
     const worldId = world.manifest?.id;
     const canExecute = () =>
@@ -145,7 +158,12 @@ function startNode(type: NodeDraft['type']) {
         @expand:tree="expandAll"
     />
 
-    <SidebarContent v-show="active" class="overflow-hidden" @contextmenu="showMenu($event)">
+    <SidebarContent
+        v-show="active"
+        class="overflow-hidden"
+        @click="clearSelection"
+        @contextmenu="showMenu($event)"
+    >
         <div
             v-if="!filteredTree.length && !draft"
             class="px-3 py-2 text-xs text-muted-foreground"
@@ -161,6 +179,8 @@ function startNode(type: NodeDraft['type']) {
             v-model:expanded="visibleExpanded"
             v-model:rename="rename"
             :active="active"
+            :busy="actions.busy.value"
+            :filtered="!!query.trim()"
             :section="section"
             :tree="filteredTree"
             @cancel:rename="cancelRename"

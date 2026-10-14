@@ -110,6 +110,30 @@ impl ProjectManager {
         Ok(None)
     }
 
+    pub(crate) async fn get_trash(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.get_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn empty_trash(&self, id: Uuid) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.empty_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
+    pub(crate) async fn restore_trash(&self, id: Uuid) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project.restore_trash().await.map(Some);
+        }
+        Ok(None)
+    }
+
     pub(crate) async fn get_wikis(&self, id: Uuid) -> KazmasResult<Option<Vec<Node>>> {
         let mut projects = self.projects.lock().await;
         if let Some(project) = projects.get_mut(&id) {
@@ -196,6 +220,24 @@ impl ProjectManager {
         if let Some(project) = projects.get_mut(&id) {
             return project.update_node(node).await.map(Some);
         }
+        Ok(None)
+    }
+
+    pub(crate) async fn move_manuscript_node(
+        &self,
+        id: Uuid,
+        node_id: Uuid,
+        target_id: Uuid,
+        placement: &str,
+    ) -> KazmasResult<Option<bool>> {
+        let mut projects = self.projects.lock().await;
+        if let Some(project) = projects.get_mut(&id) {
+            return project
+                .move_manuscript_node(node_id, target_id, placement)
+                .await
+                .map(Some);
+        }
+
         Ok(None)
     }
 

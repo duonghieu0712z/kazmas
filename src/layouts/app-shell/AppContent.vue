@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia';
 
 import { Editor } from '@/features/editor';
 import { NodeBreadcrumb } from '@/features/node-breadcrumb';
+import { useNodeDrag } from '@/features/node-tree';
 import { createWorkspaceTabMenuItems, WorkspaceTabs } from '@/features/workspace-tabs';
 import { getNodeIcon } from '@/lib/node-icons';
 import { useContextMenuProvider } from '@/providers/context-menu';
@@ -20,6 +21,7 @@ interface TabContent {
 const nodes = useNodeStore();
 const workspace = useWorkspaceStore();
 const world = useWorldStore();
+const drag = useNodeDrag();
 const { openContextMenu } = useContextMenuProvider();
 
 const { activeTab } = storeToRefs(workspace);
@@ -30,15 +32,18 @@ const closingBatch = ref(false);
 
 const tabs = computed<ContentTab[]>(() =>
     workspace.tabs.map((tab) => {
-        const node = nodes.getNode(tab.nodeId);
+        const trashedNode = nodes.getTrashedNode(tab.nodeId);
+        const node = nodes.getNode(tab.nodeId) ?? trashedNode;
         return {
             id: tab.id,
             title: node?.name ?? 'Untitled',
+            deleted: !!trashedNode,
             icon: getNodeIcon(node?.kind),
             breadcrumbs: nodes.getNodePath(tab.nodeId),
             component: Editor,
             props: {
                 nodeId: tab.nodeId,
+                readOnly: !!trashedNode,
                 'onError:save': () => {
                     if (
                         workspace.tabs.includes(tab) &&
@@ -142,7 +147,11 @@ async function closeTabs(ids: readonly string[]) {
 </script>
 
 <template>
-    <SidebarInset class="h-full min-h-0 min-w-0 overflow-hidden">
+    <SidebarInset
+        class="h-full min-h-0 min-w-0 overflow-hidden"
+        :class="drag.target?.kind === 'content' && 'outline-1 -outline-offset-1 outline-ring'"
+        data-node-drop="content"
+    >
         <WorkspaceTabs
             v-model="activeTab"
             :tabs="tabs"

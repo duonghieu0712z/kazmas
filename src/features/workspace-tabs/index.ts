@@ -7,5 +7,6 @@ export { createWorkspaceTabMenuItems } from './workspace-tab-menu';
 export interface WorkspaceTab {
     id: string;
     title: string;
+    deleted?: boolean;
     icon?: Component;
 }

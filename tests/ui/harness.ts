@@ -14,6 +14,43 @@ const entries = [
     node({ id: 'entry-long', name: longName }),
 ];
 const wikiEntries = [node({ id: 'wiki-a', kind: 'wiki_entry', name: 'Character' })];
+const sectionRoots = [
+    node({ id: 'manuscript-root', kind: 'manuscript', name: 'Manuscript' }),
+    node({ id: 'wiki-root', kind: 'wiki', name: 'Wiki' }),
+];
+
+if (scenario === 'trash-order') {
+    const deletedAt = '2026-01-01T00:00:00Z';
+    entries.splice(
+        0,
+        entries.length,
+        node({ id: 'z-file', name: 'Zebra file', deletedAt }),
+        node({ id: 'a-file', name: 'apple file', deletedAt }),
+        node({ id: 'z-folder', name: 'Zebra folder', kind: 'folder', deletedAt }),
+        node({ id: 'a-folder', name: 'apple folder', kind: 'folder', deletedAt }),
+        node({ id: 'nested-z-file', name: 'Zebra child', parentId: 'a-folder' }),
+        node({ id: 'nested-a-file', name: 'apple child', parentId: 'a-folder' }),
+        node({
+            id: 'nested-z-folder',
+            name: 'Zebra subfolder',
+            parentId: 'a-folder',
+            kind: 'folder',
+        }),
+        node({
+            id: 'nested-a-folder',
+            name: 'apple subfolder',
+            parentId: 'a-folder',
+            kind: 'folder',
+        }),
+    );
+    wikiEntries.splice(
+        0,
+        wikiEntries.length,
+        node({ id: 'wiki-file', kind: 'wiki_entry', name: 'apple page', deletedAt }),
+        node({ id: 'wiki-z-folder', kind: 'folder', name: 'Zebra topics', deletedAt }),
+        node({ id: 'wiki-a-folder', kind: 'folder', name: 'apple topics', deletedAt }),
+    );
+}
 
 if (scenario === 'tree-state') {
     entries.splice(
@@ -35,6 +72,42 @@ if (scenario === 'large-tree') {
             node({ id: `large-${index}`, name: `Chapter ${String(index).padStart(5, '0')}` }),
         );
     }
+}
+
+for (const item of entries) {
+    item.parentId ??= 'manuscript-root';
+}
+for (const item of wikiEntries) {
+    item.parentId ??= 'wiki-root';
+}
+
+const sortIndexes = new Map<string, number>();
+const siblingCounts = new Map<string | null, number>();
+for (const item of [...entries, ...wikiEntries]) {
+    const index = siblingCounts.get(item.parentId) ?? 0;
+    sortIndexes.set(item.id, index);
+    siblingCounts.set(item.parentId, index + 1);
+}
+if (scenario === 'trash-order') {
+    sortIndexes.set('z-file', 0);
+    sortIndexes.set('a-file', 0);
+    entries.find((item) => item.id === 'a-file')!.createdAt = '2026-01-02T00:00:00Z';
+    sortIndexes.set('a-folder', 1);
+    sortIndexes.set('z-folder', 2);
+    sortIndexes.set('nested-a-file', 0);
+    sortIndexes.set('nested-z-file', 0);
+    sortIndexes.set('nested-z-folder', 1);
+    sortIndexes.set('nested-a-folder', 2);
+}
+
+function compareOrder(first: ReturnType<typeof node>, second: ReturnType<typeof node>) {
+    const firstIndex = sortIndexes.get(first.id) ?? Number.MAX_SAFE_INTEGER;
+    const secondIndex = sortIndexes.get(second.id) ?? Number.MAX_SAFE_INTEGER;
+    return (
+        firstIndex - secondIndex ||
+        first.createdAt.localeCompare(second.createdAt) ||
+        first.id.localeCompare(second.id)
+    );
 }
 
 const documents = new Map(
@@ -103,12 +176,98 @@ mockIPC(
         const data = (args ?? {}) as Record<string, unknown>;
         calls.push({ command, args: data });
         switch (command) {
+            case 'get_node':
+                return (
+                    [...entries, ...wikiEntries, ...sectionRoots].find(
+                        (item) => item.id === data.nodeId,
+                    ) ?? null
+                );
             case 'get_world':
                 return scenario === 'empty' || scenario === 'dialog' ? null : manifest();
             case 'get_manuscripts':
-                return visibleEntries(entries);
+                return visibleEntries(entries).sort(compareOrder);
             case 'get_wikis':
-                return visibleEntries(wikiEntries);
+                return visibleEntries(wikiEntries).sort(compareOrder);
+            case 'get_trash': {
+                const all = [...entries, ...wikiEntries];
+                const visible = new Set(visibleEntries(all).map((item) => item.id));
+                return all.filter((item) => !visible.has(item.id)).sort(compareOrder);
+            }
+            case 'restore_trash': {
+                const deleted = [...entries, ...wikiEntries].filter((item) => item.deletedAt);
+                for (const item of deleted) {
+                    item.deletedAt = null;
+                }
+                return deleted.length > 0;
+            }
+            case 'restore_node': {
+                const all = [...entries, ...wikiEntries];
+                const visible = new Set(visibleEntries(all).map((item) => item.id));
+                const item = all.find((item) => item.id === data.nodeId);
+                if (!item || visible.has(item.id)) {
+                    return false;
+                }
+
+                const restored = new Set([item.id]);
+                const pending = [item.id];
+                while (pending.length) {
+                    const parentId = pending.pop();
+                    for (const child of all.filter((item) => item.parentId === parentId)) {
+                        restored.add(child.id);
+                        pending.push(child.id);
+                    }
+                }
+
+                const ancestors = new Set<string>();
+                let parent = all.find((node) => node.id === item.parentId);
+                while (parent && !visible.has(parent.id)) {
+                    ancestors.add(parent.id);
+                    restored.add(parent.id);
+                    const parentId = parent.parentId;
+                    parent = all.find((node) => node.id === parentId);
+                }
+
+                for (const node of all) {
+                    if (restored.has(node.id)) {
+                        node.deletedAt = null;
+                    } else if (node.parentId && ancestors.has(node.parentId) && !node.deletedAt) {
+                        node.deletedAt = new Date().toISOString();
+                    }
+                }
+                return true;
+            }
+            case 'purge_node':
+            case 'empty_trash': {
+                const all = [...entries, ...wikiEntries];
+                const removed = new Set(
+                    all
+                        .filter(
+                            (item) =>
+                                item.deletedAt &&
+                                (command === 'empty_trash' || item.id === data.nodeId),
+                        )
+                        .map((item) => item.id),
+                );
+                let changed = true;
+                while (changed) {
+                    changed = false;
+                    for (const item of all) {
+                        if (item.parentId && removed.has(item.parentId) && !removed.has(item.id)) {
+                            removed.add(item.id);
+                            changed = true;
+                        }
+                    }
+                }
+                for (const items of [entries, wikiEntries]) {
+                    for (let index = items.length - 1; index >= 0; index--) {
+                        if (removed.has(items[index]!.id)) {
+                            documents.delete(items[index]!.id);
+                            items.splice(index, 1);
+                        }
+                    }
+                }
+                return removed.size > 0;
+            }
             case 'create_manuscript_entry':
             case 'create_wiki_entry': {
                 const wiki = command === 'create_wiki_entry';
@@ -153,6 +312,38 @@ mockIPC(
                 }
                 item.name = update.name;
                 item.parentId = update.parentId;
+                return true;
+            }
+            case 'move_manuscript_node': {
+                if (scenario === 'move-error') {
+                    return false;
+                }
+                const item = entries.find((item) => item.id === data.nodeId);
+                const target = [...entries, ...sectionRoots].find(
+                    (item) => item.id === data.targetId,
+                );
+                if (!item || !target) {
+                    return false;
+                }
+                const parentId = data.placement === 'inside' ? target.id : target.parentId;
+                const siblings = entries
+                    .filter(
+                        (entry) =>
+                            entry.id !== item.id && entry.parentId === parentId && !entry.deletedAt,
+                    )
+                    .sort(compareOrder);
+                const targetIndex = siblings.findIndex((entry) => entry.id === target.id);
+                const index =
+                    data.placement === 'inside'
+                        ? siblings.length
+                        : targetIndex + Number(data.placement === 'after');
+                siblings.splice(index, 0, item);
+                item.parentId = parentId;
+                for (const [index, sibling] of siblings.entries()) {
+                    sortIndexes.set(sibling.id, index);
+                }
+                const other = entries.filter((entry) => !siblings.includes(entry));
+                entries.splice(0, entries.length, ...other, ...siblings);
                 return true;
             }
             case 'delete_node': {

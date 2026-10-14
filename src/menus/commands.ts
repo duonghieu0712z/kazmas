@@ -3,6 +3,7 @@ import type { MenuCommand as RustMenuCommand } from '@/generated/bindings';
 
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
+import { emptyTrash } from '@/actions/trash';
 import { closeWorld, newWorld, openWorld } from '@/actions/world';
 import { openAboutDialog } from '@/dialogs';
 import { commands, events } from '@/generated/bindings';
@@ -24,6 +25,7 @@ const backendMenuCommands = new Set<RustMenuCommand>([
 
 const frontendMenuHandlers: Partial<Record<RustMenuCommand, MenuCommandHandler>> = {
     about: openAboutDialog,
+    'empty-trash': emptyTrash,
     'close-world': closeWorld,
     'new-folder': createFolder,
     'new-manuscript-entry': createManuscriptEntry,

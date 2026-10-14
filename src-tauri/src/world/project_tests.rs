@@ -4,6 +4,240 @@ use uuid::Uuid;
 use super::*;
 use crate::test_support::{TestResult, temp_dir};
 
+async fn root_order(world: &mut WorldProject) -> KazmasResult<Vec<Uuid>> {
+    let root = store::get_node_by_kind(&mut world.conn, NodeKind::Manuscript).await?;
+
+    Ok(world
+        .get_node_descendants_by_kind(NodeKind::Manuscript)
+        .await?
+        .into_iter()
+        .filter(|node| node.parent_id == Some(root.id))
+        .map(|node| node.id)
+        .collect())
+}
+
+#[tokio::test]
+async fn creation_assigns_order_and_preserves_gaps_after_deletion() -> TestResult {
+    let dir = temp_dir()?;
+    let mut world = WorldProject::create_world("Create order", dir.path(), dir.path()).await?;
+    let first = world.create_manuscript_entry(Some("First"), None).await?;
+    let second = world.create_manuscript_entry(Some("Second"), None).await?;
+    let third = world.create_manuscript_entry(Some("Third"), None).await?;
+
+    assert!(world.delete_node(second).await?);
+    assert_eq!(world.get_metadata(first).await?.data["sortIndex"], 0);
+    assert_eq!(world.get_metadata(second).await?.data["sortIndex"], 1);
+    assert_eq!(world.get_metadata(third).await?.data["sortIndex"], 2);
+
+    let fourth = world
+        .create_folder(Some("Fourth"), None, NodeKind::Manuscript)
+        .await?;
+    assert_eq!(world.get_metadata(fourth).await?.data["sortIndex"], 3);
+    assert_eq!(root_order(&mut world).await?, vec![first, third, fourth]);
+
+    assert!(world.purge_node(second).await?);
+    assert_eq!(world.get_metadata(third).await?.data["sortIndex"], 2);
+
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn creation_appends_after_legacy_siblings_without_losing_metadata() -> TestResult {
+    let dir = temp_dir()?;
+    let mut world = WorldProject::create_world("Legacy order", dir.path(), dir.path()).await?;
+    let root = store::get_node_by_kind(&mut world.conn, NodeKind::Manuscript).await?;
+    let first = Node::new(
+        NodeKind::ManuscriptEntry,
+        Some("Legacy first"),
+        Some(root.id),
+    );
+    let second = Node::new(NodeKind::Folder, Some("Legacy second"), Some(root.id));
+
+    for node in [&first, &second] {
+        store::create_node(&mut world.conn, node).await?;
+        store::create_metadata(
+            &mut world.conn,
+            &NodeMetadata::new(node.id, json!({"tags": ["legacy"]})),
+        )
+        .await?;
+    }
+
+    let third = world.create_manuscript_entry(Some("New"), None).await?;
+
+    assert_eq!(root_order(&mut world).await?, vec![
+        first.id, second.id, third
+    ]);
+    assert_eq!(
+        world.get_metadata(first.id).await?.data,
+        json!({"tags": ["legacy"], "sortIndex": 0})
+    );
+    assert_eq!(world.get_metadata(second.id).await?.data["sortIndex"], 1);
+    assert_eq!(world.get_metadata(third).await?.data["sortIndex"], 2);
+
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn restoration_uses_previous_then_next_then_end_after_reordering() -> TestResult {
+    for missing in 0..=3 {
+        let dir = temp_dir()?;
+        let package = dir.path().join("Restore order.kazmas");
+        let mut world = WorldProject::create_world("Restore order", dir.path(), dir.path()).await?;
+        let a = world.create_manuscript_entry(Some("A"), None).await?;
+        let b = world.create_manuscript_entry(Some("B"), None).await?;
+        let c = world.create_manuscript_entry(Some("C"), None).await?;
+        let d = world.create_manuscript_entry(Some("D"), None).await?;
+
+        let mut metadata = world.get_metadata(b).await?;
+        metadata.data["tags"] = json!(["keep"]);
+        world.update_metadata(&metadata).await?;
+
+        assert!(world.delete_node(b).await?);
+        assert_eq!(
+            world.get_metadata(b).await?.data["trashPosition"],
+            json!({"prevSiblingId": a, "nextSiblingId": c})
+        );
+
+        assert!(world.move_manuscript_node(c, a, "before").await?);
+        assert!(world.move_manuscript_node(d, a, "before").await?);
+        assert_eq!(root_order(&mut world).await?, vec![c, d, a]);
+
+        if missing > 0 {
+            assert!(world.delete_node(a).await?);
+        }
+        if missing == 2 {
+            assert!(world.delete_node(c).await?);
+        }
+        if missing == 3 {
+            assert!(world.purge_node(a).await?);
+        }
+
+        world.save_world().await?;
+        world.close_world().await?;
+
+        let mut world = WorldProject::open_world(&package, dir.path()).await?;
+        assert!(world.restore_node(b).await?);
+
+        let expected = match missing {
+            0 => vec![c, d, a, b],
+            2 => vec![d, b],
+            _ => vec![b, c, d],
+        };
+        assert_eq!(root_order(&mut world).await?, expected);
+        let metadata = world.get_metadata(b).await?;
+        assert_eq!(metadata.data["tags"], json!(["keep"]));
+        assert!(metadata.data.get("trashPosition").is_none());
+
+        world.close_world().await?;
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn batch_restoration_preserves_sibling_order_and_ignores_reparented_anchors() -> TestResult {
+    let dir = temp_dir()?;
+    let mut world = WorldProject::create_world("Batch restore", dir.path(), dir.path()).await?;
+    let a = world.create_manuscript_entry(Some("A"), None).await?;
+    let b = world.create_manuscript_entry(Some("B"), None).await?;
+    let c = world.create_manuscript_entry(Some("C"), None).await?;
+    let d = world.create_manuscript_entry(Some("D"), None).await?;
+
+    assert!(world.delete_node(b).await?);
+    assert!(world.delete_node(c).await?);
+    assert!(world.move_manuscript_node(d, a, "before").await?);
+    assert!(world.restore_trash().await?);
+    assert_eq!(root_order(&mut world).await?, vec![d, a, b, c]);
+
+    assert!(world.delete_node(b).await?);
+    let folder = world
+        .create_folder(Some("Folder"), None, NodeKind::Manuscript)
+        .await?;
+    assert!(world.move_manuscript_node(a, folder, "inside").await?);
+    assert!(world.restore_node(b).await?);
+    assert_eq!(root_order(&mut world).await?, vec![d, b, c, folder]);
+
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn manuscript_moves_preserve_order_and_parent_after_reopening() -> TestResult {
+    let dir = temp_dir()?;
+    let package = dir.path().join("Moves.kazmas");
+    let mut world = WorldProject::create_world("Moves", dir.path(), dir.path()).await?;
+    let first = world.create_manuscript_entry(Some("First"), None).await?;
+    let second = world.create_manuscript_entry(Some("Second"), None).await?;
+    let folder = world
+        .create_folder(Some("Folder"), None, NodeKind::Manuscript)
+        .await?;
+    let nested = world
+        .create_folder(Some("Nested"), Some(folder), NodeKind::Manuscript)
+        .await?;
+    let wiki = world.create_wiki_entry(Some("Wiki"), None).await?;
+
+    let mut metadata = world.get_metadata(first).await?;
+    metadata.data["tags"] = serde_json::json!(["draft"]);
+    assert!(world.update_metadata(&metadata).await?);
+
+    assert!(world.move_manuscript_node(second, first, "before").await?);
+    let parent_id = world.get_node(first).await?.parent_id;
+    let roots: Vec<Uuid> = world
+        .get_node_descendants_by_kind(NodeKind::Manuscript)
+        .await?
+        .into_iter()
+        .filter(|node| node.parent_id == parent_id)
+        .map(|node| node.id)
+        .collect();
+    assert_eq!(roots, vec![second, first, folder]);
+
+    assert!(world.move_manuscript_node(first, folder, "inside").await?);
+    assert_eq!(
+        world.get_metadata(first).await?.data,
+        serde_json::json!({"tags": ["draft"], "sortIndex": 1})
+    );
+
+    assert!(!world.move_manuscript_node(folder, nested, "inside").await?);
+    assert!(!world.move_manuscript_node(folder, folder, "inside").await?);
+    assert!(!world.move_manuscript_node(wiki, second, "before").await?);
+    assert!(!world.move_manuscript_node(second, wiki, "before").await?);
+    assert!(!world.move_manuscript_node(second, first, "inside").await?);
+
+    assert!(world.delete_node(second).await?);
+    assert!(!world.move_manuscript_node(second, folder, "inside").await?);
+    assert!(world.restore_node(second).await?);
+
+    world.save_world().await?;
+    world.close_world().await?;
+    let mut reopened = WorldProject::open_world(&package, dir.path()).await?;
+
+    assert_eq!(reopened.get_node(first).await?.parent_id, Some(folder));
+    let children: Vec<Uuid> = reopened
+        .get_node_descendants_by_kind(NodeKind::Manuscript)
+        .await?
+        .into_iter()
+        .filter(|node| node.parent_id == Some(folder))
+        .map(|node| node.id)
+        .collect();
+    assert_eq!(children, vec![nested, first]);
+
+    let third = reopened
+        .create_manuscript_entry(Some("Third"), Some(folder))
+        .await?;
+    let children: Vec<Uuid> = reopened
+        .get_node_descendants_by_kind(NodeKind::Manuscript)
+        .await?
+        .into_iter()
+        .filter(|node| node.parent_id == Some(folder))
+        .map(|node| node.id)
+        .collect();
+    assert_eq!(children, vec![nested, first, third]);
+
+    reopened.close_world().await?;
+    Ok(())
+}
+
 #[tokio::test]
 async fn creates_folders_in_empty_sections_and_under_explicit_parents() -> TestResult {
     let dir = temp_dir()?;
@@ -120,6 +354,54 @@ async fn rolls_back_partial_entry_when_document_insert_fails() -> TestResult {
         .await?;
     assert_eq!(nodes, 0);
     assert_eq!(metadata, 3);
+    world.close_world().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn trash_restore_and_permanent_deletion_persist_after_save_and_reopen() -> TestResult {
+    let dir = temp_dir()?;
+    let package = dir.path().join("Trash.kazmas");
+    let mut world = WorldProject::create_world("Trash", dir.path(), dir.path()).await?;
+    let id = world.create_wiki_entry(Some("Character"), None).await?;
+    let content = json!({"type": "doc", "content": [{"type": "paragraph"}]});
+    world
+        .update_document(&Document::new(id, content.clone()))
+        .await?;
+    assert!(world.delete_node(id).await?);
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert_eq!(world.get_trash().await?[0].id, id);
+    assert!(
+        world
+            .get_node_descendants_by_kind(NodeKind::Wiki)
+            .await?
+            .is_empty()
+    );
+    assert!(world.restore_node(id).await?);
+    assert!(world.is_dirty());
+    assert_eq!(world.get_document(id).await?.content, content);
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert!(world.get_trash().await?.is_empty());
+    assert_eq!(
+        world.get_node_descendants_by_kind(NodeKind::Wiki).await?[0].id,
+        id
+    );
+    assert!(world.delete_node(id).await?);
+    world.save_world().await?;
+    assert!(world.empty_trash().await?);
+    assert!(world.is_dirty());
+    world.save_world().await?;
+    world.close_world().await?;
+
+    let mut world = WorldProject::open_world(&package, dir.path()).await?;
+    assert!(world.get_trash().await?.is_empty());
+    assert!(world.get_document(id).await.is_err());
     world.close_world().await?;
     Ok(())
 }

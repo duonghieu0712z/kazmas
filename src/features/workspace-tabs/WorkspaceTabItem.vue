@@ -54,6 +54,7 @@ const emit = defineEmits<{
                     class="size-3.5 text-tabs-trigger-icon-foreground"
                 />
                 <span class="max-w-40 truncate">{{ tab.title }}</span>
+                <span v-if="tab.deleted" class="shrink-0 italic">(deleted)</span>
                 <Button
                     :aria-label="`Close ${tab.title}`"
                     :class="[
@@ -87,6 +88,7 @@ const emit = defineEmits<{
 
         <TooltipContent class="max-w-80 wrap-break-word" side="bottom">
             {{ tab.title }}
+            <span v-if="tab.deleted" class="italic">(deleted)</span>
         </TooltipContent>
     </Tooltip>
 </template>

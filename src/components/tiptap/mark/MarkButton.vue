@@ -55,6 +55,7 @@ const delegatedProps = reactiveOmit(
             :model-value="isActive"
             :size="showLabel ? 'default' : 'icon'"
             @click="handleMark"
+            @mousedown.prevent
         >
             <slot>
                 <component :is="icon" />

@@ -12,10 +12,19 @@ const nodes = useNodeStore();
 const path = computed(() => props.path ?? nodes.openedNodePath);
 const currentNodeId = computed(() => path.value.at(-1)?.id);
 const crumbs = computed(() => {
-    let siblings: NodeTreeDto[] = path.value[0]?.id === 'Wiki' ? nodes.wikis : nodes.manuscripts;
+    const root = path.value[0]?.id;
+    const section = root === 'Trash' ? path.value[1]?.name : undefined;
+    let siblings: NodeTreeDto[] =
+        root === 'Trash'
+            ? nodes.trashTree.filter(
+                  (node) => nodes.trashLocations.get(node.id)?.section === section,
+              )
+            : root === 'Wiki'
+              ? nodes.wikis
+              : nodes.manuscripts;
     return path.value.map((item, index) => {
         const items = siblings;
-        if (index > 0) {
+        if (index > (root === 'Trash' ? 1 : 0)) {
             siblings = siblings.find((node) => node.id === item.id)?.children ?? [];
         }
         return { ...item, items };
@@ -29,7 +38,7 @@ const crumbs = computed(() => {
             <template v-for="(item, index) in crumbs" :key="item.id">
                 <BreadcrumbItem class="min-w-0">
                     <BreadcrumbPage
-                        v-if="index === 0"
+                        v-if="index === 0 || (path[0]?.id === 'Trash' && index === 1)"
                         class="truncate text-content-header-foreground"
                     >
                         {{ item.name }}

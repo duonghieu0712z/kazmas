@@ -212,6 +212,7 @@ impl WorldProject {
         let node = Node::new(NodeKind::Folder, name, parent_id);
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        store::append_node_sort_index(&mut tx, &node).await?;
 
         tx.commit().await?;
         self.dirty = true;
@@ -259,6 +260,7 @@ impl WorldProject {
 
         store::create_node(&mut tx, &node).await?;
         store::create_metadata(&mut tx, &NodeMetadata::new(node.id, serde_json::json!({}))).await?;
+        store::append_node_sort_index(&mut tx, &node).await?;
         store::create_document(
             &mut tx,
             &Document::new(node.id, serde_json::json!({ "type": "doc" })),
@@ -277,6 +279,21 @@ impl WorldProject {
             self.dirty = true;
         }
         Ok(updated)
+    }
+
+    pub(crate) async fn move_manuscript_node(
+        &mut self,
+        id: Uuid,
+        target_id: Uuid,
+        placement: &str,
+    ) -> KazmasResult<bool> {
+        let moved = store::move_manuscript_node(&mut self.conn, id, target_id, placement).await?;
+
+        if moved {
+            self.dirty = true;
+        }
+
+        Ok(moved)
     }
 
     pub(crate) async fn update_metadata(&mut self, metadata: &NodeMetadata) -> KazmasResult<bool> {
@@ -309,6 +326,26 @@ impl WorldProject {
             self.dirty = true;
         }
         Ok(node_updated)
+    }
+
+    pub(crate) async fn get_trash(&mut self) -> KazmasResult<Vec<Node>> {
+        store::get_trash(&mut self.conn).await
+    }
+
+    pub(crate) async fn restore_trash(&mut self) -> KazmasResult<bool> {
+        let restored = store::restore_trash(&mut self.conn).await?;
+        if restored {
+            self.dirty = true;
+        }
+        Ok(restored)
+    }
+
+    pub(crate) async fn empty_trash(&mut self) -> KazmasResult<bool> {
+        let emptied = store::empty_trash(&mut self.conn).await?;
+        if emptied {
+            self.dirty = true;
+        }
+        Ok(emptied)
     }
 
     pub(crate) async fn delete_node(&mut self, id: Uuid) -> KazmasResult<bool> {
