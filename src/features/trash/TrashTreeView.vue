@@ -18,15 +18,21 @@ const expanded = defineModel<string[]>('expanded', { required: true });
 const openGroupCount = computed(
     () => props.groups.filter((group) => expanded.value.includes(group.id)).length,
 );
+
+function canResizeGroup(index: number) {
+    const adjacentGroups = [props.groups[index - 1], props.groups[index]];
+
+    return adjacentGroups.every((group) => !!group && expanded.value.includes(group.id));
+}
 </script>
 
 <template>
     <ResizablePanelGroup class="min-h-0 flex-1" direction="vertical" separation="divider">
         <template v-for="(group, index) in groups" :key="group.id">
             <ResizableHandle
-                v-if="
-                    index && expanded.includes(group.id) && expanded.includes(groups[index - 1]!.id)
-                "
+                v-if="index"
+                v-show="canResizeGroup(index)"
+                :disabled="!canResizeGroup(index)"
             />
 
             <ResizablePanel

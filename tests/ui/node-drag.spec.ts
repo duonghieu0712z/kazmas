@@ -42,6 +42,70 @@ test('reorders manuscript nodes without activating the dragged document', async 
     ).toEqual([{ nodeId: 'entry-b', targetId: 'entry-a', placement: 'before' }]);
 });
 
+test('drops on the tree background to append a node after its siblings', async ({
+    page,
+    workspace,
+}) => {
+    await workspace.open();
+    const tree = page.locator('[data-node-tree="Manuscript"]');
+    const rootId = await tree.getAttribute('data-root-id');
+    expect(rootId).toBeTruthy();
+    await startDrag(page, page.getByRole('treeitem', { name: 'Chapter A', exact: true }));
+    await moveTo(page, tree, 0.9);
+    await page.mouse.up();
+    await expect(page.getByRole('treeitem').nth(0)).toHaveAccessibleName('Chapter B');
+    await expect(page.getByRole('treeitem').last()).toHaveAccessibleName('Chapter A');
+    await expect(page.getByRole('tab')).toHaveCount(1);
+    await expect(page.locator('[data-slot="node-drag-preview"]')).toHaveCount(0);
+    expect(
+        await page.evaluate(() =>
+            window.__kazmasTest.calls
+                .filter((call) => call.command === 'move_manuscript_node')
+                .map((call) => call.args),
+        ),
+    ).toEqual([{ nodeId: 'entry-a', targetId: rootId, placement: 'inside' }]);
+});
+
+for (const event of ['blur', 'pointercancel']) {
+    test(`cancels dragging on ${event} and allows the next click and drag`, async ({
+        page,
+        workspace,
+    }) => {
+        await workspace.open();
+        const first = page.getByRole('treeitem', { name: 'Chapter A', exact: true });
+        const second = page.getByRole('treeitem', { name: 'Chapter B', exact: true });
+        await startDrag(page, second);
+        await moveTo(page, first, 0.1);
+        await expect(first).toHaveAttribute('data-drop-placement', 'before');
+        await page.evaluate((type) => {
+            if (type === 'blur') {
+                window.dispatchEvent(new Event(type));
+            } else {
+                document.dispatchEvent(new PointerEvent(type));
+            }
+        }, event);
+        await expect(page.locator('[data-slot="node-drag-preview"]')).toHaveCount(0);
+        await expect(first).not.toHaveAttribute('data-drop-placement');
+        await page.mouse.up();
+        await expect(page.getByRole('treeitem').nth(0)).toHaveAccessibleName('Chapter A');
+        expect(
+            await page.evaluate(() =>
+                window.__kazmasTest.calls.some((call) => call.command === 'move_manuscript_node'),
+            ),
+        ).toBe(false);
+        await second.click();
+        await expect(
+            page.getByRole('tab', { name: 'Chapter B Close Chapter B', exact: true }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await startDrag(page, first);
+        await moveTo(page, second, 0.9);
+        await expect(second).toHaveAttribute('data-drop-placement', 'after');
+        await page.mouse.up();
+        await expect(page.getByRole('treeitem').nth(0)).toHaveAccessibleName('Chapter B');
+        await expect(page.getByRole('treeitem').nth(1)).toHaveAccessibleName('Chapter A');
+    });
+}
+
 test('moves entries into folders and back to the root and rejects cycles', async ({
     page,
     workspace,
@@ -117,7 +181,10 @@ test('drops an entire branch on Trash after saving and closes its tabs', async (
     const commands = await page.evaluate(() =>
         window.__kazmasTest.calls.map((call) => call.command),
     );
-    expect(commands.lastIndexOf('update_document')).toBeLessThan(commands.indexOf('delete_node'));
+    const saveIndex = commands.lastIndexOf('update_document');
+    const deleteIndex = commands.indexOf('delete_node');
+    expect(saveIndex).toBeGreaterThanOrEqual(0);
+    expect(deleteIndex).toBeGreaterThan(saveIndex);
     await page.getByRole('button', { name: 'Trash', exact: true }).click();
     await expect(page.getByRole('treeitem', { name: 'Draft', exact: true })).toBeVisible();
 });

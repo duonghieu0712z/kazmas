@@ -189,7 +189,7 @@ test('groups trash by source and shows the original location of separately delet
     await expect(chapter).toHaveAttribute('aria-level', '1');
     await expect(chapter.getByText('Manuscript / Draft', { exact: true })).toHaveCount(0);
     await chapter.getByText('Chapter A', { exact: true }).hover();
-    const tooltip = page.getByRole('tooltip', { includeHidden: true });
+    const tooltip = page.locator('[data-slot="tooltip-content"]');
     await expect(tooltip.getByText('Chapter A', { exact: true })).toBeVisible();
     await expect(
         tooltip.getByText('Original location: Manuscript / Draft', { exact: true }),

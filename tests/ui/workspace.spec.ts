@@ -136,6 +136,10 @@ test('toolbar bold changes the document and reflects its active state', async ({
         'aria-pressed',
         'true',
     );
+    await expect(page.locator('.tiptap:visible')).toBeFocused();
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toContain(
+        'A sample manuscript',
+    );
 });
 
 test('switching documents immediately preserves the pending edit', async ({ page, workspace }) => {

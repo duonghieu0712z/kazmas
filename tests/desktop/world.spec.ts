@@ -6,6 +6,10 @@ import { browser, $, expect } from '@wdio/globals';
 
 import '@wdio/tauri-service';
 
+function activityButton(name: string) {
+    return $(`//button[@data-slot="sidebar-menu-button"][normalize-space(.)="${name}"]`);
+}
+
 async function closeTestWindow(handle: string) {
     await browser.switchToWindow(handle);
     await browser.closeWindow();
@@ -64,7 +68,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.waitUntil(() => browser.execute(() => Boolean(window.__kazmasDesktopTest)), {
             timeout: 30000,
         });
-        const manuscript = $('button=Manuscript');
+        const manuscript = activityButton('Manuscript');
         if ((await manuscript.getAttribute('data-active')) !== 'true') {
             await manuscript.click();
         }
@@ -220,7 +224,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
     it('groups trashed empty folders by source after saving and reopening', async () => {
         for (const section of ['Manuscript', 'Wiki']) {
-            const activity = $(`button=${section}`);
+            const activity = activityButton(section);
             if ((await activity.getAttribute('data-active')) !== 'true') {
                 await activity.click();
             }
@@ -230,7 +234,9 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             const folderName = `Discarded ${section}`;
             await $('input[aria-label="New item name"]').setValue(folderName);
             await browser.keys('Enter');
-            const folder = $(`//*[@role="treeitem"][normalize-space(.)="${folderName}"]`);
+            const folder = $(
+                `//*[@data-node-tree="${section}"]//*[@role="treeitem"][normalize-space(.)="${folderName}"]`,
+            );
             await folder.waitForDisplayed();
             await browser.execute((name) => {
                 const item = Array.from(document.querySelectorAll('[role="treeitem"]')).find(
@@ -246,7 +252,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.execute(() => window.__kazmasDesktopTest.save());
         await browser.execute(() => window.__kazmasDesktopTest.close());
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
-        await $('button=Trash').click();
+        await activityButton('Trash').click();
         for (const section of ['Manuscript', 'Wiki']) {
             const group = $(
                 `[role="region"][aria-label="Trash"] [role="group"][aria-label="${section}"]`,
@@ -255,15 +261,35 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             await expect(group.$('[data-slot="sidebar-group-label"]')).toHaveText(section);
             const folder = $(`[role="treeitem"][aria-label="Discarded ${section}"]`);
             await expect(folder).toHaveAttribute('aria-level', '1');
-            await expect(
-                folder.$('[data-slot="tooltip-trigger"].text-muted-foreground'),
-            ).toHaveText(section);
+            await browser.execute((name) => {
+                const item = document.querySelector(
+                    `[role="region"][aria-label="Trash"] [role="treeitem"][aria-label="Discarded ${name}"]`,
+                );
+                item?.querySelector('[data-slot="tooltip-trigger"]')?.dispatchEvent(
+                    new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse' }),
+                );
+            }, section);
+            const tooltip = $(
+                `//*[@data-slot="tooltip-content"][p[normalize-space(.)="Original location: ${section}"]]`,
+            );
+            await tooltip.waitForDisplayed();
+            await expect(tooltip).toHaveText(
+                expect.stringContaining(`Original location: ${section}`),
+            );
         }
         await $('button[aria-label="Restore All"]').click();
-        await $('[role="region"][aria-label="Trash"] p').waitForDisplayed();
-        await expect($('[role="region"][aria-label="Trash"] p')).toHaveText('Trash is empty.');
+        await browser.waitUntil(() =>
+            browser.execute(
+                () =>
+                    document.querySelectorAll(
+                        '[role="region"][aria-label="Trash"] [role="treeitem"]',
+                    ).length === 0,
+            ),
+        );
+        await expect($('button[aria-label="Restore All"]')).toBeDisabled();
+        await expect($('button[aria-label="Empty Trash"]')).toBeDisabled();
         for (const section of ['Manuscript', 'Wiki']) {
-            await $(`button=${section}`).click();
+            await activityButton(section).click();
             await expect(
                 $(`//*[@role="treeitem"][normalize-space(.)="Discarded ${section}"]`),
             ).toBeDisplayed();
