@@ -11,7 +11,7 @@ import UniqueID from '@tiptap/extension-unique-id';
 import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
 
-import { ActiveMark, CodeBlockLowlight, TrailingParagraph } from '@/extensions/tiptap';
+import { ActiveMark, CodeBlockLowlight, Highlight, TrailingParagraph } from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 const lowlight = createLowlight(all);
@@ -124,6 +124,9 @@ export function createEditorExtensions() {
         }),
         FindAndReplace.configure({
             injectCSS: false,
+        }),
+        Highlight.configure({
+            multicolor: true,
         }),
         InvisibleCharacters.configure({
             visible: false,

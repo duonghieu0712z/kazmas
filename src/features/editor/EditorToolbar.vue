@@ -27,6 +27,7 @@ const findAndReplaceOpen = ref(false);
 
         <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
+            <HighlightPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
