@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { browser, $, expect } from '@wdio/globals';
+import { browser, $, $$, expect } from '@wdio/globals';
 
 import '@wdio/tauri-service';
 
@@ -23,6 +23,35 @@ async function openChapterA() {
     await entry.waitForDisplayed();
     await entry.click();
     await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
+}
+
+async function clickToolbarControl(name: string) {
+    const control = $(`button[aria-label="${name}"]`);
+    let direction = 'Next';
+
+    for (let index = 0; index < 12; index++) {
+        if (await control.isDisplayed()) {
+            await control.scrollIntoView({ block: 'nearest', inline: 'center' });
+            await control.waitForClickable();
+            await control.click();
+            return;
+        }
+
+        let navigation = $(`button[aria-label="${direction} toolbar controls"]`);
+
+        if (!(await navigation.isDisplayed()) && direction === 'Next') {
+            direction = 'Previous';
+            navigation = $('button[aria-label="Previous toolbar controls"]');
+        }
+
+        if (!(await navigation.isDisplayed())) {
+            break;
+        }
+
+        await navigation.click();
+    }
+
+    throw new Error(`Toolbar control ${name} could not be reached.`);
 }
 
 async function waitForDocumentEditor(title: string) {
@@ -165,6 +194,75 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         );
     });
 
+    it('reaches earlier toolbar controls after navigating to later controls in a narrow window', async () => {
+        const size = await browser.getWindowSize();
+
+        try {
+            await browser.setWindowSize(640, 800);
+            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+            await editor.setValue('Toolbar navigation');
+            await editor.click();
+            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+            await clickToolbarControl('Highlight');
+            await clickToolbarControl('Text color');
+            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+        } finally {
+            await browser.setWindowSize(size.width, size.height);
+        }
+    });
+
+    it('saves system fonts, highlight colors, and line height through a real package reopen', async () => {
+        const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+        await editor.setValue('Persisted typography and colors');
+        await editor.click();
+        await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+
+        await clickToolbarControl('Font family');
+        await browser.waitUntil(async () => (await $$('[role="option"]')).length > 1);
+        const fontOption = (await $$('[role="option"]'))[1]!;
+        const family = await fontOption.getText();
+        expect(family.trim().length).toBeGreaterThan(0);
+        await fontOption.click();
+
+        await clickToolbarControl('Highlight');
+        await clickToolbarControl('Text color');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
+        ).setValue('#123456');
+        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+        await clickToolbarControl('Text background color');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
+        ).setValue('#abcdef');
+        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+
+        await clickToolbarControl('Line height');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] button[aria-label="1.5"]',
+        ).click();
+
+        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(() => window.__kazmasDesktopTest.close());
+        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await openChapterA();
+
+        await expectDocumentText('Persisted typography and colors');
+        const mark = $('[role="tabpanel"][data-state="active"] .tiptap mark');
+        await expect(mark).toHaveAttribute('data-text-color', '#123456');
+        await expect(mark).toHaveAttribute('data-color', '#abcdef');
+        const typography = await browser.execute(() => {
+            const element = document.querySelector<HTMLElement>(
+                '[role="tabpanel"][data-state="active"] .tiptap span[style*="font-family"]',
+            );
+            return {
+                family: element?.style.fontFamily.replace(/["']/g, ''),
+                lineHeight: element?.style.lineHeight,
+            };
+        });
+        expect(typography.family).toBe(family);
+        expect(typography.lineHeight).toBe('1.5');
+    });
+
     it('switches documents before debounce expires without losing the first edit', async () => {
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
             'Pending chapter A content',
@@ -217,6 +315,8 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
         await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
         await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
+        await waitForDocumentEditor('Sibling chapter');
+        await reopenedEntry.waitForClickable();
         await reopenedEntry.click();
         await waitForDocumentEditor('New chapter');
         await expectDocumentText('Nested chapter content');

@@ -6,6 +6,38 @@ type Workspace = {
     open: (scenario?: string) => Promise<void>;
 };
 
+export async function showToolbarControl(page: Page, name: string) {
+    const control = page.getByRole('button', { name, exact: true, includeHidden: true });
+    let direction = 'Next';
+
+    for (let index = 0; index < 12; index++) {
+        if (await control.isVisible()) {
+            return control;
+        }
+
+        let navigation = page.getByRole('button', {
+            name: `${direction} toolbar controls`,
+            exact: true,
+        });
+
+        if (!(await navigation.isVisible()) && direction === 'Next') {
+            direction = 'Previous';
+            navigation = page.getByRole('button', {
+                name: 'Previous toolbar controls',
+                exact: true,
+            });
+        }
+
+        if (!(await navigation.isVisible())) {
+            break;
+        }
+
+        await navigation.click();
+    }
+
+    throw new Error(`Toolbar control ${name} could not be reached.`);
+}
+
 async function expectPlatformChrome(page: Page) {
     const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true, includeHidden: true });
     const closeWindow = page.getByRole('button', {

@@ -7,11 +7,25 @@ import RubyText from '@tiptap/extension-ruby-text';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
+import {
+    BackgroundColor,
+    Color,
+    FontFamily,
+    FontSize,
+    LineHeight,
+    TextStyle,
+} from '@tiptap/extension-text-style';
 import UniqueID from '@tiptap/extension-unique-id';
 import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
 
-import { ActiveMark, CodeBlockLowlight, TrailingParagraph } from '@/extensions/tiptap';
+import {
+    ActiveMark,
+    CodeBlockLowlight,
+    DocumentTextSize,
+    Highlight,
+    TrailingParagraph,
+} from '@/extensions/tiptap';
 import { cn } from '@/lib/utils';
 
 const lowlight = createLowlight(all);
@@ -49,6 +63,13 @@ export function createEditorExtensions() {
             orderedList: false,
             trailingNode: false,
         }),
+        TextStyle,
+        Color,
+        BackgroundColor,
+        FontFamily,
+        FontSize,
+        DocumentTextSize,
+        LineHeight,
         ActiveMark.configure({
             HTMLAttributes: {
                 class: cn('bg-editor-active-mark'),
@@ -124,6 +145,9 @@ export function createEditorExtensions() {
         }),
         FindAndReplace.configure({
             injectCSS: false,
+        }),
+        Highlight.configure({
+            multicolor: true,
         }),
         InvisibleCharacters.configure({
             visible: false,

@@ -1,4 +1,5 @@
 mod error;
+mod font;
 mod menu;
 mod node;
 mod world;
@@ -11,6 +12,7 @@ use tauri_specta::{Commands, collect_commands};
 #[allow(clippy::items_after_statements)]
 pub(crate) fn commands() -> Commands<tauri::Wry> {
     collect_commands![
+        font::get_system_fonts,
         menu::execute_menu_command,
         world::get_world,
         world::create_world,

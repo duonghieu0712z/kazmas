@@ -13,6 +13,7 @@ pub(super) enum CommandErrorCode {
     Invalid,
     NotFound,
     // External errors
+    Font,
     Io,
     Json,
     Sqlite,
@@ -36,6 +37,7 @@ impl From<KazmasError> for CommandError {
             KazmasError::AlreadyExists(_) => CommandErrorCode::AlreadyExists,
             KazmasError::Invalid(_) => CommandErrorCode::Invalid,
             KazmasError::NotFound(_) => CommandErrorCode::NotFound,
+            KazmasError::Font(_) => CommandErrorCode::Font,
             KazmasError::Io(_) => CommandErrorCode::Io,
             KazmasError::Json(_) => CommandErrorCode::Json,
             KazmasError::Sqlite(_) => CommandErrorCode::Sqlite,
