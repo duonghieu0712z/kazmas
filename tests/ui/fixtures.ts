@@ -8,21 +8,31 @@ type Workspace = {
 
 export async function showToolbarControl(page: Page, name: string) {
     const control = page.getByRole('button', { name, exact: true, includeHidden: true });
+    let direction = 'Next';
 
     for (let index = 0; index < 12; index++) {
         if (await control.isVisible()) {
             return control;
         }
 
-        const next = page.getByRole('button', { name: 'Next toolbar controls', exact: true });
+        let navigation = page.getByRole('button', {
+            name: `${direction} toolbar controls`,
+            exact: true,
+        });
 
-        if (await next.isVisible()) {
-            await next.click();
-        } else {
-            await page
-                .getByRole('button', { name: 'Previous toolbar controls', exact: true })
-                .click();
+        if (!(await navigation.isVisible()) && direction === 'Next') {
+            direction = 'Previous';
+            navigation = page.getByRole('button', {
+                name: 'Previous toolbar controls',
+                exact: true,
+            });
         }
+
+        if (!(await navigation.isVisible())) {
+            break;
+        }
+
+        await navigation.click();
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);

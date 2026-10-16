@@ -27,6 +27,7 @@ async function openChapterA() {
 
 async function clickToolbarControl(name: string) {
     const control = $(`button[aria-label="${name}"]`);
+    let direction = 'Next';
 
     for (let index = 0; index < 12; index++) {
         if (await control.isDisplayed()) {
@@ -36,13 +37,18 @@ async function clickToolbarControl(name: string) {
             return;
         }
 
-        const next = $('button[aria-label="Next toolbar controls"]');
+        let navigation = $(`button[aria-label="${direction} toolbar controls"]`);
 
-        if (await next.isDisplayed()) {
-            await next.click();
-        } else {
-            await $('button[aria-label="Previous toolbar controls"]').click();
+        if (!(await navigation.isDisplayed()) && direction === 'Next') {
+            direction = 'Previous';
+            navigation = $('button[aria-label="Previous toolbar controls"]');
         }
+
+        if (!(await navigation.isDisplayed())) {
+            break;
+        }
+
+        await navigation.click();
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);
@@ -186,6 +192,23 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
         );
+    });
+
+    it('reaches earlier toolbar controls after navigating to later controls in a narrow window', async () => {
+        const size = await browser.getWindowSize();
+
+        try {
+            await browser.setWindowSize(640, 800);
+            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+            await editor.setValue('Toolbar navigation');
+            await editor.click();
+            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+            await clickToolbarControl('Highlight');
+            await clickToolbarControl('Text color');
+            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+        } finally {
+            await browser.setWindowSize(size.width, size.height);
+        }
     });
 
     it('saves system fonts, highlight colors, and line height through a real package reopen', async () => {

@@ -20,6 +20,18 @@ async function selectTarget(page: Page) {
     return editor;
 }
 
+test('reaches earlier toolbar controls after navigating to later controls in a narrow window', async ({
+    page,
+    workspace,
+}) => {
+    await page.setViewportSize({ width: 640, height: 800 });
+    await workspace.open();
+    await selectTarget(page);
+    await (await showToolbarControl(page, 'Highlight')).click();
+    await (await showToolbarControl(page, 'Text color')).click();
+    await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+});
+
 test('highlight palette preserves selection and remembers the color for the icon toggle', async ({
     page,
     workspace,
