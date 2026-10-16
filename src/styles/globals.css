@@ -147,9 +147,21 @@
     --color-tooltip-background: var(--muted);
     --color-tooltip-foreground: var(--muted-foreground);
     --color-tooltip-border: var(--border);
-    /* }
+}
 
-@theme static { */
+@theme static {
+    /* Editor text colors */
+    --color-editor-text-yellow: var(--highlight-yellow-foreground);
+    --color-editor-text-background-yellow: var(--highlight-yellow-background);
+    --color-editor-text-green: var(--highlight-green-foreground);
+    --color-editor-text-background-green: var(--highlight-green-background);
+    --color-editor-text-blue: var(--highlight-blue-foreground);
+    --color-editor-text-background-blue: var(--highlight-blue-background);
+    --color-editor-text-purple: var(--highlight-purple-foreground);
+    --color-editor-text-background-purple: var(--highlight-purple-background);
+    --color-editor-text-pink: var(--highlight-pink-foreground);
+    --color-editor-text-background-pink: var(--highlight-pink-background);
+
     /* Editor highlight presets */
     --color-editor-highlight-yellow-background: var(--highlight-yellow-background);
     --color-editor-highlight-yellow-foreground: var(--highlight-yellow-foreground);

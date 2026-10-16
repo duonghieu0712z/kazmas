@@ -3,6 +3,7 @@ import { useSystemFonts } from '@/composables/use-system-fonts';
 
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
+const colorTypes = ['color', 'backgroundColor'] as const;
 
 const findAndReplaceOpen = ref(false);
 
@@ -40,6 +41,7 @@ async function handleFontMenuOpen(open: boolean) {
         <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
+            <TextStyleColorPopover v-for="type in colorTypes" :key="type" :type="type" />
             <HighlightPopover />
             <ResetAllFormattingButton />
         </ButtonGroup>
