@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FontSizeDropdownProps } from '.';
+import type { FontSizeComboboxProps } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
@@ -12,7 +12,7 @@ import { Toggle } from '@/components/ui/toggle';
 import FontSizeList from './FontSizeList.vue';
 import { DEFAULT_FONT_SIZES, useFontSize } from './use-font-size';
 
-const props = withDefaults(defineProps<FontSizeDropdownProps>(), {
+const props = withDefaults(defineProps<FontSizeComboboxProps>(), {
     variant: 'default',
     sizes: () => DEFAULT_FONT_SIZES,
     showTooltip: true,

@@ -36,7 +36,7 @@ async function handleFontMenuOpen(open: boolean) {
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
-            <FontFamilyDropdown
+            <FontFamilyCombobox
                 :error="!!fontsError"
                 :fonts="fonts"
                 :loading="fontsLoading"

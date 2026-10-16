@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FontFamilyDropdownProps } from '.';
+import type { FontFamilyComboboxProps } from '.';
 
 import { ChevronDownIcon } from '@lucide/vue';
 import { reactiveOmit } from '@vueuse/core';
@@ -12,7 +12,7 @@ import { Toggle } from '@/components/ui/toggle';
 import FontFamilyList from './FontFamilyList.vue';
 import { useFontFamily } from './use-font-family';
 
-const props = withDefaults(defineProps<FontFamilyDropdownProps>(), {
+const props = withDefaults(defineProps<FontFamilyComboboxProps>(), {
     variant: 'default',
     fonts: () => [],
     loading: false,
