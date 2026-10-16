@@ -20,22 +20,12 @@ async function handleFontMenuOpen(open: boolean) {
         <ButtonGroup spacing="spaced">
             <UndoRedoButton action="undo" />
             <UndoRedoButton action="redo" />
-            <FindAndReplaceButton v-model:open="findAndReplaceOpen" />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
             <HeadingDropdown />
-            <ListDropdown />
-            <BlockquoteButton />
-            <CodeBlockButton />
-            <HorizontalRuleButton />
-        </ButtonGroup>
-
-        <ButtonGroupSeparator class="my-1" />
-
-        <ButtonGroup spacing="spaced">
             <FontFamilyCombobox
                 :error="!!fontsError"
                 :fonts="fonts"
@@ -43,16 +33,14 @@ async function handleFontMenuOpen(open: boolean) {
                 @retry="loadFonts"
                 @update:open="handleFontMenuOpen"
             />
-            <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
-            <HighlightPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
+            <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
-            <LinkPopover />
-            <RubyTextPopover />
+            <HighlightPopover />
             <ResetAllFormattingButton />
         </ButtonGroup>
 
@@ -61,11 +49,23 @@ async function handleFontMenuOpen(open: boolean) {
         <ButtonGroup spacing="spaced">
             <TextAlignPopover />
             <LineHeightPopover />
+            <ListDropdown />
+            <BlockquoteButton />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
+            <LinkPopover />
+            <RubyTextPopover />
+            <CodeBlockButton />
+            <HorizontalRuleButton />
+        </ButtonGroup>
+
+        <ButtonGroupSeparator class="my-1" />
+
+        <ButtonGroup spacing="spaced">
+            <FindAndReplaceButton v-model:open="findAndReplaceOpen" />
             <InvisibleCharactersButton />
             <EditableButton />
         </ButtonGroup>
