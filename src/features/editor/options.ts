@@ -7,7 +7,7 @@ import RubyText from '@tiptap/extension-ruby-text';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
-import { FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-style';
+import { FontFamily, FontSize, LineHeight, TextStyle } from '@tiptap/extension-text-style';
 import UniqueID from '@tiptap/extension-unique-id';
 import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
@@ -60,6 +60,7 @@ export function createEditorExtensions() {
         FontFamily,
         FontSize,
         DocumentTextSize,
+        LineHeight,
         ActiveMark.configure({
             HTMLAttributes: {
                 class: cn('bg-editor-active-mark'),

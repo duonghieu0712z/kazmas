@@ -274,6 +274,10 @@
     background-color: var(--color-editor-background);
     color: var(--color-editor-foreground);
 
+    :where(p, h1, h2, h3, h4, h5, h6) {
+        line-height: 1.15;
+    }
+
     --tw-prose-body: var(--color-editor-foreground);
     --tw-prose-headings: var(--color-editor-foreground);
     --tw-prose-lead: var(--color-editor-foreground);

@@ -60,6 +60,7 @@ async function handleFontMenuOpen(open: boolean) {
 
         <ButtonGroup spacing="spaced">
             <TextAlignPopover />
+            <LineHeightPopover />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
