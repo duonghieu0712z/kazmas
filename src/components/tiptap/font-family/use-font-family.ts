@@ -40,7 +40,7 @@ export function setFontFamily(editor: Editor | null, fontFamily: string | null) 
         return editor.chain().focus().unsetFontFamily().run();
     }
 
-    return editor.chain().focus().setFontFamily(fontFamily).run();
+    return editor.chain().focus().setFontFamily(JSON.stringify(fontFamily)).run();
 }
 
 export function useFontFamily(config: UseFontFamilyConfig = {}) {
@@ -85,7 +85,9 @@ export function useFontFamily(config: UseFontFamilyConfig = {}) {
             return null;
         }
 
-        return editor.value!.isActive('textStyle', { fontFamily: family }) ? family : undefined;
+        return editor.value!.isActive('textStyle', { fontFamily: family })
+            ? family.replace(/^(['"])(.*)\1$/, '$2').replace(/\\(['"\\])/g, '$1')
+            : undefined;
     });
 
     const canSet = computed(() => isEditable.value && canSetFontFamily(editor.value));

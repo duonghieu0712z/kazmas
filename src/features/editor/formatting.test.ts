@@ -3,10 +3,12 @@ import type { JSONContent } from '@tiptap/vue-3';
 import { closeHistory } from '@tiptap/pm/history';
 import StarterKit from '@tiptap/starter-kit';
 import { Editor } from '@tiptap/vue-3';
+import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
+import { defineComponent } from 'vue';
 
 import { getDocumentTextSize, setDocumentTextSize } from '@/components/tiptap/document-text-size';
-import { setFontFamily } from '@/components/tiptap/font-family';
+import { setFontFamily, useFontFamily } from '@/components/tiptap/font-family';
 import { getActiveFontSize, setFontSize } from '@/components/tiptap/font-size';
 import { HIGHLIGHT_PRESETS, setHighlight } from '@/components/tiptap/highlight';
 import { getActiveLineHeight, setLineHeight } from '@/components/tiptap/line-height';
@@ -45,6 +47,32 @@ describe('editor formatting controls', () => {
         }
     });
 
+    it.each(['JetBrains Mono', '123 Font', 'Font, Name', 'serif', 'Font "Name"'])(
+        'applies %s as one font family and restores its unquoted label',
+        (family) => {
+            const editor = createEditor();
+            expect(setFontFamily(editor, family)).toBe(true);
+            const span = editor.view.dom.querySelector('span')!;
+            const expectedStyle = document.createElement('span').style;
+            expectedStyle.fontFamily = JSON.stringify(family);
+            expect(span.style.fontFamily).toBe(expectedStyle.fontFamily);
+            expect(span.style.fontFamily).not.toBe('');
+
+            for (const content of [editor.getJSON(), editor.getHTML()]) {
+                const restored = createEditor(content);
+                const wrapper = mount(
+                    defineComponent({
+                        setup: () => useFontFamily({ editor: restored }),
+                        template: '<span>{{ label }}</span>',
+                    }),
+                );
+                expect(wrapper.vm.activeFontFamily).toBe(family);
+                expect(wrapper.text()).toBe(family);
+                wrapper.unmount();
+            }
+        },
+    );
+
     it('formats only the selected text and preserves unrelated marks and typography', () => {
         const editor = createEditor();
         editor.commands.setBold();
@@ -58,7 +86,7 @@ describe('editor formatting controls', () => {
         expect(targetMarks(editor)).toMatchObject({
             bold: {},
             textStyle: {
-                fontFamily: 'Geist',
+                fontFamily: '"Geist"',
                 fontSize: '20px',
                 lineHeight: '1.5',
                 color: '#123456',
@@ -116,7 +144,7 @@ describe('editor formatting controls', () => {
         setTextStyleColor(editor, 'color', null);
         expect(getActiveTextStyleColor(editor, 'color')).toBeNull();
         expect(getActiveTextStyleColor(editor, 'backgroundColor')).toBe('#abcdef');
-        expect(targetMarks(editor).textStyle?.fontFamily).toBe('Geist');
+        expect(targetMarks(editor).textStyle?.fontFamily).toBe('"Geist"');
 
         setTextStyleColor(editor, 'color', '#654321');
         setTextStyleColor(editor, 'backgroundColor', null);
@@ -173,7 +201,7 @@ describe('editor formatting controls', () => {
         expect(targetMarks(html)).toMatchObject({
             highlight: targetMarks(editor).highlight,
             textStyle: {
-                fontFamily: 'Geist',
+                fontFamily: '"Geist"',
                 fontSize: '18px',
                 lineHeight: '1.5',
                 color: 'rgb(18, 52, 86)',

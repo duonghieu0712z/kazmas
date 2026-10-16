@@ -67,17 +67,25 @@ test('font search loads lazily, preserves selection, and keeps the trigger at 12
     ).toBe(0);
     await font.click();
     await expect(page.getByRole('option', { name: 'Default · Lora', exact: true })).toBeVisible();
-    await page.getByRole('combobox', { name: 'Search fonts', exact: true }).fill('geist');
+    await page.getByRole('combobox', { name: 'Search fonts', exact: true }).fill('jetbrains');
     await expect(page.getByRole('option', { name: 'Default · Lora', exact: true })).toHaveCount(0);
-    await page.getByRole('option', { name: 'Geist', exact: true }).click();
+    await page.getByRole('option', { name: 'JetBrains Mono', exact: true }).click();
 
     await expect(editor.locator('span[style*="font-family"]')).toHaveText('target');
     await expect(editor).toBeFocused();
-    await expect(font).toHaveText('Geist');
+    await expect(editor.locator('span[style*="font-family"]')).toHaveCSS(
+        'font-family',
+        '"JetBrains Mono"',
+    );
+    await expect(font).toHaveText('JetBrains Mono');
     await expect(font).toHaveCSS('width', '120px');
     await expect(font).toHaveAttribute('aria-pressed', 'false');
 
     await font.click();
+    await expect(page.getByRole('option', { name: 'JetBrains Mono', exact: true })).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
     await page.getByRole('combobox', { name: 'Search fonts', exact: true }).fill('not-a-font');
     await expect(page.getByText('No fonts found', { exact: true })).toBeVisible();
     await page.keyboard.press('Escape');
