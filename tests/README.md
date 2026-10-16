@@ -25,6 +25,11 @@ Rust tests live inside the crate to access internal APIs. SQLite runs against re
 
 UI tests use their own HTML entry at `tests/ui/index.html`, which loads `tests/ui/main.ts`. Playwright opens that HTML file with the selected scenario in its query string. The test entry loads IPC mocks from `tests/ui/harness.ts` before importing `src/main.ts`, waits for application startup, and initializes the selected test scenario. The application's `index.html` and `src/main.ts` contain no test setup or test imports. Playwright uses the shared `vite.config.ts`; mode `test-ui` scans the test HTML for dependencies, warms up both entry modules, disables generated declaration writes, and excludes `temp` from file watching. All modes exclude `src-tauri` and `.artifacts` from file watching.
 
+The `typography-controls` scenario mounts `tests/ui/TypographyControls.vue` instead of the product
+application. It exercises the reusable font size and document text size controls that are
+intentionally absent from the product toolbar, using the product editor extensions and shared
+editor context.
+
 The desktop test build uses identifier `com.kazmas.desktop.tests`, WDIO permissions limited to the test configuration, and a separate workspace for each run. The test Tauri configuration runs `scripts/build-desktop-tests.js --frontend-only` before compilation. It builds `tests/desktop/index.html` through the shared `vite.config.ts` in mode `test-desktop`, with the repository root unchanged, and writes assets to `.artifacts/desktop/frontend`. The script copies the generated HTML to `index.html` at the output root for Tauri to load. The HTML loads `tests/desktop/main.ts`; that entry loads the automation plugin before importing `src/main.ts`, waits for application startup, and loads the frontend bridge. Backend automation and the test Save As command are enabled through the `desktop-tests` feature. The test Save As command calls the real backend and restricts its destination to the current test directory. This verifies persistence; interaction with the native Save As dialog requires manual verification.
 
 Generated output lives under `.artifacts/`: coverage reports in `coverage/`, Playwright results and reports in `playwright/`, desktop packages and logs in `desktop/`, and isolated Rust data in `rust/`. Git, linting, formatting, and Vite file watching exclude this directory. Desktop tests retain generated packages and logs for investigation. Existing files in `temp` remain untouched.
@@ -48,6 +53,14 @@ Backend tests cover SQLite schema and metadata, data constraints, Unicode JSON, 
 Frontend tests cover trees and breadcrumbs, stale load results, world transitions, concurrent listener initialization, save confirmation branches, command failures, dialog validation, the 700 ms debounce, edits during active writes, document switching, unmounting, and out-of-order load responses. The editor mounts only when valid content is available; reported load and write errors use an alert role.
 
 UI tests cover mouse and keyboard interactions, the toolbar, find and replace, formatting reset, trailing paragraphs, focus restoration after dialogs, sidebar resizing and collapsing, small windows, scrolling long content, load failures, write retries, delayed responses, and code block language persistence. Desktop tests verify persistence through the UI, IPC, real SQLite databases, and real packages, including Save As, Save/Discard/Cancel choices, corrupt packages, and opening a project that already has a window. Formatted content is saved through the File menu on Windows and the unsaved-changes dialog on macOS. The duplicate-window test checks window ownership and window count; it does not assert operating-system focus.
+
+Formatting tests cover selection boundaries, mixed values, independent text/background colors
+over Highlight, individual clearing, undo/redo, JSON and HTML round-trips, read-only controls,
+system font request caching and retry, numeric font size input, and document text size inheritance.
+Browser tests verify picker drafts and cancellation, keyboard interaction, focus restoration,
+font search, and color persistence across document switches in light and dark themes. Desktop
+tests select an actual system font and verify typography and colors after saving and reopening
+a real package.
 
 Context menu tests cover direct switching between tree and tab menus, right-click suppression inside popup and submenu content, inline rename validation, cancellation and write retries, document creation in folders and across sections, branch deletion after pending document saves, tab group closing, and preserving tabs and nodes when saving fails. Reveal in Tree tests verify sidebar reopening, section switching, repeated scrolling to the same distant virtualized node, keyboard focus, and keeping the active tab unchanged. Inline rename unit tests cover concurrent Enter/blur submissions and stale results after world changes.
 

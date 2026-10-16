@@ -6,6 +6,28 @@ type Workspace = {
     open: (scenario?: string) => Promise<void>;
 };
 
+export async function showToolbarControl(page: Page, name: string) {
+    const control = page.getByRole('button', { name, exact: true, includeHidden: true });
+
+    for (let index = 0; index < 12; index++) {
+        if (await control.isVisible()) {
+            return control;
+        }
+
+        const next = page.getByRole('button', { name: 'Next toolbar controls', exact: true });
+
+        if (await next.isVisible()) {
+            await next.click();
+        } else {
+            await page
+                .getByRole('button', { name: 'Previous toolbar controls', exact: true })
+                .click();
+        }
+    }
+
+    throw new Error(`Toolbar control ${name} could not be reached.`);
+}
+
 async function expectPlatformChrome(page: Page) {
     const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true, includeHidden: true });
     const closeWindow = page.getByRole('button', {

@@ -133,7 +133,9 @@ export function setTextStyleColor(
                 return true;
             }
 
-            return commands.updateAttributes('highlight', attributes);
+            commands.updateAttributes('highlight', attributes);
+
+            return true;
         })
         .run();
 }
