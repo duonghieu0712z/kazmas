@@ -2,7 +2,11 @@
 import type { HTMLAttributes } from 'vue';
 
 import { unrefElement } from '@vueuse/core';
-import { injectDropdownMenuRootContext, injectPopoverRootContext } from 'reka-ui';
+import {
+    injectComboboxRootContext,
+    injectDropdownMenuRootContext,
+    injectPopoverRootContext,
+} from 'reka-ui';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
@@ -22,7 +26,11 @@ const props = withDefaults(
 );
 
 const tooltipTrigger = useTemplateRef<InstanceType<typeof TooltipTrigger>>('tooltipTrigger');
-const popupContexts = [injectPopoverRootContext(null), injectDropdownMenuRootContext(null)];
+const popupContexts = [
+    injectPopoverRootContext(null),
+    injectDropdownMenuRootContext(null),
+    injectComboboxRootContext(null),
+];
 
 const disabled = computed(() => {
     const element = unrefElement(tooltipTrigger);

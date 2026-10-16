@@ -1,8 +1,18 @@
 <script setup lang="ts">
+import { useSystemFonts } from '@/composables/use-system-fonts';
+
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
 
 const findAndReplaceOpen = ref(false);
+
+const { fonts, isLoading: fontsLoading, error: fontsError, loadFonts } = useSystemFonts();
+
+async function handleFontMenuOpen(open: boolean) {
+    if (open) {
+        await loadFonts();
+    }
+}
 </script>
 
 <template>
@@ -26,6 +36,13 @@ const findAndReplaceOpen = ref(false);
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
+            <FontFamilyDropdown
+                :error="!!fontsError"
+                :fonts="fonts"
+                :loading="fontsLoading"
+                @retry="loadFonts"
+                @update:open="handleFontMenuOpen"
+            />
             <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
             <HighlightPopover />
         </ButtonGroup>
