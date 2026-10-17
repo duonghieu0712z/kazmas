@@ -155,6 +155,17 @@ export function useTextStyleColor(config: UseTextStyleColorConfig) {
     });
 
     const activeColor = computed(() => getActiveTextStyleColor(editor.value, type.value));
+    const isActive = computed(() => {
+        const currentEditor = editor.value;
+
+        if (!currentEditor || !isTextStyleColorAvailable(currentEditor, type.value)) {
+            return false;
+        }
+
+        const color = currentEditor.getAttributes('textStyle')[type.value];
+
+        return !!color && currentEditor.isActive('textStyle', { [type.value]: color });
+    });
     const activeHex = computed(() => {
         if (!activeColor.value || !editor.value || editor.value.isDestroyed) {
             return undefined;
@@ -213,6 +224,7 @@ export function useTextStyleColor(config: UseTextStyleColorConfig) {
         editor,
         presets,
         activeColor,
+        isActive,
         activePreset,
         canSet,
         canRemove,

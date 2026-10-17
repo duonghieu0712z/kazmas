@@ -32,6 +32,7 @@ const {
     editor,
     presets,
     activeColor,
+    isActive,
     activePreset,
     canSet,
     canRemove,
@@ -98,7 +99,7 @@ function handleCloseAutoFocus(event: Event) {
                     :aria-label="label"
                     class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="isDisabled"
-                    :model-value="open || !!activeColor"
+                    :model-value="open || isActive"
                     size="default"
                 >
                     <slot>
