@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 
 import { browser, $, $$, expect } from '@wdio/globals';
 
+import { getToolbarNavigationState } from '../support/toolbar';
+
 import '@wdio/tauri-service';
 
 function activityButton(name: string) {
@@ -19,36 +21,57 @@ async function closeTestWindow(handle: string) {
 }
 
 async function openChapterA() {
-    const entry = $('//*[@role="treeitem"][contains(., "Chapter A")]');
-    await entry.waitForDisplayed();
-    await entry.click();
-    await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
+    await clickTreeItem('Chapter A');
+    await waitForDocumentEditor('Chapter A');
+}
+
+async function clickTreeItem(name: string) {
+    await $(`//*[@role="treeitem"][normalize-space(.)="${name}"]`).waitForClickable();
+
+    await browser.execute((title) => {
+        const item = Array.from(document.querySelectorAll<HTMLElement>('[role="treeitem"]')).find(
+            (element) => element.textContent?.trim() === title,
+        );
+        if (!item) {
+            throw new Error(`Tree item ${title} is unavailable.`);
+        }
+
+        const rect = item.getBoundingClientRect();
+        const x = Math.floor(rect.left + rect.width / 2);
+        const y = Math.floor(rect.top + rect.height / 2);
+        const target = document.elementFromPoint(x, y);
+        if (!target || !item.contains(target)) {
+            throw new Error(`Tree item ${title} is not at its visible click position.`);
+        }
+
+        item.click();
+    }, name);
 }
 
 async function clickToolbarControl(name: string) {
     const control = $(`button[aria-label="${name}"]`);
-    let direction = 'Next';
+    let state = await browser.execute(getToolbarNavigationState, name);
+    const maxSteps = state.controlCount * 2;
 
-    for (let index = 0; index < 12; index++) {
-        if (await control.isDisplayed()) {
-            await control.scrollIntoView({ block: 'nearest', inline: 'center' });
+    for (let index = 0; index < maxSteps; index++) {
+        if (state.direction === null) {
             await control.waitForClickable();
-            await control.click();
+            await control.click({ button: 'left' });
             return;
         }
 
-        let navigation = $(`button[aria-label="${direction} toolbar controls"]`);
+        const navigation = $(`button[aria-label="${state.direction} toolbar controls"]`);
+        const previousLeft = state.scrollLeft;
 
-        if (!(await navigation.isDisplayed()) && direction === 'Next') {
-            direction = 'Previous';
-            navigation = $('button[aria-label="Previous toolbar controls"]');
-        }
-
-        if (!(await navigation.isDisplayed())) {
-            break;
-        }
-
-        await navigation.click();
+        await navigation.waitForClickable();
+        await navigation.click({ button: 'left' });
+        await browser.waitUntil(
+            async () => {
+                state = await browser.execute(getToolbarNavigationState, name);
+                return state.scrollLeft !== previousLeft || state.direction === null;
+            },
+            { timeoutMsg: `Toolbar did not move toward ${name}.` },
+        );
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);
@@ -157,7 +180,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Formatted manuscript');
         await $('[role="tabpanel"][data-state="active"] .tiptap').click();
         await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
-        await $('button[aria-label="Bold"]').click();
+        await clickToolbarControl('Bold');
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
         );
@@ -194,18 +217,28 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         );
     });
 
-    it('reaches earlier toolbar controls after navigating to later controls in a narrow window', async () => {
+    it('reaches earlier toolbar controls across narrow and wide windows', async () => {
         const size = await browser.getWindowSize();
 
         try {
-            await browser.setWindowSize(640, 800);
-            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
-            await editor.setValue('Toolbar navigation');
-            await editor.click();
-            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
-            await clickToolbarControl('Highlight');
-            await clickToolbarControl('Text color');
-            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+            for (const width of [640, 960, 1200]) {
+                await browser.setWindowSize(width, 800);
+                const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+                await editor.setValue('Toolbar navigation');
+                await editor.click();
+                await browser.keys(
+                    process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a'],
+                );
+                await clickToolbarControl('Highlight');
+                await clickToolbarControl('Text color');
+                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await browser.keys('Escape');
+                await clickToolbarControl('Line height');
+                await browser.keys('Escape');
+                await clickToolbarControl('Text color');
+                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await browser.keys('Escape');
+            }
         } finally {
             await browser.setWindowSize(size.width, size.height);
         }
@@ -303,23 +336,27 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect(sibling).toHaveAttribute('aria-level', '2');
         await waitForDocumentEditor('Sibling chapter');
 
-        await browser.execute(() => window.__kazmasDesktopTest.save());
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
-        const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
-        await reopenedFolder.waitForDisplayed();
-        if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
-            await reopenedFolder.$('.tree-chevron-icon').click();
+        for (let cycle = 0; cycle < 3; cycle++) {
+            await $('//*[@role="tab"][normalize-space(.)="Sibling chapter"]').click();
+            await browser.execute(() => window.__kazmasDesktopTest.save());
+            await browser.execute(() => window.__kazmasDesktopTest.close());
+            await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+            const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
+            await reopenedFolder.waitForDisplayed();
+            if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
+                await reopenedFolder.$('.tree-chevron-icon').click();
+            }
+            const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
+            const reopenedSibling = $(
+                '//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]',
+            );
+            await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
+            await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
+            await waitForDocumentEditor('Sibling chapter');
+            await clickTreeItem('New chapter');
+            await waitForDocumentEditor('New chapter');
+            await expectDocumentText('Nested chapter content');
         }
-        const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
-        const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
-        await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
-        await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
-        await waitForDocumentEditor('Sibling chapter');
-        await reopenedEntry.waitForClickable();
-        await reopenedEntry.click();
-        await waitForDocumentEditor('New chapter');
-        await expectDocumentText('Nested chapter content');
     });
 
     it('groups trashed empty folders by source after saving and reopening', async () => {

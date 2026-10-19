@@ -36,6 +36,16 @@ Generated output lives under `.artifacts/`: coverage reports in `coverage/`, Pla
 
 After a successful desktop test build, the build script copies the executable to `.artifacts/desktop/bin`. WebdriverIO uses that copy, so rebuilding the normal development executable cannot change which application the tests launch. Each desktop test closes additional windows, dismisses active dialogs, flushes pending writes, and closes its world through the test bridge. Cleanup failures are reported instead of silently ignored.
 
+For focus-sensitive desktop controls, use `click({ button: 'left' })` so the embedded driver
+dispatches the mouse press and release sequence. Its no-options element click instead centers
+the element, invokes DOM `click()`, and forces focus afterward, which does not preserve the
+control's mouse-down behavior. Toolbar helpers navigate using the target group's position
+relative to the viewport and wait for scrolling to advance; they do not force-scroll controls.
+For visible virtualized tree rows, resolve the current row, check its hit target, and invoke
+DOM `click()` in one browser execution. The embedded driver's element-origin pointer actions
+center-scroll the row, and separate coordinate-based commands can hit a different row after
+the virtualizer updates. Do not force-scroll or focus the row after selecting it.
+
 Playwright workspace fixtures open scenarios, wait for the test bridge, check platform controls, and wait for fonts. An automatic fixture records `pageerror` events, attaches diagnostics, and fails on unexpected JavaScript errors. The exact browser message `ResizeObserver loop completed with undelivered notifications.` is retained in diagnostics without failing the test; it occurs during the existing sidebar resize interaction. The IPC harness rejects unknown commands and uses structured backend errors for failed reads and writes. Delayed document reads are released explicitly by the test.
 
 ## Screenshot Baselines

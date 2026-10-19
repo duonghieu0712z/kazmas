@@ -20,16 +20,25 @@ async function selectTarget(page: Page) {
     return editor;
 }
 
-test('reaches earlier toolbar controls after navigating to later controls in a narrow window', async ({
+test('reaches earlier toolbar controls across narrow and wide windows', async ({
     page,
     workspace,
 }) => {
-    await page.setViewportSize({ width: 640, height: 800 });
     await workspace.open();
-    await selectTarget(page);
-    await (await showToolbarControl(page, 'Highlight')).click();
-    await (await showToolbarControl(page, 'Text color')).click();
-    await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+
+    for (const width of [640, 960, 1200]) {
+        await page.setViewportSize({ width, height: 800 });
+        await selectTarget(page);
+        await (await showToolbarControl(page, 'Highlight')).click();
+        await (await showToolbarControl(page, 'Text color')).click();
+        await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await (await showToolbarControl(page, 'Line height')).click();
+        await page.keyboard.press('Escape');
+        await (await showToolbarControl(page, 'Text color')).click();
+        await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+        await page.keyboard.press('Escape');
+    }
 });
 
 test('highlight palette preserves selection and remembers the color for the icon toggle', async ({

@@ -2,37 +2,36 @@ import type { Page } from '@playwright/test';
 
 import { expect, test as base } from '@playwright/test';
 
+import { getToolbarNavigationState } from '../support/toolbar';
+
 type Workspace = {
     open: (scenario?: string) => Promise<void>;
 };
 
 export async function showToolbarControl(page: Page, name: string) {
     const control = page.getByRole('button', { name, exact: true, includeHidden: true });
-    let direction = 'Next';
+    let state = await page.evaluate(getToolbarNavigationState, name);
+    const maxSteps = state.controlCount * 2;
 
-    for (let index = 0; index < 12; index++) {
-        if (await control.isVisible()) {
+    for (let index = 0; index < maxSteps; index++) {
+        if (state.direction === null) {
+            await expect(control).toBeVisible();
             return control;
         }
 
-        let navigation = page.getByRole('button', {
-            name: `${direction} toolbar controls`,
+        const navigation = page.getByRole('button', {
+            name: `${state.direction} toolbar controls`,
             exact: true,
         });
-
-        if (!(await navigation.isVisible()) && direction === 'Next') {
-            direction = 'Previous';
-            navigation = page.getByRole('button', {
-                name: 'Previous toolbar controls',
-                exact: true,
-            });
-        }
-
-        if (!(await navigation.isVisible())) {
-            break;
-        }
+        const previousLeft = state.scrollLeft;
 
         await navigation.click();
+        await expect
+            .poll(async () => {
+                state = await page.evaluate(getToolbarNavigationState, name);
+                return state.scrollLeft !== previousLeft || state.direction === null;
+            })
+            .toBe(true);
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);
