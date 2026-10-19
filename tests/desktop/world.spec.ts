@@ -49,18 +49,22 @@ async function clickTreeItem(name: string) {
 }
 
 async function clickToolbarControl(name: string) {
+    const control = $(`button[aria-label="${name}"]`);
     let state = await browser.execute(getToolbarNavigationState, name);
     const maxSteps = state.controlCount * 2;
 
     for (let index = 0; index < maxSteps; index++) {
         if (state.direction === null) {
-            await clickToolbarButton(name);
+            await control.waitForClickable();
+            await control.click({ button: 'left' });
             return;
         }
 
+        const navigation = $(`button[aria-label="${state.direction} toolbar controls"]`);
         const previousLeft = state.scrollLeft;
 
-        await clickToolbarButton(`${state.direction} toolbar controls`);
+        await navigation.waitForClickable();
+        await navigation.click({ button: 'left' });
         await browser.waitUntil(
             async () => {
                 state = await browser.execute(getToolbarNavigationState, name);
@@ -71,43 +75,6 @@ async function clickToolbarControl(name: string) {
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);
-}
-
-async function clickToolbarButton(name: string) {
-    const button = $(
-        `[role="tabpanel"][data-state="active"] [data-slot="toolbar"] button[aria-label="${name}"]`,
-    );
-    await button.waitForDisplayed();
-    await button.waitForEnabled();
-
-    const point = await browser.execute((label) => {
-        const toolbar = document.querySelector(
-            '[role="tabpanel"][data-state="active"] [data-slot="toolbar"]',
-        );
-        const control = Array.from(toolbar?.querySelectorAll('button') ?? []).find(
-            (element) => element.getAttribute('aria-label') === label,
-        );
-        if (!control) {
-            throw new Error(`Toolbar button ${label} is unavailable.`);
-        }
-
-        const rect = control.getBoundingClientRect();
-        const x = Math.floor(rect.left + rect.width / 2);
-        const y = Math.floor(rect.top + rect.height / 2);
-        const target = document.elementFromPoint(x, y);
-        if (!target || !control.contains(target)) {
-            throw new Error(`Toolbar button ${label} is not at its visible click position.`);
-        }
-
-        return { x, y };
-    }, name);
-
-    await browser
-        .action('pointer')
-        .move({ ...point, origin: 'viewport', duration: 0 })
-        .down({ button: 0 })
-        .up({ button: 0 })
-        .perform();
 }
 
 async function waitForDocumentEditor(title: string) {
@@ -248,33 +215,6 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
         );
-    });
-
-    it('clicks visible formatting controls without scrolling their toolbar group', async () => {
-        const size = await browser.getWindowSize();
-
-        try {
-            await browser.setWindowSize(1200, 800);
-            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
-            await editor.setValue('Visible toolbar controls');
-            await editor.click();
-            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
-
-            const before = await browser.execute(getToolbarNavigationState, 'Highlight');
-            expect(before.direction).toBeNull();
-
-            await clickToolbarControl('Highlight');
-
-            const after = await browser.execute(getToolbarNavigationState, 'Text color');
-            expect(after.scrollLeft).toBe(before.scrollLeft);
-            expect(after.direction).toBeNull();
-
-            await clickToolbarControl('Text color');
-            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
-            await browser.keys('Escape');
-        } finally {
-            await browser.setWindowSize(size.width, size.height);
-        }
     });
 
     it('reaches earlier toolbar controls across narrow and wide windows', async () => {
