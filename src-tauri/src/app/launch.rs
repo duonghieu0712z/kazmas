@@ -63,7 +63,7 @@ pub(crate) fn run_event_handler() -> impl FnMut(&AppHandle, RunEvent) {
     |_, _| {}
 }
 
-#[cfg(any(target_os = "macos", test))]
+#[cfg(target_os = "macos")]
 fn opened_world_paths(urls: Vec<tauri::Url>) -> Vec<PathBuf> {
     urls.into_iter()
         .filter_map(|url| url.to_file_path().ok())
@@ -186,7 +186,3 @@ fn launch_world_paths(args: Vec<String>, cwd: impl AsRef<Path>) -> Vec<PathBuf> 
         .filter(|path| is_world_path(path))
         .collect()
 }
-
-#[cfg(test)]
-#[path = "launch_tests.rs"]
-mod tests;

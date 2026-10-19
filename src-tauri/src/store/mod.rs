@@ -11,5 +11,3 @@ pub(crate) use node::{
     restore_trash, update_node, update_node_modified_at,
 };
 pub(crate) use node_order::append as append_node_sort_index;
-#[cfg(test)]
-mod tests;

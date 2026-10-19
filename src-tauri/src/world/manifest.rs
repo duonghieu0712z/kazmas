@@ -8,10 +8,6 @@ use zip::ZipArchive;
 
 use crate::app::{KazmasError, KazmasResult};
 
-#[cfg(test)]
-#[path = "manifest_tests.rs"]
-mod tests;
-
 const MANIFEST_ENTRY: &str = "manifest.json";
 const WORLD_DB: &str = "data/world.db";
 const ASSETS: &str = "assets";

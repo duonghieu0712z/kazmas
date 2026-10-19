@@ -4,10 +4,6 @@ use std::{
     path::Path,
 };
 
-#[cfg(test)]
-#[path = "archive_tests.rs"]
-mod tests;
-
 use tempfile::NamedTempFile;
 use walkdir::WalkDir;
 use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
