@@ -1,5 +1,7 @@
 export function getToolbarNavigationState(name: string) {
-    const toolbar = document.querySelector('[data-slot="toolbar"]');
+    const toolbar =
+        document.querySelector('[role="tabpanel"][data-state="active"] [data-slot="toolbar"]') ??
+        document.querySelector('[data-slot="toolbar"]');
     const viewport = toolbar?.querySelector<HTMLElement>(':scope > div');
     const control = Array.from(toolbar?.querySelectorAll('button') ?? []).find(
         (button) => button.getAttribute('aria-label') === name,
