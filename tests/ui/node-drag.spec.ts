@@ -154,7 +154,10 @@ test('drops a node over the editor to open its tab without inserting text', asyn
     await expect(
         page.getByRole('tab', { name: 'Chapter B Close Chapter B', exact: true }),
     ).toHaveAttribute('aria-selected', 'true');
-    await page.getByRole('tab', { name: 'Chapter A Close Chapter A', exact: true }).click();
+    await page
+        .getByRole('tab')
+        .filter({ hasText: /^Chapter A$/ })
+        .click();
     await expect(editor).toHaveText('Keep this draft');
     await page.getByRole('button', { name: 'Wiki', exact: true }).click();
     await startDrag(page, page.getByRole('treeitem', { name: 'Character', exact: true }));
