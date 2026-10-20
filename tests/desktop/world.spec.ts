@@ -49,23 +49,18 @@ async function clickTreeItem(name: string) {
 }
 
 async function clickToolbarControl(name: string) {
-    const toolbar = '[role="tabpanel"][data-state="active"] [data-slot="toolbar"]';
-    const control = $(`${toolbar} button[aria-label="${name}"]`);
     let state = await browser.execute(getToolbarNavigationState, name);
     const maxSteps = state.controlCount * 2;
 
     for (let index = 0; index < maxSteps; index++) {
         if (state.direction === null) {
-            await control.waitForClickable();
-            await control.click({ button: 'left' });
+            await clickToolbarButton(name);
             return;
         }
 
-        const navigation = $(`${toolbar} button[aria-label="${state.direction} toolbar controls"]`);
         const previousLeft = state.scrollLeft;
 
-        await navigation.waitForClickable();
-        await navigation.click({ button: 'left' });
+        await clickToolbarButton(`${state.direction} toolbar controls`);
         await browser.waitUntil(
             async () => {
                 state = await browser.execute(getToolbarNavigationState, name);
@@ -76,6 +71,42 @@ async function clickToolbarControl(name: string) {
     }
 
     throw new Error(`Toolbar control ${name} could not be reached.`);
+}
+
+async function clickToolbarButton(name: string) {
+    const point = await browser.waitUntil(
+        async () => {
+            return await browser.execute((label) => {
+                const toolbar = document.querySelector(
+                    '[role="tabpanel"][data-state="active"] [data-slot="toolbar"]',
+                );
+                const button = Array.from(toolbar?.querySelectorAll('button') ?? []).find(
+                    (element) => element.getAttribute('aria-label') === label,
+                );
+                if (!button || button.disabled) {
+                    return null;
+                }
+
+                const rect = button.getBoundingClientRect();
+                const x = Math.floor(rect.left + rect.width / 2);
+                const y = Math.floor(rect.top + rect.height / 2);
+                const target = document.elementFromPoint(x, y);
+                if (!target || !button.contains(target)) {
+                    return null;
+                }
+
+                return { x, y };
+            }, name);
+        },
+        { timeoutMsg: `Toolbar button ${name} is not at its visible click position.` },
+    );
+
+    await browser
+        .action('pointer')
+        .move({ ...point, origin: 'viewport', duration: 0 })
+        .down({ button: 0 })
+        .up({ button: 0 })
+        .perform();
 }
 
 async function waitForDocumentEditor(title: string) {
@@ -218,6 +249,33 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         );
     });
 
+    it('clicks visible formatting controls without scrolling their toolbar group', async () => {
+        const size = await browser.getWindowSize();
+
+        try {
+            await browser.setWindowSize(1200, 800);
+            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+            await editor.setValue('Visible toolbar controls');
+            await editor.click();
+            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+
+            const before = await browser.execute(getToolbarNavigationState, 'Highlight');
+            expect(before.direction).toBeNull();
+
+            await clickToolbarControl('Highlight');
+
+            const after = await browser.execute(getToolbarNavigationState, 'Text color');
+            expect(after.scrollLeft).toBe(before.scrollLeft);
+            expect(after.direction).toBeNull();
+
+            await clickToolbarControl('Text color');
+            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+            await browser.keys('Escape');
+        } finally {
+            await browser.setWindowSize(size.width, size.height);
+        }
+    });
+
     it('reaches earlier toolbar controls across narrow and wide windows', async () => {
         const size = await browser.getWindowSize();
 
@@ -264,11 +322,15 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
         ).setValue('#123456');
         await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+        await $('[role="dialog"][aria-label="Text color"]').waitForExist({ reverse: true });
         await clickToolbarControl('Text background color');
         await $(
             '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
         ).setValue('#abcdef');
         await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+        await $('[role="dialog"][aria-label="Text background color"]').waitForExist({
+            reverse: true,
+        });
 
         await clickToolbarControl('Line height');
         await $(

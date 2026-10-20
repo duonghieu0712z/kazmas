@@ -39,8 +39,11 @@ After a successful desktop test build, the build script copies the executable to
 For focus-sensitive desktop controls, use `click({ button: 'left' })` so the embedded driver
 dispatches the mouse press and release sequence. Its no-options element click instead centers
 the element, invokes DOM `click()`, and forces focus afterward, which does not preserve the
-control's mouse-down behavior. Toolbar helpers navigate using the target group's position
-relative to the viewport and wait for scrolling to advance; they do not force-scroll controls.
+control's mouse-down behavior. Element-origin pointer actions also center-scroll their target.
+Toolbar helpers therefore click verified hit positions with viewport-origin pointer actions,
+preserving mouse-down behavior without changing the toolbar's scroll position implicitly.
+They navigate using the target group's position relative to the viewport and wait for scrolling
+to advance; they do not force-scroll controls.
 For visible virtualized tree rows, resolve the current row, check its hit target, and invoke
 DOM `click()` in one browser execution. The embedded driver's element-origin pointer actions
 center-scroll the row, and separate coordinate-based commands can hit a different row after
