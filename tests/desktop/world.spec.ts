@@ -2,7 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { browser, $, expect } from '@wdio/globals';
+import { browser, $, $$, expect } from '@wdio/globals';
+
+import { getToolbarNavigationState } from '../support/toolbar';
 
 import '@wdio/tauri-service';
 
@@ -19,10 +21,92 @@ async function closeTestWindow(handle: string) {
 }
 
 async function openChapterA() {
-    const entry = $('//*[@role="treeitem"][contains(., "Chapter A")]');
-    await entry.waitForDisplayed();
-    await entry.click();
-    await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
+    await clickTreeItem('Chapter A');
+    await waitForDocumentEditor('Chapter A');
+}
+
+async function clickTreeItem(name: string) {
+    await $(`//*[@role="treeitem"][normalize-space(.)="${name}"]`).waitForClickable();
+
+    await browser.execute((title) => {
+        const item = Array.from(document.querySelectorAll<HTMLElement>('[role="treeitem"]')).find(
+            (element) => element.textContent?.trim() === title,
+        );
+        if (!item) {
+            throw new Error(`Tree item ${title} is unavailable.`);
+        }
+
+        const rect = item.getBoundingClientRect();
+        const x = Math.floor(rect.left + rect.width / 2);
+        const y = Math.floor(rect.top + rect.height / 2);
+        const target = document.elementFromPoint(x, y);
+        if (!target || !item.contains(target)) {
+            throw new Error(`Tree item ${title} is not at its visible click position.`);
+        }
+
+        item.click();
+    }, name);
+}
+
+async function clickToolbarControl(name: string) {
+    let state = await browser.execute(getToolbarNavigationState, name);
+    const maxSteps = state.controlCount * 2;
+
+    for (let index = 0; index < maxSteps; index++) {
+        if (state.direction === null) {
+            await clickToolbarButton(name);
+            return;
+        }
+
+        const previousLeft = state.scrollLeft;
+
+        await clickToolbarButton(`${state.direction} toolbar controls`);
+        await browser.waitUntil(
+            async () => {
+                state = await browser.execute(getToolbarNavigationState, name);
+                return state.scrollLeft !== previousLeft || state.direction === null;
+            },
+            { timeoutMsg: `Toolbar did not move toward ${name}.` },
+        );
+    }
+
+    throw new Error(`Toolbar control ${name} could not be reached.`);
+}
+
+async function clickToolbarButton(name: string) {
+    const point = await browser.waitUntil(
+        async () => {
+            return await browser.execute((label) => {
+                const toolbar = document.querySelector(
+                    '[role="tabpanel"][data-state="active"] [data-slot="toolbar"]',
+                );
+                const button = Array.from(toolbar?.querySelectorAll('button') ?? []).find(
+                    (element) => element.getAttribute('aria-label') === label,
+                );
+                if (!button || button.disabled) {
+                    return null;
+                }
+
+                const rect = button.getBoundingClientRect();
+                const x = Math.floor(rect.left + rect.width / 2);
+                const y = Math.floor(rect.top + rect.height / 2);
+                const target = document.elementFromPoint(x, y);
+                if (!target || !button.contains(target)) {
+                    return null;
+                }
+
+                return { x, y };
+            }, name);
+        },
+        { timeoutMsg: `Toolbar button ${name} is not at its visible click position.` },
+    );
+
+    await browser
+        .action('pointer')
+        .move({ ...point, origin: 'viewport', duration: 0 })
+        .down({ button: 0 })
+        .up({ button: 0 })
+        .perform();
 }
 
 async function waitForDocumentEditor(title: string) {
@@ -128,7 +212,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Formatted manuscript');
         await $('[role="tabpanel"][data-state="active"] .tiptap').click();
         await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
-        await $('button[aria-label="Bold"]').click();
+        await clickToolbarControl('Bold');
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
         );
@@ -163,6 +247,116 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
         );
+    });
+
+    it('clicks visible formatting controls without scrolling their toolbar group', async () => {
+        const size = await browser.getWindowSize();
+
+        try {
+            await browser.setWindowSize(1200, 800);
+            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+            await editor.setValue('Visible toolbar controls');
+            await editor.click();
+            await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+
+            const before = await browser.execute(getToolbarNavigationState, 'Highlight');
+            expect(before.direction).toBeNull();
+
+            await clickToolbarControl('Highlight');
+
+            const after = await browser.execute(getToolbarNavigationState, 'Text color');
+            expect(after.scrollLeft).toBe(before.scrollLeft);
+            expect(after.direction).toBeNull();
+
+            await clickToolbarControl('Text color');
+            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+            await browser.keys('Escape');
+        } finally {
+            await browser.setWindowSize(size.width, size.height);
+        }
+    });
+
+    it('reaches earlier toolbar controls across narrow and wide windows', async () => {
+        const size = await browser.getWindowSize();
+
+        try {
+            for (const width of [640, 960, 1200]) {
+                await browser.setWindowSize(width, 800);
+                const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+                await editor.setValue('Toolbar navigation');
+                await editor.click();
+                await browser.keys(
+                    process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a'],
+                );
+                await clickToolbarControl('Highlight');
+                await clickToolbarControl('Text color');
+                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await browser.keys('Escape');
+                await clickToolbarControl('Line height');
+                await browser.keys('Escape');
+                await clickToolbarControl('Text color');
+                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await browser.keys('Escape');
+            }
+        } finally {
+            await browser.setWindowSize(size.width, size.height);
+        }
+    });
+
+    it('saves system fonts, highlight colors, and line height through a real package reopen', async () => {
+        const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+        await editor.setValue('Persisted typography and colors');
+        await editor.click();
+        await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
+
+        await clickToolbarControl('Font family');
+        await browser.waitUntil(async () => (await $$('[role="option"]')).length > 1);
+        const fontOption = (await $$('[role="option"]'))[1]!;
+        const family = await fontOption.getText();
+        expect(family.trim().length).toBeGreaterThan(0);
+        await fontOption.click();
+
+        await clickToolbarControl('Highlight');
+        await clickToolbarControl('Text color');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
+        ).setValue('#123456');
+        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+        await $('[role="dialog"][aria-label="Text color"]').waitForExist({ reverse: true });
+        await clickToolbarControl('Text background color');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
+        ).setValue('#abcdef');
+        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
+        await $('[role="dialog"][aria-label="Text background color"]').waitForExist({
+            reverse: true,
+        });
+
+        await clickToolbarControl('Line height');
+        await $(
+            '[data-slot="popover-content"][data-state="open"] button[aria-label="1.5"]',
+        ).click();
+
+        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(() => window.__kazmasDesktopTest.close());
+        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await openChapterA();
+
+        await expectDocumentText('Persisted typography and colors');
+        const mark = $('[role="tabpanel"][data-state="active"] .tiptap mark');
+        await expect(mark).toHaveAttribute('data-text-color', '#123456');
+        await expect(mark).toHaveAttribute('data-color', '#abcdef');
+        const typography = await browser.execute(() => {
+            const element = document.querySelector<HTMLElement>(
+                '[role="tabpanel"][data-state="active"] .tiptap span[style*="font-family"]',
+            );
+            return {
+                family: element?.style.fontFamily.replace(/["']/g, ''),
+                lineHeight: element?.style.lineHeight,
+            };
+        });
+        expect(typography.family).toBe(family);
+        expect(typography.lineHeight).toBe('1.5');
     });
 
     it('switches documents before debounce expires without losing the first edit', async () => {
@@ -205,21 +399,27 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect(sibling).toHaveAttribute('aria-level', '2');
         await waitForDocumentEditor('Sibling chapter');
 
-        await browser.execute(() => window.__kazmasDesktopTest.save());
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
-        const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
-        await reopenedFolder.waitForDisplayed();
-        if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
-            await reopenedFolder.$('.tree-chevron-icon').click();
+        for (let cycle = 0; cycle < 3; cycle++) {
+            await $('//*[@role="tab"][normalize-space(.)="Sibling chapter"]').click();
+            await browser.execute(() => window.__kazmasDesktopTest.save());
+            await browser.execute(() => window.__kazmasDesktopTest.close());
+            await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+            const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
+            await reopenedFolder.waitForDisplayed();
+            if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
+                await reopenedFolder.$('.tree-chevron-icon').click();
+            }
+            const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
+            const reopenedSibling = $(
+                '//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]',
+            );
+            await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
+            await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
+            await waitForDocumentEditor('Sibling chapter');
+            await clickTreeItem('New chapter');
+            await waitForDocumentEditor('New chapter');
+            await expectDocumentText('Nested chapter content');
         }
-        const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
-        const reopenedSibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
-        await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
-        await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
-        await reopenedEntry.click();
-        await waitForDocumentEditor('New chapter');
-        await expectDocumentText('Nested chapter content');
     });
 
     it('groups trashed empty folders by source after saving and reopening', async () => {

@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { useSystemFonts } from '@/composables/use-system-fonts';
+
 const marks = ['bold', 'italic', 'underline', 'strike'] as const;
 const codeAndScriptMarks = ['code', 'subscript', 'superscript'] as const;
+const colorTypes = ['color', 'backgroundColor'] as const;
 
 const findAndReplaceOpen = ref(false);
+
+const { fonts, isLoading: fontsLoading, error: fontsError, loadFonts } = useSystemFonts();
+
+async function handleFontMenuOpen(open: boolean) {
+    if (open) {
+        await loadFonts();
+    }
+}
 </script>
 
 <template>
@@ -10,31 +21,28 @@ const findAndReplaceOpen = ref(false);
         <ButtonGroup spacing="spaced">
             <UndoRedoButton action="undo" />
             <UndoRedoButton action="redo" />
-            <FindAndReplaceButton v-model:open="findAndReplaceOpen" />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
             <HeadingDropdown />
-            <ListDropdown />
-            <BlockquoteButton />
-            <CodeBlockButton />
-            <HorizontalRuleButton />
+            <FontFamilyCombobox
+                :error="!!fontsError"
+                :fonts="fonts"
+                :loading="fontsLoading"
+                @retry="loadFonts"
+                @update:open="handleFontMenuOpen"
+            />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in marks" :key="mark" :type="mark" />
-        </ButtonGroup>
-
-        <ButtonGroupSeparator class="my-1" />
-
-        <ButtonGroup spacing="spaced">
             <MarkButton v-for="mark in codeAndScriptMarks" :key="mark" :type="mark" />
-            <LinkPopover />
-            <RubyTextPopover />
+            <TextStyleColorPopover v-for="type in colorTypes" :key="type" :type="type" />
+            <HighlightPopover />
             <ResetAllFormattingButton />
         </ButtonGroup>
 
@@ -42,11 +50,24 @@ const findAndReplaceOpen = ref(false);
 
         <ButtonGroup spacing="spaced">
             <TextAlignPopover />
+            <LineHeightPopover />
+            <ListDropdown />
+            <BlockquoteButton />
         </ButtonGroup>
 
         <ButtonGroupSeparator class="my-1" />
 
         <ButtonGroup spacing="spaced">
+            <LinkPopover />
+            <RubyTextPopover />
+            <CodeBlockButton />
+            <HorizontalRuleButton />
+        </ButtonGroup>
+
+        <ButtonGroupSeparator class="my-1" />
+
+        <ButtonGroup spacing="spaced">
+            <FindAndReplaceButton v-model:open="findAndReplaceOpen" />
             <InvisibleCharactersButton />
             <EditableButton />
         </ButtonGroup>
