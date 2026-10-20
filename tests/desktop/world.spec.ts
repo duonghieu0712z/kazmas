@@ -49,7 +49,8 @@ async function clickTreeItem(name: string) {
 }
 
 async function clickToolbarControl(name: string) {
-    const control = $(`button[aria-label="${name}"]`);
+    const toolbar = '[role="tabpanel"][data-state="active"] [data-slot="toolbar"]';
+    const control = $(`${toolbar} button[aria-label="${name}"]`);
     let state = await browser.execute(getToolbarNavigationState, name);
     const maxSteps = state.controlCount * 2;
 
@@ -60,7 +61,7 @@ async function clickToolbarControl(name: string) {
             return;
         }
 
-        const navigation = $(`button[aria-label="${state.direction} toolbar controls"]`);
+        const navigation = $(`${toolbar} button[aria-label="${state.direction} toolbar controls"]`);
         const previousLeft = state.scrollLeft;
 
         await navigation.waitForClickable();
