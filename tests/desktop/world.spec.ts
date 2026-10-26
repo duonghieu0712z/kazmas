@@ -208,6 +208,8 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.execute(() => window.__kazmasDesktopTest.save());
         await browser.execute(() => window.__kazmasDesktopTest.close());
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await waitForDocumentEditor('Sibling chapter');
+
         const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
         await reopenedFolder.waitForDisplayed();
         if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
@@ -218,6 +220,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
         await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
         await reopenedEntry.click();
+        await expect(reopenedEntry).toHaveAttribute('aria-selected', 'true');
         await waitForDocumentEditor('New chapter');
         await expectDocumentText('Nested chapter content');
     });
