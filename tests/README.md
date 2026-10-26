@@ -31,6 +31,8 @@ Generated output lives under `.artifacts/`: coverage reports in `coverage/`, Pla
 
 After a successful desktop test build, the build script copies the executable to `.artifacts/desktop/bin`. WebdriverIO uses that copy, so rebuilding the normal development executable cannot change which application the tests launch. Each desktop test closes additional windows, dismisses active dialogs, flushes pending writes, and closes its world through the test bridge. Cleanup failures are reported instead of silently ignored.
 
+Await desktop element queries before starting another query. The embedded driver's `find_all` handler in `tauri-plugin-wdio-webdriver` 1.5.0 uses a shared `__wd_temp_` prefix while assigning element references. Concurrent queries can overwrite that temporary storage and return references to the wrong elements, even when both selectors are correct.
+
 Playwright workspace fixtures open scenarios, wait for the test bridge, check platform controls, and wait for fonts. An automatic fixture records `pageerror` events, attaches diagnostics, and fails on unexpected JavaScript errors. The exact browser message `ResizeObserver loop completed with undelivered notifications.` is retained in diagnostics without failing the test; it occurs during the existing sidebar resize interaction. The IPC harness rejects unknown commands and uses structured backend errors for failed reads and writes. Delayed document reads are released explicitly by the test.
 
 ## Screenshot Baselines
