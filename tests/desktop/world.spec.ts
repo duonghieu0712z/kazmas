@@ -110,13 +110,13 @@ async function clickToolbarButton(name: string) {
 }
 
 async function waitForDocumentEditor(title: string) {
-    const tab = $(`//*[@role="tab"][normalize-space(.)="${title}"]`);
+    const tab = await $(`//*[@role="tab"][normalize-space(.)="${title}"]`);
     await expect(tab).toHaveAttribute('aria-selected', 'true');
     const panelId = await tab.getAttribute('aria-controls');
     if (!panelId) {
         throw new Error(`Document tab ${title} has no associated panel.`);
     }
-    const editor = $(
+    const editor = await $(
         `[role="tabpanel"][id="${panelId}"][data-state="active"] .tiptap[contenteditable="true"]`,
     );
     await editor.waitForDisplayed();
@@ -254,7 +254,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
         try {
             await browser.setWindowSize(1200, 800);
-            const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+            const editor = await $('[role="tabpanel"][data-state="active"] .tiptap');
             await editor.setValue('Visible toolbar controls');
             await editor.click();
             await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
@@ -282,7 +282,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         try {
             for (const width of [640, 960, 1200]) {
                 await browser.setWindowSize(width, 800);
-                const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+                const editor = await $('[role="tabpanel"][data-state="active"] .tiptap');
                 await editor.setValue('Toolbar navigation');
                 await editor.click();
                 await browser.keys(
@@ -304,7 +304,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
     });
 
     it('saves system fonts, highlight colors, and line height through a real package reopen', async () => {
-        const editor = $('[role="tabpanel"][data-state="active"] .tiptap');
+        const editor = await $('[role="tabpanel"][data-state="active"] .tiptap');
         await editor.setValue('Persisted typography and colors');
         await editor.click();
         await browser.keys(process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a']);
@@ -343,7 +343,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await openChapterA();
 
         await expectDocumentText('Persisted typography and colors');
-        const mark = $('[role="tabpanel"][data-state="active"] .tiptap mark');
+        const mark = await $('[role="tabpanel"][data-state="active"] .tiptap mark');
         await expect(mark).toHaveAttribute('data-text-color', '#123456');
         await expect(mark).toHaveAttribute('data-color', '#abcdef');
         const typography = await browser.execute(() => {
@@ -369,21 +369,19 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
     });
 
     it('creates nested sidebar items and preserves their parents after reopening', async () => {
-        const folder = $('//*[@role="treeitem"][contains(., "New folder")]');
-        const entry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
-        const sibling = $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
-
         await $(
             '//*[@data-slot="sidebar-header"][.//span[text()="Manuscript"]]//button[@aria-label="New folder"]',
         ).click();
         await $('input[aria-label="New item name"]').setValue('  New folder  ');
         await browser.keys('Enter');
+        const folder = await $('//*[@role="treeitem"][contains(., "New folder")]');
         await expect(folder).toHaveAttribute('aria-selected', 'true');
         await expect(folder).toHaveAttribute('aria-level', '1');
 
         await $('button[aria-label="New manuscript entry"]').click();
         await $('input[aria-label="New item name"]').setValue('  New chapter  ');
         await browser.keys('Enter');
+        const entry = await $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
         await expect(entry).toHaveAttribute('aria-selected', 'true');
         await expect(entry).toHaveAttribute('aria-level', '2');
         const editor = await waitForDocumentEditor('New chapter');
@@ -395,6 +393,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('button[aria-label="New manuscript entry"]').click();
         await $('input[aria-label="New item name"]').setValue('Sibling chapter');
         await browser.keys('Enter');
+        const sibling = await $('//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]');
         await expect(sibling).toHaveAttribute('aria-selected', 'true');
         await expect(sibling).toHaveAttribute('aria-level', '2');
         await waitForDocumentEditor('Sibling chapter');
@@ -404,19 +403,22 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             await browser.execute(() => window.__kazmasDesktopTest.save());
             await browser.execute(() => window.__kazmasDesktopTest.close());
             await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
-            const reopenedFolder = $('//*[@role="treeitem"][contains(., "New folder")]');
+            const reopenedFolder = await $('//*[@role="treeitem"][contains(., "New folder")]');
             await reopenedFolder.waitForDisplayed();
             if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
                 await reopenedFolder.$('.tree-chevron-icon').click();
             }
-            const reopenedEntry = $('//*[@role="treeitem"][normalize-space(.)="New chapter"]');
-            const reopenedSibling = $(
+            const reopenedEntry = await $(
+                '//*[@role="treeitem"][normalize-space(.)="New chapter"]',
+            );
+            const reopenedSibling = await $(
                 '//*[@role="treeitem"][normalize-space(.)="Sibling chapter"]',
             );
             await expect(reopenedEntry).toHaveAttribute('aria-level', '2');
             await expect(reopenedSibling).toHaveAttribute('aria-level', '2');
             await waitForDocumentEditor('Sibling chapter');
             await clickTreeItem('New chapter');
+            await expect(reopenedEntry).toHaveAttribute('aria-selected', 'true');
             await waitForDocumentEditor('New chapter');
             await expectDocumentText('Nested chapter content');
         }
@@ -434,7 +436,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             const folderName = `Discarded ${section}`;
             await $('input[aria-label="New item name"]').setValue(folderName);
             await browser.keys('Enter');
-            const folder = $(
+            const folder = await $(
                 `//*[@data-node-tree="${section}"]//*[@role="treeitem"][normalize-space(.)="${folderName}"]`,
             );
             await folder.waitForDisplayed();
@@ -454,12 +456,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
         await activityButton('Trash').click();
         for (const section of ['Manuscript', 'Wiki']) {
-            const group = $(
+            const group = await $(
                 `[role="region"][aria-label="Trash"] [role="group"][aria-label="${section}"]`,
             );
             await group.waitForDisplayed();
             await expect(group.$('[data-slot="sidebar-group-label"]')).toHaveText(section);
-            const folder = $(`[role="treeitem"][aria-label="Discarded ${section}"]`);
+            const folder = await $(`[role="treeitem"][aria-label="Discarded ${section}"]`);
             await expect(folder).toHaveAttribute('aria-level', '1');
             await browser.execute((name) => {
                 const item = document.querySelector(
@@ -469,7 +471,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
                     new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse' }),
                 );
             }, section);
-            const tooltip = $(
+            const tooltip = await $(
                 `//*[@data-slot="tooltip-content"][p[normalize-space(.)="Original location: ${section}"]]`,
             );
             await tooltip.waitForDisplayed();
