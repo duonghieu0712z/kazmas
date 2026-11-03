@@ -16,6 +16,7 @@ use zip::{
     write::SimpleFileOptions,
 };
 
+use super::manifest::{MANIFEST_ENTRY, MAX_MANIFEST_SIZE, validate_manifest_size};
 use crate::app::{KazmasError, KazmasResult};
 
 const COMPRESSION_LEVEL: i64 = 3;
@@ -88,11 +89,16 @@ pub(super) fn pack_world_archive(
     workspace: impl AsRef<Path>,
     package: impl AsRef<Path>,
 ) -> KazmasResult<()> {
+    let manifest_path = workspace.as_ref().join(MANIFEST_ENTRY);
     let mut remaining_size = MAX_WORLD_SIZE;
     for entry in walk_world_entries(&workspace) {
         let entry = entry?;
         let metadata = read_world_entry_metadata(entry.path())?;
         if metadata.is_file() {
+            if entry.path() == manifest_path {
+                validate_manifest_size(metadata.len())?;
+            }
+
             remaining_size = consume_world_size_budget(remaining_size, metadata.len())?;
         }
     }
@@ -129,7 +135,17 @@ pub(super) fn pack_world_archive(
 
         writer.start_file(name, options)?;
         let file = File::open(path)?;
-        let copied = io::copy(&mut file.take(remaining_size + 1), &mut writer)?;
+        let is_manifest = path == manifest_path;
+        let size_limit = if is_manifest {
+            remaining_size.min(MAX_MANIFEST_SIZE)
+        } else {
+            remaining_size
+        };
+        let copied = io::copy(&mut file.take(size_limit + 1), &mut writer)?;
+        if is_manifest {
+            validate_manifest_size(copied)?;
+        }
+
         remaining_size = consume_world_size_budget(remaining_size, copied)?;
     }
 

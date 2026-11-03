@@ -61,6 +61,41 @@ fn rejects_oversized_workspace_without_creating_package() -> TestResult {
 }
 
 #[test]
+fn oversized_workspace_manifest_preserves_existing_package() -> TestResult {
+    let dir = temp_dir()?;
+    let workspace = dir.path().join("source");
+    fs::create_dir_all(&workspace)?;
+    let manifest_path = workspace.join(MANIFEST_ENTRY);
+    File::create(&manifest_path)?.set_len(MAX_MANIFEST_SIZE)?;
+
+    let package = dir.path().join("world.kazmas");
+    pack_world_archive(&workspace, &package)?;
+    let mut archive = open_world_archive(&package)?;
+    assert_eq!(archive.by_name(MANIFEST_ENTRY)?.size(), MAX_MANIFEST_SIZE);
+    drop(archive);
+    let previous = fs::read(&package)?;
+
+    File::options()
+        .write(true)
+        .open(&manifest_path)?
+        .set_len(MAX_MANIFEST_SIZE + 1)?;
+    assert!(matches!(
+        pack_world_archive(&workspace, &package),
+        Err(KazmasError::Invalid(_))
+    ));
+    assert_eq!(fs::read(&package)?, previous);
+
+    fs::remove_file(&package)?;
+    assert!(matches!(
+        pack_world_archive(&workspace, &package),
+        Err(KazmasError::Invalid(_))
+    ));
+    assert!(!package.exists());
+
+    Ok(())
+}
+
+#[test]
 fn rejects_archive_entries_that_escape_the_workspace() -> TestResult {
     let dir = temp_dir()?;
     for (index, name) in ["../escaped.txt", "/absolute.txt"].iter().enumerate() {
