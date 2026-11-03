@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, showToolbarControl, test } from './fixtures';
 
 const mac = process.platform === 'darwin';
 
@@ -309,7 +309,7 @@ test('long document content scrolls inside the editor viewport', async ({ page, 
 
 test('find and replace updates matching text in the document', async ({ page, workspace }) => {
     await workspace.open();
-    await page.getByRole('button', { name: 'Find and replace', exact: true }).click();
+    await (await showToolbarControl(page, 'Find and replace')).click();
     await page.getByPlaceholder('Find', { exact: true }).fill('sample');
     await page.getByRole('button', { name: 'Toggle replace', exact: true }).click();
     await page.getByPlaceholder('Replace', { exact: true }).fill('revised');

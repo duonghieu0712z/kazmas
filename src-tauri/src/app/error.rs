@@ -16,6 +16,9 @@ pub(crate) enum KazmasError {
 
     // External errors
     #[error(transparent)]
+    Font(#[from] font_kit::error::SelectionError),
+
+    #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
