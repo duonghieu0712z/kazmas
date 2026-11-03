@@ -6,13 +6,16 @@ use tokio::fs;
 use uuid::Uuid;
 use zip::ZipArchive;
 
+use super::archive::open_world_archive;
 use crate::app::{KazmasError, KazmasResult};
 
 #[cfg(test)]
 #[path = "manifest_tests.rs"]
 mod tests;
 
-const MANIFEST_ENTRY: &str = "manifest.json";
+pub(super) const MAX_MANIFEST_SIZE: u64 = 1024 * 1024;
+
+pub(super) const MANIFEST_ENTRY: &str = "manifest.json";
 const WORLD_DB: &str = "data/world.db";
 const ASSETS: &str = "assets";
 
@@ -62,14 +65,22 @@ impl WorldManifest {
 }
 
 pub(crate) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldManifest> {
-    let zip_file = File::open(package)?;
-    let mut archive = ZipArchive::new(zip_file)?;
-    let mut manifest_file = archive.by_name(MANIFEST_ENTRY)?;
+    let mut archive = open_world_archive(package)?;
+    read_manifest_from_archive(&mut archive)
+}
 
-    let mut manifest_json = String::new();
-    manifest_file.read_to_string(&mut manifest_json)?;
+pub(super) fn read_manifest_from_archive(
+    archive: &mut ZipArchive<File>,
+) -> KazmasResult<WorldManifest> {
+    let manifest_file = archive.by_name(MANIFEST_ENTRY)?;
 
-    let manifest: WorldManifest = serde_json::from_str(&manifest_json)?;
+    let mut manifest_json = Vec::new();
+    manifest_file
+        .take(MAX_MANIFEST_SIZE + 1)
+        .read_to_end(&mut manifest_json)?;
+    validate_manifest_size(manifest_json.len() as u64)?;
+
+    let manifest: WorldManifest = serde_json::from_slice(&manifest_json)?;
     for path in [&manifest.paths.world, &manifest.paths.assets] {
         let normalized = path.replace('\\', "/");
         if normalized.is_empty()
@@ -91,7 +102,18 @@ pub(super) async fn write_manifest(
 ) -> KazmasResult<()> {
     let file = workspace.as_ref().join(MANIFEST_ENTRY);
     let data = serde_json::to_string(manifest)?;
+    validate_manifest_size(data.len() as u64)?;
+
     fs::write(file, data).await?;
+    Ok(())
+}
+
+pub(super) fn validate_manifest_size(size: u64) -> KazmasResult<()> {
+    if size > MAX_MANIFEST_SIZE {
+        return Err(KazmasError::Invalid(
+            "world manifest exceeds the 1 MiB size limit".into(),
+        ));
+    }
     Ok(())
 }
 
