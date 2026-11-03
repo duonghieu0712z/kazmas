@@ -3,7 +3,7 @@ import type { Mark } from '@tiptap/pm/model';
 import type { Editor } from '@tiptap/vue-3';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { BaselineIcon, PaintBucketIcon } from '@lucide/vue';
+import { LetterAIcon, PaintBucketIcon } from '@lucide/vue';
 import { computed, toValue } from 'vue';
 
 import { useTiptapEditor } from '@/components/tiptap/editor';
@@ -218,7 +218,7 @@ export function useTextStyleColor(config: UseTextStyleColorConfig) {
     });
 
     const label = computed(() => (type.value === 'color' ? 'Text color' : 'Text background color'));
-    const icon = computed(() => (type.value === 'color' ? BaselineIcon : PaintBucketIcon));
+    const icon = computed(() => (type.value === 'color' ? LetterAIcon : PaintBucketIcon));
 
     return {
         editor,

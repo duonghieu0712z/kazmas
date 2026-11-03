@@ -104,17 +104,8 @@ function handleCloseAutoFocus(event: Event) {
                 >
                     <slot>
                         <span aria-hidden="true" class="flex flex-col items-center">
-                            <component
-                                :is="icon"
-                                :class="
-                                    type === 'color'
-                                        ? 'size-4 [&>path:first-child]:stroke-(--text-style-color)'
-                                        : 'size-3.5'
-                                "
-                                :style="{ '--text-style-color': activeColor || 'currentColor' }"
-                            />
+                            <component :is="icon" class="size-3.5" />
                             <ColorSwatch
-                                v-if="type === 'backgroundColor'"
                                 as="span"
                                 class="h-0.5 w-4 rounded-none"
                                 :color="activeColor || 'currentColor'"
