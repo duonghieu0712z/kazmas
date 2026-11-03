@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, File},
+    fs::{self, File, Metadata},
     io::{self, Read},
     path::Path,
 };
@@ -91,16 +91,15 @@ pub(super) fn pack_world_archive(
     let mut entries = Vec::new();
     let mut remaining_size = MAX_WORLD_SIZE;
     for entry in WalkDir::new(&workspace)
+        .follow_root_links(false)
         .into_iter()
         .filter_entry(|entry| !should_skip_entry(entry.path()))
     {
         let entry = entry?;
-        let metadata = fs::metadata(entry.path())?;
-
+        let metadata = read_world_entry_metadata(entry.path())?;
         if metadata.is_file() {
             remaining_size = consume_world_size_budget(remaining_size, metadata.len())?;
         }
-
         entries.push(entry);
     }
 
@@ -114,6 +113,7 @@ pub(super) fn pack_world_archive(
     let mut remaining_size = MAX_WORLD_SIZE;
     for entry in entries {
         let path = entry.path();
+        let metadata = read_world_entry_metadata(path)?;
         let name = path
             .strip_prefix(&workspace)?
             .to_string_lossy()
@@ -123,12 +123,12 @@ pub(super) fn pack_world_archive(
             continue;
         }
 
-        if path.is_dir() {
+        if metadata.is_dir() {
             writer.add_directory(format!("{name}/"), options)?;
             continue;
         }
 
-        if !path.is_file() {
+        if !metadata.is_file() {
             continue;
         }
 
@@ -186,4 +186,16 @@ fn create_temp_package(package: impl AsRef<Path>) -> KazmasResult<NamedTempFile>
         .tempfile_in(parent)?;
 
     Ok(temp_package)
+}
+
+fn read_world_entry_metadata(path: &Path) -> KazmasResult<Metadata> {
+    let metadata = fs::symlink_metadata(path)?;
+    if metadata.file_type().is_symlink() {
+        return Err(KazmasError::Invalid(format!(
+            "symbolic links are not supported in world workspaces: {}",
+            path.display()
+        )));
+    }
+
+    Ok(metadata)
 }
