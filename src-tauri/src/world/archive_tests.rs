@@ -47,6 +47,20 @@ fn round_trip_preserves_nested_unicode_files_and_skips_transient_entries() -> Te
 }
 
 #[test]
+fn rejects_oversized_workspace_without_creating_package() -> TestResult {
+    let dir = temp_dir()?;
+    let workspace = dir.path().join("source");
+    fs::create_dir_all(&workspace)?;
+    File::create(workspace.join("oversized.bin"))?.set_len(MAX_WORLD_SIZE + 1)?;
+
+    let package = dir.path().join("world.kazmas");
+    assert!(pack_world_archive(&workspace, &package).is_err());
+    assert!(!package.exists());
+
+    Ok(())
+}
+
+#[test]
 fn rejects_archive_entries_that_escape_the_workspace() -> TestResult {
     let dir = temp_dir()?;
     for (index, name) in ["../escaped.txt", "/absolute.txt"].iter().enumerate() {
@@ -58,6 +72,24 @@ fn rejects_archive_entries_that_escape_the_workspace() -> TestResult {
         assert!(open_world_archive(&package).is_err());
         assert!(!dir.path().join("escaped.txt").exists());
     }
+    Ok(())
+}
+
+#[test]
+fn extraction_does_not_write_traversal_entries_outside_workspace() -> TestResult {
+    let dir = temp_dir()?;
+    let package = dir.path().join("unsafe.kazmas");
+    let mut writer = ZipWriter::new(File::create(&package)?);
+    writer.start_file("../escaped.txt", SimpleFileOptions::default())?;
+    writer.write_all(b"unsafe")?;
+    writer.finish()?;
+
+    let workspace = dir.path().join("workspace");
+    let archive = ZipArchive::new(File::open(&package)?)?;
+    let _ = unpack_world_archive(archive, &workspace);
+
+    assert!(!dir.path().join("escaped.txt").exists());
+
     Ok(())
 }
 
