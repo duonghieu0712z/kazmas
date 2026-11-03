@@ -9,7 +9,7 @@ use std::{
 mod tests;
 
 use tempfile::NamedTempFile;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 use zip::{
     CompressionMethod, ZipArchive, ZipWriter,
     read::{ExtractOptions, SymlinkExtractAction},
@@ -88,19 +88,13 @@ pub(super) fn pack_world_archive(
     workspace: impl AsRef<Path>,
     package: impl AsRef<Path>,
 ) -> KazmasResult<()> {
-    let mut entries = Vec::new();
     let mut remaining_size = MAX_WORLD_SIZE;
-    for entry in WalkDir::new(&workspace)
-        .follow_root_links(false)
-        .into_iter()
-        .filter_entry(|entry| !should_skip_entry(entry.path()))
-    {
+    for entry in walk_world_entries(&workspace) {
         let entry = entry?;
         let metadata = read_world_entry_metadata(entry.path())?;
         if metadata.is_file() {
             remaining_size = consume_world_size_budget(remaining_size, metadata.len())?;
         }
-        entries.push(entry);
     }
 
     let package = package.as_ref();
@@ -111,7 +105,8 @@ pub(super) fn pack_world_archive(
         .compression_level(Some(COMPRESSION_LEVEL));
 
     let mut remaining_size = MAX_WORLD_SIZE;
-    for entry in entries {
+    for entry in walk_world_entries(&workspace) {
+        let entry = entry?;
         let path = entry.path();
         let metadata = read_world_entry_metadata(path)?;
         let name = path
@@ -145,6 +140,15 @@ pub(super) fn pack_world_archive(
     fs::rename(&temp_package, package)?;
 
     Ok(())
+}
+
+fn walk_world_entries(
+    workspace: impl AsRef<Path>,
+) -> impl Iterator<Item = walkdir::Result<DirEntry>> {
+    WalkDir::new(workspace)
+        .follow_root_links(false)
+        .into_iter()
+        .filter_entry(|entry| !should_skip_entry(entry.path()))
 }
 
 fn should_skip_entry(path: impl AsRef<Path>) -> bool {
