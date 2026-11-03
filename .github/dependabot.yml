@@ -15,6 +15,7 @@ updates:
     multi-ecosystem-group: tauri
     patterns:
       - '@tauri-apps/*'
+      - '@wdio/tauri-*'
 
   - package-ecosystem: cargo
     directory: /src-tauri
@@ -33,7 +34,11 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: '@tauri-apps/*'
+      - dependency-name: '@wdio/tauri-*'
     groups:
+      tiptap:
+        patterns:
+          - '@tiptap/*'
       npm-minor-and-patch:
         update-types:
           - minor

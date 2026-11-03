@@ -525,7 +525,7 @@ async fn missing_database_cleans_workspace_and_preserves_package() -> TestResult
     let manifest = WorldManifest::new("Incomplete");
     write_manifest(&manifest, &workspace).await?;
     let package = dir.path().join("incomplete.kazmas");
-    pack_world(&workspace, &package)?;
+    pack_world_archive(&workspace, &package)?;
     let original = fs::read(&package).await?;
     let temp = dir.path().join("workspaces");
     for _ in 0..2 {
