@@ -10,7 +10,11 @@ mod tests;
 
 use tempfile::NamedTempFile;
 use walkdir::WalkDir;
-use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
+use zip::{
+    CompressionMethod, ZipArchive, ZipWriter,
+    read::{ExtractOptions, SymlinkExtractAction},
+    write::SimpleFileOptions,
+};
 
 use crate::app::{KazmasError, KazmasResult};
 
@@ -23,7 +27,47 @@ const APPLE_DOUBLE_PREFIX: &str = "._";
 const WAL_SUFFIX: &str = "-wal";
 const SHM_SUFFIX: &str = "-shm";
 
-pub(super) fn pack_world(
+pub(super) fn open_world_archive(package: impl AsRef<Path>) -> KazmasResult<ZipArchive<File>> {
+    let zip_file = File::open(package)?;
+    let mut archive = ZipArchive::new(zip_file)?;
+
+    archive.validate_header_consistency()?;
+
+    for index in 0..archive.len() {
+        let entry = archive.by_index(index)?;
+        let name = entry.name()?;
+        let normalized = name.replace('\\', "/");
+        if normalized.starts_with('/')
+            || normalized.contains(':')
+            || normalized.split('/').any(|part| part == "..")
+        {
+            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
+        }
+
+        if entry.enclosed_name().is_none() {
+            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
+        }
+
+        if entry.is_symlink() {
+            return Err(KazmasError::Invalid(format!(
+                "symbolic links are not supported in world packages: {name}"
+            )));
+        }
+    }
+
+    Ok(archive)
+}
+
+pub(super) fn unpack_world_archive(
+    mut archive: ZipArchive<File>,
+    workspace: impl AsRef<Path>,
+) -> KazmasResult<()> {
+    let options = ExtractOptions::default().symlink_action(SymlinkExtractAction::NoExtract);
+    archive.extract_with_options(workspace, options)?;
+    Ok(())
+}
+
+pub(super) fn pack_world_archive(
     workspace: impl AsRef<Path>,
     package: impl AsRef<Path>,
 ) -> KazmasResult<()> {
@@ -68,45 +112,6 @@ pub(super) fn pack_world(
 
     let temp_package = temp.into_temp_path();
     fs::rename(&temp_package, package)?;
-
-    Ok(())
-}
-
-pub(super) fn unpack_world(
-    package: impl AsRef<Path>,
-    workspace: impl AsRef<Path>,
-) -> KazmasResult<()> {
-    let zip_file = File::open(package)?;
-    let mut archive = ZipArchive::new(zip_file)?;
-
-    for index in 0..archive.len() {
-        let mut entry = archive.by_index(index)?;
-        let name = entry.name()?;
-        let normalized = name.replace('\\', "/");
-        if normalized.starts_with('/')
-            || normalized.contains(':')
-            || normalized.split('/').any(|part| part == "..")
-        {
-            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
-        }
-        let Some(enclosed_name) = entry.enclosed_name() else {
-            return Err(KazmasError::Invalid(format!("unsafe archive entry {name}")));
-        };
-
-        let output_path = workspace.as_ref().join(enclosed_name);
-
-        if entry.is_dir() {
-            fs::create_dir_all(output_path)?;
-            continue;
-        }
-
-        if let Some(parent) = output_path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        let mut output = File::create(output_path)?;
-        io::copy(&mut entry, &mut output)?;
-    }
 
     Ok(())
 }

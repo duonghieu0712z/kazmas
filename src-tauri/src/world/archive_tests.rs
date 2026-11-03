@@ -25,9 +25,10 @@ fn round_trip_preserves_nested_unicode_files_and_skips_transient_entries() -> Te
         fs::write(workspace.join(name), "skip")?;
     }
     let package = dir.path().join("world.kazmas");
-    pack_world(&workspace, &package)?;
+    pack_world_archive(&workspace, &package)?;
     let output = dir.path().join("output");
-    unpack_world(&package, &output)?;
+    let archive = open_world_archive(&package)?;
+    unpack_world_archive(archive, &output)?;
     assert_eq!(fs::read(output.join("data/world.db"))?, b"database");
     assert_eq!(
         fs::read_to_string(output.join("assets/nested/sample.txt"))?,
@@ -54,7 +55,7 @@ fn rejects_archive_entries_that_escape_the_workspace() -> TestResult {
         writer.start_file(*name, SimpleFileOptions::default())?;
         writer.write_all(b"unsafe")?;
         writer.finish()?;
-        assert!(unpack_world(&package, dir.path().join(format!("output-{index}"))).is_err());
+        assert!(open_world_archive(&package).is_err());
         assert!(!dir.path().join("escaped.txt").exists());
     }
     Ok(())
@@ -65,7 +66,7 @@ fn packing_failure_preserves_existing_package() -> TestResult {
     let dir = temp_dir()?;
     let package = dir.path().join("saved.kazmas");
     fs::write(&package, b"previous package")?;
-    assert!(pack_world(dir.path().join("missing"), &package).is_err());
+    assert!(pack_world_archive(dir.path().join("missing"), &package).is_err());
     assert_eq!(fs::read(package)?, b"previous package");
     Ok(())
 }

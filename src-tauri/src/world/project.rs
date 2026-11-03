@@ -9,8 +9,8 @@ use tokio::fs;
 use uuid::Uuid;
 
 use super::{
-    archive::{pack_world, unpack_world},
-    manifest::{WorldManifest, read_manifest, write_manifest},
+    archive::{open_world_archive, pack_world_archive, unpack_world_archive},
+    manifest::{WorldManifest, read_manifest_from_archive, write_manifest},
 };
 use crate::{
     app::{KazmasError, KazmasResult},
@@ -75,7 +75,7 @@ impl WorldProject {
         seed_world_nodes(&mut conn, &manifest).await?;
 
         database::checkpoint_wal(&mut conn).await?;
-        pack_world(&workspace_path, &package_path)?;
+        pack_world_archive(&workspace_path, &package_path)?;
 
         Ok(Self {
             manifest,
@@ -112,10 +112,11 @@ impl WorldProject {
             )));
         }
 
-        let mut manifest = read_manifest(&package_path)?;
+        let mut archive = open_world_archive(&package_path)?;
+        let mut manifest = read_manifest_from_archive(&mut archive)?;
 
         let workspace_path = create_workspace_path(manifest.id, &temp_dir).await?;
-        unpack_world(&package_path, &workspace_path)?;
+        unpack_world_archive(archive, &workspace_path)?;
 
         let database_path = workspace_path.join(manifest.world_path());
         if !fs::try_exists(&database_path).await? || !fs::metadata(&database_path).await?.is_file()
@@ -133,7 +134,7 @@ impl WorldProject {
         database::checkpoint_wal(&mut conn).await?;
         manifest.open();
         write_manifest(&manifest, &workspace_path).await?;
-        pack_world(&workspace_path, &package_path)?;
+        pack_world_archive(&workspace_path, &package_path)?;
 
         Ok(Self {
             manifest,
@@ -150,7 +151,7 @@ impl WorldProject {
         self.manifest.modify();
         write_manifest(&self.manifest, &self.workspace).await?;
 
-        pack_world(&self.workspace, &self.package)?;
+        pack_world_archive(&self.workspace, &self.package)?;
         self.dirty = false;
         Ok(())
     }

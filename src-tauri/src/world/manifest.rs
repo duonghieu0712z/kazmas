@@ -6,6 +6,7 @@ use tokio::fs;
 use uuid::Uuid;
 use zip::ZipArchive;
 
+use super::archive::open_world_archive;
 use crate::app::{KazmasError, KazmasResult};
 
 #[cfg(test)]
@@ -62,8 +63,13 @@ impl WorldManifest {
 }
 
 pub(crate) fn read_manifest(package: impl AsRef<Path>) -> KazmasResult<WorldManifest> {
-    let zip_file = File::open(package)?;
-    let mut archive = ZipArchive::new(zip_file)?;
+    let mut archive = open_world_archive(package)?;
+    read_manifest_from_archive(&mut archive)
+}
+
+pub(super) fn read_manifest_from_archive(
+    archive: &mut ZipArchive<File>,
+) -> KazmasResult<WorldManifest> {
     let mut manifest_file = archive.by_name(MANIFEST_ENTRY)?;
 
     let mut manifest_json = String::new();
