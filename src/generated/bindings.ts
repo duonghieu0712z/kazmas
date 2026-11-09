@@ -5,6 +5,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 
 /** Commands */
 export const commands = {
+	getSystemFonts: () => typedError<string[], CommandError>(__TAURI_INVOKE("get_system_fonts")),
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
 	getWorld: () => typedError<{
 	id: string,
@@ -71,7 +72,7 @@ export type CommandError = {
 	message: string,
 };
 
-export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
+export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "FONT" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
 
 export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-manuscript-entry" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "reload-window" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 

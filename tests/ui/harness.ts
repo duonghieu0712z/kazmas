@@ -176,6 +176,8 @@ mockIPC(
         const data = (args ?? {}) as Record<string, unknown>;
         calls.push({ command, args: data });
         switch (command) {
+            case 'get_system_fonts':
+                return ['Geist', 'JetBrains Mono', 'Lora'];
             case 'get_node':
                 return (
                     [...entries, ...wikiEntries, ...sectionRoots].find(
