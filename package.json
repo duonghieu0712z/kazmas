@@ -7,11 +7,11 @@
     "author": "duonghieu0712z",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --configLoader native",
         "start": "pnpm tauri dev",
-        "preview": "vite preview",
+        "preview": "vite preview --configLoader native",
         "build": "run-p type-check \"build-only {@}\" --",
-        "build-only": "vite build",
+        "build-only": "vite build --configLoader native",
         "make": "pnpm tauri build",
         "type-check": "pnpm test:types",
         "lint": "run-s lint:check:*",
@@ -22,9 +22,9 @@
         "lint:fix:eslint": "eslint --fix . --cache",
         "format": "oxfmt --check .",
         "format:fix": "oxfmt .",
-        "test": "vitest",
-        "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage",
+        "test": "vitest --configLoader native",
+        "test:run": "vitest run --configLoader native",
+        "test:coverage": "vitest run --coverage --configLoader native",
         "test:types": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
         "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
         "test:ui": "playwright test",
@@ -112,7 +112,7 @@
         "vue-tsc": "^3.3.14"
     },
     "engines": {
-        "node": ">=22.12.0"
+        "node": ">=22.18.0"
     },
     "packageManager": "pnpm@12.18.0"
 }
