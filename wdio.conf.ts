@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { mkdirSync, mkdtempSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { browser } from '@wdio/globals';
@@ -9,13 +9,6 @@ const root = resolve('.artifacts/desktop');
 mkdirSync(root, { recursive: true });
 const runDirectory = process.env.KAZMAS_TEST_DATA_DIR ?? mkdtempSync(resolve(root, 'run-'));
 process.env.KAZMAS_TEST_DATA_DIR = runDirectory;
-
-function traceDesktopCommand(event: string, name: string) {
-    appendFileSync(
-        resolve(runDirectory, `commands-${process.pid}.log`),
-        `${new Date().toISOString()} ${event} ${name}\n`,
-    );
-}
 
 export const config: WebdriverIO.Config = {
     runner: 'local',
@@ -58,15 +51,6 @@ export const config: WebdriverIO.Config = {
     connectionRetryTimeout: 60000,
     connectionRetryCount: 1,
     mochaOpts: { timeout: 60000 },
-    beforeTest(test) {
-        traceDesktopCommand('TEST', test.title);
-    },
-    beforeCommand(commandName) {
-        traceDesktopCommand('START', commandName);
-    },
-    afterCommand(commandName, _args, _result, error) {
-        traceDesktopCommand(error ? 'FAIL' : 'END', commandName);
-    },
     async afterTest(_test, _context, result) {
         if (!result.passed) {
             await browser.saveScreenshot(resolve(runDirectory, `failure-${Date.now()}.png`));

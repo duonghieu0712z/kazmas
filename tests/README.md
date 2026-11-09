@@ -40,8 +40,7 @@ Declare callbacks that await desktop bridge commands as `async` and await the co
 `browser.execute`. WebdriverIO 10 selects the asynchronous WebDriver endpoint from the callback's
 function type; returning a Promise from a synchronous callback uses the embedded driver's polling
 path instead. The asynchronous endpoint holds WebKit activity while IPC completes on headless
-macOS runners. Per-worker `commands-*.log` files record test names and command start/end markers
-without arguments, so CI artifacts identify requests that stop responding.
+macOS runners.
 
 For focus-sensitive desktop controls, use `click({ button: 'left' })` so the embedded driver
 dispatches the mouse press and release sequence. Its no-options element click instead centers
