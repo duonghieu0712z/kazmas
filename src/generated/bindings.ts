@@ -6,40 +6,14 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	executeMenuCommand: (id: MenuCommand) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id })),
-	getWorld: () => typedError<{
-	id: string,
-	name: string,
-	createdAt: string,
-	modifiedAt: string,
-	openedAt: string,
-} | null, CommandError>(__TAURI_INVOKE("get_world")),
-	createWorld: (name: string, path: string, newWindow: boolean) => typedError<{
-	id: string,
-	name: string,
-	createdAt: string,
-	modifiedAt: string,
-	openedAt: string,
-} | null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
-	openWorld: (file: string, newWindow: boolean) => typedError<{
-	id: string,
-	name: string,
-	createdAt: string,
-	modifiedAt: string,
-	openedAt: string,
-} | null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
+	getWorld: () => typedError<WorldManifestDto | null, CommandError>(__TAURI_INVOKE("get_world")),
+	createWorld: (name: string, path: string, newWindow: boolean) => typedError<WorldManifestDto | null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow })),
+	openWorld: (file: string, newWindow: boolean) => typedError<WorldManifestDto | null, CommandError>(__TAURI_INVOKE("open_world", { file, newWindow })),
 	closeWorld: () => typedError<null, CommandError>(__TAURI_INVOKE("close_world")),
-	getNode: (nodeId: string) => typedError<{
-	id: string,
-	parentId: string | null,
-	kind: NodeKind,
-	name: string,
-	createdAt: string,
-	modifiedAt: string,
-	deletedAt: string | null,
-} | null, CommandError>(__TAURI_INVOKE("get_node", { nodeId })),
-	getManuscripts: () => typedError<NodeDto[] | null, CommandError>(__TAURI_INVOKE("get_manuscripts")),
-	getWikis: () => typedError<NodeDto[] | null, CommandError>(__TAURI_INVOKE("get_wikis")),
-	getTrash: () => typedError<NodeDto[] | null, CommandError>(__TAURI_INVOKE("get_trash")),
+	getNode: (nodeId: string) => typedError<NodeDto_Serialize | null, CommandError>(__TAURI_INVOKE("get_node", { nodeId })),
+	getManuscripts: () => typedError<NodeDto_Serialize[] | null, CommandError>(__TAURI_INVOKE("get_manuscripts")),
+	getWikis: () => typedError<NodeDto_Serialize[] | null, CommandError>(__TAURI_INVOKE("get_wikis")),
+	getTrash: () => typedError<NodeDto_Serialize[] | null, CommandError>(__TAURI_INVOKE("get_trash")),
 	emptyTrash: () => typedError<boolean | null, CommandError>(__TAURI_INVOKE("empty_trash")),
 	restoreTrash: () => typedError<boolean | null, CommandError>(__TAURI_INVOKE("restore_trash")),
 	getMetadata: (nodeId: string) => typedError<string | null, CommandError>(__TAURI_INVOKE("get_metadata", { nodeId })),
@@ -47,7 +21,7 @@ export const commands = {
 	createFolder: (name: string | null, parentId: string | null, section: NodeKind) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_folder", { name, parentId, section })),
 	createManuscriptEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_manuscript_entry", { name, parentId })),
 	createWikiEntry: (name: string | null, parentId: string | null) => typedError<string | null, CommandError>(__TAURI_INVOKE("create_wiki_entry", { name, parentId })),
-	updateNode: (node: UpdateNodeDto) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_node", { node })),
+	updateNode: (node: UpdateNodeDto_Deserialize) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_node", { node })),
 	moveManuscriptNode: (nodeId: string, targetId: string, placement: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("move_manuscript_node", { nodeId, targetId, placement })),
 	updateMetadata: (nodeId: string, data: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_metadata", { nodeId, data })),
 	updateDocument: (nodeId: string, content: string) => typedError<boolean | null, CommandError>(__TAURI_INVOKE("update_document", { nodeId, content })),
@@ -58,8 +32,8 @@ export const commands = {
 
 /** Events */
 export const events = {
-	menuCommand: makeEvent<MenuCommandEvent>("menu-command"),
-	worldChanged: makeEvent<WorldChangedEvent>("world-changed"),
+	menuCommand: makeEvent<MenuCommandEvent, MenuCommandEvent>("menu-command"),
+	worldChanged: makeEvent<WorldChangedEvent, WorldChangedEvent>("world-changed"),
 };
 
 /* Constants */
@@ -77,7 +51,19 @@ export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-wind
 
 export type MenuCommandEvent = MenuCommand;
 
-export type NodeDto = {
+export type NodeDto = NodeDto_Serialize | NodeDto_Deserialize;
+
+export type NodeDto_Deserialize = {
+	id: string,
+	parentId?: string | null,
+	kind: NodeKind,
+	name: string,
+	createdAt: string,
+	modifiedAt: string,
+	deletedAt?: string | null,
+};
+
+export type NodeDto_Serialize = {
 	id: string,
 	parentId: string | null,
 	kind: NodeKind,
@@ -89,7 +75,15 @@ export type NodeDto = {
 
 export type NodeKind = "world" | "manuscript" | "wiki" | "folder" | "manuscript_entry" | "wiki_entry";
 
-export type UpdateNodeDto = {
+export type UpdateNodeDto = UpdateNodeDto_Serialize | UpdateNodeDto_Deserialize;
+
+export type UpdateNodeDto_Deserialize = {
+	id: string,
+	parentId?: string | null,
+	name: string,
+};
+
+export type UpdateNodeDto_Serialize = {
 	id: string,
 	parentId: string | null,
 	name: string,
@@ -117,20 +111,24 @@ async function typedError<T, E>(result: Promise<T>): Promise<{ status: "ok"; dat
 
 type EventEmit<T> = [T] extends [null] ? () => Promise<void> : (payload: T) => Promise<void>;
 
-function makeEvent<T>(name: string, serialize?: (payload: T) => unknown, deserialize?: (payload: any) => T) {
-    const mapEvent = (cb: __TAURI_EVENT.EventCallback<T>) => (event: __TAURI_EVENT.Event<any>) => cb({ ...event, payload: deserialize ? deserialize(event.payload) : event.payload });
-    const mapPayload = (payload: T) => serialize ? serialize(payload) : payload;
+type EventEmitTo<T> = [T] extends [null] ? (target: __TAURI_EVENT.EventTarget | string) => Promise<void> : (target: __TAURI_EVENT.EventTarget | string, payload: T) => Promise<void>;
+
+function makeEvent<TListen, TEmit = TListen>(name: string, serialize?: (payload: TEmit) => unknown, deserialize?: (payload: any) => TListen) {
+    const mapEvent = (cb: __TAURI_EVENT.EventCallback<TListen>) => (event: __TAURI_EVENT.Event<any>) => cb({ ...event, payload: deserialize ? deserialize(event.payload) : event.payload });
+    const mapPayload = (payload: TEmit) => serialize ? serialize(payload) : payload;
 
     const base = {
-        listen: (cb: __TAURI_EVENT.EventCallback<T>) => __TAURI_EVENT.listen(name, mapEvent(cb)),
-        once: (cb: __TAURI_EVENT.EventCallback<T>) => __TAURI_EVENT.once(name, mapEvent(cb)),
-        emit: ((payload: T) => __TAURI_EVENT.emit(name, mapPayload(payload)) as unknown) as EventEmit<T>
+        listen: (cb: __TAURI_EVENT.EventCallback<TListen>) => __TAURI_EVENT.listen(name, mapEvent(cb)),
+        once: (cb: __TAURI_EVENT.EventCallback<TListen>) => __TAURI_EVENT.once(name, mapEvent(cb)),
+        emit: ((payload: TEmit) => __TAURI_EVENT.emit(name, mapPayload(payload)) as unknown) as EventEmit<TEmit>,
+        emitTo: ((to: __TAURI_EVENT.EventTarget | string, payload: TEmit) => __TAURI_EVENT.emitTo(to, name, mapPayload(payload)) as unknown) as EventEmitTo<TEmit>
     };
 
     const fn = (target: import("@tauri-apps/api/webview").Webview | import("@tauri-apps/api/window").Window) => ({
-        listen: (cb: __TAURI_EVENT.EventCallback<T>) => target.listen(name, mapEvent(cb)),
-        once: (cb: __TAURI_EVENT.EventCallback<T>) => target.once(name, mapEvent(cb)),
-        emit: ((payload: T) => target.emit(name, mapPayload(payload)) as unknown) as EventEmit<T>
+        listen: (cb: __TAURI_EVENT.EventCallback<TListen>) => target.listen(name, mapEvent(cb)),
+        once: (cb: __TAURI_EVENT.EventCallback<TListen>) => target.once(name, mapEvent(cb)),
+        emit: ((payload: TEmit) => target.emit(name, mapPayload(payload)) as unknown) as EventEmit<TEmit>,
+        emitTo: ((to: __TAURI_EVENT.EventTarget | string, payload: TEmit) => target.emitTo(to, name, mapPayload(payload)) as unknown) as EventEmitTo<TEmit>
     });
 
     return Object.assign(fn, base);
