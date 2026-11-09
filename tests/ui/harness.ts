@@ -1,4 +1,4 @@
-import type { MenuCommand } from '@/generated/bindings';
+import type { MenuCommand, UpdateNodeDto_Deserialize } from '@/generated/bindings';
 
 import { emit } from '@tauri-apps/api/event';
 import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
@@ -84,9 +84,10 @@ for (const item of wikiEntries) {
 const sortIndexes = new Map<string, number>();
 const siblingCounts = new Map<string | null, number>();
 for (const item of [...entries, ...wikiEntries]) {
-    const index = siblingCounts.get(item.parentId) ?? 0;
+    const parentId = item.parentId ?? null;
+    const index = siblingCounts.get(parentId) ?? 0;
     sortIndexes.set(item.id, index);
-    siblingCounts.set(item.parentId, index + 1);
+    siblingCounts.set(parentId, index + 1);
 }
 if (scenario === 'trash-order') {
     sortIndexes.set('z-file', 0);
@@ -196,7 +197,7 @@ mockIPC(
             case 'restore_trash': {
                 const deleted = [...entries, ...wikiEntries].filter((item) => item.deletedAt);
                 for (const item of deleted) {
-                    item.deletedAt = null;
+                    delete item.deletedAt;
                 }
                 return deleted.length > 0;
             }
@@ -229,7 +230,7 @@ mockIPC(
 
                 for (const node of all) {
                     if (restored.has(node.id)) {
-                        node.deletedAt = null;
+                        delete node.deletedAt;
                     } else if (node.parentId && ancestors.has(node.parentId) && !node.deletedAt) {
                         node.deletedAt = new Date().toISOString();
                     }
@@ -277,7 +278,7 @@ mockIPC(
                     node({
                         id,
                         name: typeof data.name === 'string' ? data.name : 'Untitled',
-                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        ...(typeof data.parentId === 'string' ? { parentId: data.parentId } : {}),
                         kind: wiki ? 'wiki_entry' : 'manuscript_entry',
                     }),
                 );
@@ -294,7 +295,7 @@ mockIPC(
                     node({
                         id,
                         name: typeof data.name === 'string' ? data.name : 'Untitled',
-                        parentId: typeof data.parentId === 'string' ? data.parentId : null,
+                        ...(typeof data.parentId === 'string' ? { parentId: data.parentId } : {}),
                         kind: 'folder',
                     }),
                 );
@@ -305,13 +306,17 @@ mockIPC(
                     failedRename = true;
                     return Promise.reject({ code: 'IO', message: 'Rename failed.' });
                 }
-                const update = data.node as { id: string; name: string; parentId: string | null };
+                const update = data.node as UpdateNodeDto_Deserialize;
                 const item = [...entries, ...wikiEntries].find((item) => item.id === update.id);
                 if (!item || item.deletedAt) {
                     return false;
                 }
                 item.name = update.name;
-                item.parentId = update.parentId;
+                if (update.parentId) {
+                    item.parentId = update.parentId;
+                } else {
+                    delete item.parentId;
+                }
                 return true;
             }
             case 'move_manuscript_node': {
@@ -338,7 +343,11 @@ mockIPC(
                         ? siblings.length
                         : targetIndex + Number(data.placement === 'after');
                 siblings.splice(index, 0, item);
-                item.parentId = parentId;
+                if (parentId) {
+                    item.parentId = parentId;
+                } else {
+                    delete item.parentId;
+                }
                 for (const [index, sibling] of siblings.entries()) {
                     sortIndexes.set(sibling.id, index);
                 }

@@ -65,12 +65,12 @@ export type NodeDto_Deserialize = {
 
 export type NodeDto_Serialize = {
 	id: string,
-	parentId: string | null,
+	parentId?: string,
 	kind: NodeKind,
 	name: string,
 	createdAt: string,
 	modifiedAt: string,
-	deletedAt: string | null,
+	deletedAt?: string,
 };
 
 export type NodeKind = "world" | "manuscript" | "wiki" | "folder" | "manuscript_entry" | "wiki_entry";
@@ -85,7 +85,7 @@ export type UpdateNodeDto_Deserialize = {
 
 export type UpdateNodeDto_Serialize = {
 	id: string,
-	parentId: string | null,
+	parentId?: string,
 	name: string,
 };
 

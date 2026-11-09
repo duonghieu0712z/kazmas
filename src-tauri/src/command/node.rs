@@ -18,11 +18,13 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 pub(super) struct NodeDto {
     id: Uuid,
+    #[serde(skip_serializing_if = "Option::is_none")]
     parent_id: Option<Uuid>,
     kind: NodeKind,
     name: String,
     created_at: DateTime<Utc>,
     modified_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     deleted_at: Option<DateTime<Utc>>,
 }
 
@@ -44,6 +46,7 @@ impl From<Node> for NodeDto {
 #[serde(rename_all = "camelCase")]
 pub(super) struct UpdateNodeDto {
     id: Uuid,
+    #[serde(skip_serializing_if = "Option::is_none")]
     parent_id: Option<Uuid>,
     name: String,
 }

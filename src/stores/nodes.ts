@@ -1,11 +1,11 @@
-import type { NodeDto } from '@/generated/bindings';
+import type { NodeDto_Serialize } from '@/generated/bindings';
 
 import { defineStore } from 'pinia';
 
 import { commands } from '@/generated/bindings';
 import { useWorkspaceStore } from '@/stores/workspace';
 
-export type NodeTreeDto = NodeDto & {
+export type NodeTreeDto = NodeDto_Serialize & {
     children: NodeTreeDto[];
 };
 
@@ -15,10 +15,10 @@ export type NodePathItem = {
 };
 
 export const useNodeStore = defineStore('nodes', () => {
-    const manuscriptNodes = shallowRef<NodeDto[]>([]);
-    const wikiNodes = shallowRef<NodeDto[]>([]);
-    const trashNodes = shallowRef<NodeDto[]>([]);
-    const trashAncestors = shallowRef<NodeDto[]>([]);
+    const manuscriptNodes = shallowRef<NodeDto_Serialize[]>([]);
+    const wikiNodes = shallowRef<NodeDto_Serialize[]>([]);
+    const trashNodes = shallowRef<NodeDto_Serialize[]>([]);
+    const trashAncestors = shallowRef<NodeDto_Serialize[]>([]);
     const trashError = ref('');
     const selectedNodeId = shallowRef<string | null>(null);
 
@@ -111,11 +111,11 @@ export const useNodeStore = defineStore('nodes', () => {
         workspace.resetWorld();
     };
 
-    const selectNode = (node: NodeDto) => {
+    const selectNode = (node: NodeDto_Serialize) => {
         selectedNodeId.value = node.id;
     };
 
-    const openNode = (node: NodeDto) => {
+    const openNode = (node: NodeDto_Serialize) => {
         if (node.kind === 'manuscript_entry' || node.kind === 'wiki_entry') {
             workspace.openDocument(node.id);
         }
@@ -157,7 +157,7 @@ export const useNodeStore = defineStore('nodes', () => {
             if (result.status === 'ok') {
                 const trash = result.data ?? [];
                 const known = new Map(trash.map((node) => [node.id, node]));
-                const ancestors: NodeDto[] = [];
+                const ancestors: NodeDto_Serialize[] = [];
                 for (const item of trash) {
                     let parentId = item.parentId;
                     while (parentId && !known.has(parentId)) {
@@ -172,7 +172,7 @@ export const useNodeStore = defineStore('nodes', () => {
                         ancestors.push(parent.data);
                         parentId =
                             parent.data.kind === 'manuscript' || parent.data.kind === 'wiki'
-                                ? null
+                                ? undefined
                                 : parent.data.parentId;
                     }
                 }
@@ -227,7 +227,7 @@ export const useNodeStore = defineStore('nodes', () => {
     };
 });
 
-function buildNodeTree(nodes: NodeDto[]) {
+function buildNodeTree(nodes: NodeDto_Serialize[]) {
     const nodeMap = new Map<string, NodeTreeDto>();
     for (const node of nodes) {
         nodeMap.set(node.id, { ...node, children: [] });
@@ -246,8 +246,8 @@ function buildNodeTree(nodes: NodeDto[]) {
     return roots;
 }
 
-function buildNodePath(rootName: string, nodes: NodeDto[], nodeId: string) {
-    const nodeMap = new Map<string, NodeDto>();
+function buildNodePath(rootName: string, nodes: NodeDto_Serialize[], nodeId: string) {
+    const nodeMap = new Map<string, NodeDto_Serialize>();
     for (const node of nodes) {
         nodeMap.set(node.id, node);
     }

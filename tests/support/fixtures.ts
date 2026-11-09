@@ -1,14 +1,12 @@
-import type { NodeDto, WorldManifestDto } from '@/generated/bindings';
+import type { NodeDto_Serialize, WorldManifestDto } from '@/generated/bindings';
 
-export function node(overrides: Partial<NodeDto> = {}): NodeDto {
+export function node(overrides: Partial<NodeDto_Serialize> = {}): NodeDto_Serialize {
     return {
         id: 'entry-a',
-        parentId: null,
         name: 'Chapter A',
         kind: 'manuscript_entry',
         createdAt: '2026-01-01T00:00:00Z',
         modifiedAt: '2026-01-01T00:00:00Z',
-        deletedAt: null,
         ...overrides,
     };
 }
