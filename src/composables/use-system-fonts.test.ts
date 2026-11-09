@@ -37,6 +37,7 @@ describe('system font loading', () => {
     });
 
     it('exposes errors and retries a failed load instead of caching the failure', async () => {
+        const reportError = vi.spyOn(globalThis, 'reportError');
         getSystemFonts.mockResolvedValueOnce({
             status: 'error',
             error: { message: 'Fonts unavailable' },
@@ -49,6 +50,7 @@ describe('system font loading', () => {
         expect(state.error.value).toBeInstanceOf(Error);
         expect((state.error.value as Error).message).toBe('Fonts unavailable');
         expect(state.fonts.value).toEqual([]);
+        expect(reportError).not.toHaveBeenCalled();
 
         await state.loadFonts();
         expect(getSystemFonts).toHaveBeenCalledTimes(2);
