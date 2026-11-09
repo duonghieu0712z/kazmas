@@ -36,7 +36,7 @@ export default defineConfig({
                 'src/extensions/tiptap/**',
                 'src/lib/document-saves.ts',
             ],
-            exclude: ['**/*.test.ts', '**/index.ts'],
+            exclude: ['**/*.test.ts', '**/index.ts', '**/.DS_Store'],
         },
     },
 });
