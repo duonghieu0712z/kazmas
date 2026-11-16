@@ -40,6 +40,8 @@ updates:
         patterns:
           - '@tiptap/*'
       npm-minor-and-patch:
+        exclude-patterns:
+          - '@tiptap/*'
         update-types:
           - minor
           - patch
