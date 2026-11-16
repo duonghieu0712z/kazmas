@@ -53,6 +53,9 @@ tauri-build = { version = "2.7.4", features = [] }
 [dev-dependencies]
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
 
+[lints.cargo]
+unused_dependencies = "allow"
+
 [lints.rust]
 unsafe_code = "deny"
 unused_imports = "warn"
