@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, mergeConfig } from 'vite';
 
-import { createSharedConfig } from './vite.shared.config';
+import { createSharedConfig } from './vite.shared.config.ts';
 
 export default mergeConfig(
     createSharedConfig(),

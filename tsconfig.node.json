@@ -10,10 +10,12 @@
         "commitlint.config.*"
     ],
     "compilerOptions": {
-        "module": "preserve",
-        "moduleResolution": "bundler",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "types": ["node"],
         "allowSyntheticDefaultImports": true,
+        "allowImportingTsExtensions": true,
+        "erasableSyntaxOnly": true,
         "noEmit": true,
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo"
     }

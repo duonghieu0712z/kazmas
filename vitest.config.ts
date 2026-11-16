@@ -1,7 +1,7 @@
 import { mergeConfig } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-import { createSharedConfig } from './vite.shared.config';
+import { createSharedConfig } from './vite.shared.config.ts';
 
 export default mergeConfig(
     createSharedConfig(),

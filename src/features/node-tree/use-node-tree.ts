@@ -36,7 +36,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
 
             return id ? findNode(props.tree, id) : undefined;
         },
-        set: (node: NodeTreeDto | undefined) => {
+        set: (node?: NodeTreeDto) => {
             state.value.selectedId = node?.id ?? null;
         },
     });
@@ -98,7 +98,7 @@ export function useNodeTree(props: { tree: NodeTreeDto[]; section: NodeTreeSecti
         { immediate: true, flush: 'sync' },
     );
 
-    const revealAncestors = (parentId: string | null) => {
+    const revealAncestors = (parentId?: string | null) => {
         let parent = parentId ? findNode(props.tree, parentId) : undefined;
         const expanded = new Set(state.value.expanded);
         const visited = new Set<string>();

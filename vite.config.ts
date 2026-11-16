@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, mergeConfig } from 'vite';
 import vueDevTools from 'vite-plugin-vue-devtools';
 
-import { createSharedConfig } from './vite.shared.config';
+import { createSharedConfig } from './vite.shared.config.ts';
 
 const host = process.env.TAURI_DEV_HOST;
 

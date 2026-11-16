@@ -1,4 +1,4 @@
-import type { NodeDto } from '@/generated/bindings';
+import type { NodeDto_Serialize } from '@/generated/bindings';
 
 import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
@@ -28,8 +28,8 @@ describe('desktop bridge world loading', () => {
             await flushPromises();
             const nodes = useNodeStore();
             nodes.openNode(node());
-            const manuscripts = deferred<{ status: 'ok'; data: NodeDto[] }>();
-            const wikis = deferred<{ status: 'ok'; data: NodeDto[] }>();
+            const manuscripts = deferred<{ status: 'ok'; data: NodeDto_Serialize[] }>();
+            const wikis = deferred<{ status: 'ok'; data: NodeDto_Serialize[] }>();
             tauri.getManuscripts.mockClear().mockReturnValue(manuscripts.promise);
             tauri.getWikis.mockClear().mockReturnValue(wikis.promise);
             tauri.createWorld.mockResolvedValue({ status: 'ok', data: manifest() });

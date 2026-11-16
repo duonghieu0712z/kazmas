@@ -36,7 +36,7 @@ describe('inline rename', () => {
             expect(actions.rename.value?.saving).toBe(true);
             expect(tauri.updateNode).toHaveBeenCalledExactlyOnceWith({
                 id: 'entry-a',
-                parentId: null,
+                parentId: undefined,
                 name: 'Revised',
             });
             let finished = false;
