@@ -1,14 +1,6 @@
 {
     "extends": "@tsconfig/node24/tsconfig.json",
-    "include": [
-        "vite*.ts",
-        "vitest.config.*",
-        "playwright.config.*",
-        "wdio.conf.*",
-        "eslint.config.*",
-        "lint-staged.config.*",
-        "commitlint.config.*"
-    ],
+    "include": ["vite*.ts", "eslint.config.*", "lint-staged.config.*", "commitlint.config.*"],
     "compilerOptions": {
         "module": "nodenext",
         "moduleResolution": "nodenext",

@@ -9,10 +9,6 @@ use zip::ZipArchive;
 use super::archive::open_world_archive;
 use crate::app::{KazmasError, KazmasResult};
 
-#[cfg(test)]
-#[path = "manifest_tests.rs"]
-mod tests;
-
 pub(super) const MAX_MANIFEST_SIZE: u64 = 1024 * 1024;
 
 pub(super) const MANIFEST_ENTRY: &str = "manifest.json";

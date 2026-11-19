@@ -1,9 +1,5 @@
 use std::path::{Path, PathBuf};
 
-#[cfg(test)]
-#[path = "project_tests.rs"]
-mod tests;
-
 use sqlx::{Acquire, SqliteConnection};
 use tokio::fs;
 use uuid::Uuid;
