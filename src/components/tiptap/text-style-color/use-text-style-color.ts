@@ -48,14 +48,6 @@ export function canSetTextStyleColor(editor: Editor | null, type: TextStyleColor
 }
 
 function getMarkColor(marks: readonly Mark[], type: TextStyleColorType): string | null {
-    const highlight = marks.find((mark) => mark.type.name === 'highlight');
-    const highlightAttribute = type === 'color' ? 'textColor' : 'color';
-    const highlightColor = highlight?.attrs[highlightAttribute] as string | null | undefined;
-
-    if (highlightColor && highlightColor !== 'inherit' && highlightColor !== 'transparent') {
-        return highlightColor;
-    }
-
     const textStyle = marks.find((mark) => mark.type.name === 'textStyle');
 
     return (textStyle?.attrs[type] as string | null) || null;
@@ -155,17 +147,6 @@ export function useTextStyleColor(config: UseTextStyleColorConfig) {
     });
 
     const activeColor = computed(() => getActiveTextStyleColor(editor.value, type.value));
-    const isActive = computed(() => {
-        const currentEditor = editor.value;
-
-        if (!currentEditor || !isTextStyleColorAvailable(currentEditor, type.value)) {
-            return false;
-        }
-
-        const color = currentEditor.getAttributes('textStyle')[type.value];
-
-        return !!color && currentEditor.isActive('textStyle', { [type.value]: color });
-    });
     const activeHex = computed(() => {
         if (!activeColor.value || !editor.value || editor.value.isDestroyed) {
             return undefined;
@@ -224,7 +205,6 @@ export function useTextStyleColor(config: UseTextStyleColorConfig) {
         editor,
         presets,
         activeColor,
-        isActive,
         activePreset,
         canSet,
         canRemove,

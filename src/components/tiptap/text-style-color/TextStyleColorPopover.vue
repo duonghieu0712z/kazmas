@@ -32,7 +32,6 @@ const {
     editor,
     presets,
     activeColor,
-    isActive,
     activePreset,
     canSet,
     canRemove,
@@ -54,7 +53,7 @@ watch(open, (value) => {
         return;
     }
 
-    const initialColor = activeColor.value ?? presets.value[0]?.color ?? 'currentColor';
+    const initialColor = activeColor.value ?? getComputedStyle(editor.value.view.dom)[props.type];
     customColor.value = getColorHex(initialColor, editor.value.view.dom);
 });
 
@@ -99,7 +98,7 @@ function handleCloseAutoFocus(event: Event) {
                     :aria-label="label"
                     class="gap-0.5 text-editor-toolbar-foreground"
                     :disabled="isDisabled"
-                    :model-value="open || isActive"
+                    :model-value="open"
                     size="default"
                 >
                     <slot>
@@ -108,6 +107,11 @@ function handleCloseAutoFocus(event: Event) {
                             <ColorSwatch
                                 as="span"
                                 class="h-0.5 w-4 rounded-none"
+                                :class="
+                                    type === 'color'
+                                        ? 'text-editor-foreground'
+                                        : 'text-editor-background'
+                                "
                                 :color="activeColor || 'currentColor'"
                             />
                         </span>

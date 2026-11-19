@@ -155,7 +155,7 @@ function handleCloseAutoFocus(event: Event) {
                         'data-disabled:pointer-events-none data-disabled:text-disabled-foreground',
                     ]"
                     :data-disabled="isDisabled ? '' : undefined"
-                    :data-state="isSelectedPresetActive || open ? 'on' : 'off'"
+                    :data-state="open ? 'on' : 'off'"
                     spacing="spaced"
                 >
                     <Toggle
@@ -167,7 +167,7 @@ function handleCloseAutoFocus(event: Event) {
                             'data-[state=on]:bg-transparent data-[state=on]:text-inherit',
                         ]"
                         :disabled="isDisabled"
-                        :model-value="isSelectedPresetActive"
+                        :model-value="false"
                         size="icon"
                         @click="toggleSelectedHighlight"
                         @mousedown.prevent
