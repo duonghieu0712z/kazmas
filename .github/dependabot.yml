@@ -13,6 +13,9 @@ updates:
     directory: /
     versioning-strategy: increase
     multi-ecosystem-group: tauri
+    allow:
+      - dependency-name: '@tauri-apps/*'
+      - dependency-name: '@wdio/tauri-*'
     patterns:
       - '@tauri-apps/*'
       - '@wdio/tauri-*'
@@ -20,6 +23,8 @@ updates:
   - package-ecosystem: cargo
     directory: /src-tauri
     multi-ecosystem-group: tauri
+    allow:
+      - dependency-name: tauri*
     patterns:
       - tauri*
 
@@ -40,6 +45,8 @@ updates:
         patterns:
           - '@tiptap/*'
       npm-minor-and-patch:
+        exclude-patterns:
+          - '@tiptap/*'
         update-types:
           - minor
           - patch

@@ -1,4 +1,4 @@
-import { createGlobalState, useAsyncState } from '@vueuse/core';
+import { createGlobalState, noop, useAsyncState } from '@vueuse/core';
 
 import { commands } from '@/generated/bindings';
 
@@ -16,7 +16,7 @@ export const useSystemFonts = createGlobalState(() => {
             return result.data;
         },
         [] as string[],
-        { immediate: false, resetOnExecute: false },
+        { immediate: false, resetOnExecute: false, onError: noop },
     );
 
     const loadFonts = async () => {

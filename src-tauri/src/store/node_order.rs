@@ -48,7 +48,9 @@ WHERE node_id = ?
 #[derive(Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TrashPosition {
+    #[serde(skip_serializing_if = "Option::is_none")]
     prev_sibling_id: Option<Uuid>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     next_sibling_id: Option<Uuid>,
 }
 

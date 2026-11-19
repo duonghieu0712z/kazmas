@@ -13,7 +13,7 @@ function run(args) {
 }
 
 if (process.argv.includes('--frontend-only')) {
-    const status = run(['build', '--mode', 'test-desktop']);
+    const status = run(['build', '--config', 'vite.desktop.config.ts']);
     if (status === 0) {
         copyFileSync(
             '.artifacts/desktop/frontend/tests/desktop/index.html',

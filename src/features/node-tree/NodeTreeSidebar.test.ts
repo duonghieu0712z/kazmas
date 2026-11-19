@@ -1,4 +1,4 @@
-import type { NodeDto } from '@/generated/bindings';
+import type { NodeDto_Serialize } from '@/generated/bindings';
 import type { NodeTreeDto } from '@/stores/nodes';
 
 import { flushPromises, mount } from '@vue/test-utils';
@@ -32,7 +32,7 @@ function mountTree(tree: NodeTreeDto[]) {
     });
 }
 
-async function mountStoredTree(data: NodeDto[] = []) {
+async function mountStoredTree(data: NodeDto_Serialize[] = []) {
     setActivePinia(createPinia());
     const nodes = useNodeStore();
     const world = useWorldStore();

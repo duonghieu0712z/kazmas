@@ -163,11 +163,11 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         }
         packagePath = resolve(directory, `${name}.kazmas`);
         await browser.execute(
-            (worldName, path) => window.__kazmasDesktopTest.create(worldName, path),
+            async (worldName, path) => await window.__kazmasDesktopTest.create(worldName, path),
             name,
             directory,
         );
-        await browser.execute(() => window.__kazmasDesktopTest.entry('Chapter A'));
+        await browser.execute(async () => await window.__kazmasDesktopTest.entry('Chapter A'));
         await $('[role="tabpanel"][data-state="active"] .tiptap').waitForDisplayed();
     });
 
@@ -183,7 +183,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         }
         try {
             await browser.switchToWindow(owner);
-            await browser.execute(() => window.__kazmasDesktopTest.reset());
+            await browser.execute(async () => await window.__kazmasDesktopTest.reset());
         } catch (error) {
             errors.push(error);
         }
@@ -201,9 +201,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
             'Unicode \u65e5\u672c\u8a9e and formatted manuscript',
         );
-        await browser.execute(() => window.__kazmasDesktopTest.save());
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(async () => await window.__kazmasDesktopTest.save());
+        await browser.execute(async () => await window.__kazmasDesktopTest.close());
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await openChapterA();
         await expectDocumentText('Unicode \u65e5\u672c\u8a9e and formatted manuscript');
     });
@@ -240,9 +243,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             );
         });
         if (process.platform !== 'darwin') {
-            await browser.execute(() => window.__kazmasDesktopTest.close());
+            await browser.execute(async () => await window.__kazmasDesktopTest.close());
         }
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await openChapterA();
         await expect($('[role="tabpanel"][data-state="active"] .tiptap strong')).toHaveText(
             'Formatted manuscript',
@@ -337,9 +343,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             '[data-slot="popover-content"][data-state="open"] button[aria-label="1.5"]',
         ).click();
 
-        await browser.execute(() => window.__kazmasDesktopTest.save());
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(async () => await window.__kazmasDesktopTest.save());
+        await browser.execute(async () => await window.__kazmasDesktopTest.close());
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await openChapterA();
 
         await expectDocumentText('Persisted typography and colors');
@@ -363,7 +372,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue(
             'Pending chapter A content',
         );
-        await browser.execute(() => window.__kazmasDesktopTest.entry('Chapter B'));
+        await browser.execute(async () => await window.__kazmasDesktopTest.entry('Chapter B'));
         await openChapterA();
         await expectDocumentText('Pending chapter A content');
     });
@@ -400,9 +409,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
         for (let cycle = 0; cycle < 3; cycle++) {
             await $('//*[@role="tab"][normalize-space(.)="Sibling chapter"]').click();
-            await browser.execute(() => window.__kazmasDesktopTest.save());
-            await browser.execute(() => window.__kazmasDesktopTest.close());
-            await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+            await browser.execute(async () => await window.__kazmasDesktopTest.save());
+            await browser.execute(async () => await window.__kazmasDesktopTest.close());
+            await browser.execute(
+                async (path) => await window.__kazmasDesktopTest.open(path),
+                packagePath,
+            );
             const reopenedFolder = await $('//*[@role="treeitem"][contains(., "New folder")]');
             await reopenedFolder.waitForDisplayed();
             if ((await reopenedFolder.getAttribute('aria-expanded')) !== 'true') {
@@ -451,9 +463,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             await $('//*[@role="menuitem"][normalize-space(.)="Move to Trash"]').click();
             await folder.waitForExist({ reverse: true });
         }
-        await browser.execute(() => window.__kazmasDesktopTest.save());
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(async () => await window.__kazmasDesktopTest.save());
+        await browser.execute(async () => await window.__kazmasDesktopTest.close());
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await activityButton('Trash').click();
         for (const section of ['Manuscript', 'Wiki']) {
             const group = await $(
@@ -502,16 +517,16 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         const original = await readFile(packagePath);
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Copy content');
         const copy = packagePath.replace('.kazmas', '-copy.kazmas');
-        await browser.execute((path) => window.__kazmasDesktopTest.saveAs(path), copy);
+        await browser.execute(async (path) => await window.__kazmasDesktopTest.saveAs(path), copy);
         expect(await readFile(packagePath)).toEqual(original);
-        await browser.execute(() => window.__kazmasDesktopTest.close());
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), copy);
+        await browser.execute(async () => await window.__kazmasDesktopTest.close());
+        await browser.execute(async (path) => await window.__kazmasDesktopTest.open(path), copy);
         await openChapterA();
         await expectDocumentText('Copy content');
     });
 
     it('cancel keeps the world open and discard reopens the last saved content', async () => {
-        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(async () => await window.__kazmasDesktopTest.save());
         await $('[role="tabpanel"][data-state="active"] .tiptap').setValue('Discarded content');
         await browser.execute(() => {
             void window.__kazmasDesktopTest.close();
@@ -525,7 +540,10 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="alertdialog"]').waitForDisplayed();
         await $("button=Don't Save").click();
         await $('[role="tabpanel"][data-state="active"] .tiptap').waitForExist({ reverse: true });
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await openChapterA();
         await expectDocumentText('');
     });
@@ -538,7 +556,10 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await $('[role="alertdialog"]').waitForDisplayed();
         await $('button=Save').click();
         await $('[role="tabpanel"][data-state="active"] .tiptap').waitForExist({ reverse: true });
-        await browser.execute((path) => window.__kazmasDesktopTest.open(path), packagePath);
+        await browser.execute(
+            async (path) => await window.__kazmasDesktopTest.open(path),
+            packagePath,
+        );
         await openChapterA();
         await expectDocumentText('Saved from dialog');
     });
@@ -547,16 +568,16 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         const corrupt = packagePath.replace('.kazmas', '-corrupt.kazmas');
         await writeFile(corrupt, 'invalid package');
         await expect(
-            browser.execute((path) => window.__kazmasDesktopTest.open(path), corrupt),
+            browser.execute(async (path) => await window.__kazmasDesktopTest.open(path), corrupt),
         ).rejects.toThrow();
         expect(await browser.execute(() => window.__kazmasDesktopTest.world()?.name)).toBe(name);
         await expect($('[role="tabpanel"][data-state="active"] .tiptap')).toBeDisplayed();
     });
 
     it('keeps the existing project owner without creating a duplicate window', async () => {
-        await browser.execute(() => window.__kazmasDesktopTest.save());
+        await browser.execute(async () => await window.__kazmasDesktopTest.save());
         const before = await browser.getWindowHandles();
-        await browser.execute(() => window.__kazmasDesktopTest.newWindow());
+        await browser.execute(async () => await window.__kazmasDesktopTest.newWindow());
         await browser.waitUntil(
             async () => (await browser.getWindowHandles()).length === before.length + 1,
         );
@@ -572,7 +593,7 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
             );
             expect(await browser.execute(() => window.__kazmasDesktopTest.world())).toBeNull();
             await browser.execute(
-                (path) => window.__kazmasDesktopTest.open(path, true),
+                async (path) => await window.__kazmasDesktopTest.open(path, true),
                 packagePath,
             );
             expect((await browser.getWindowHandles()).sort()).toEqual([...handles].sort());

@@ -198,10 +198,13 @@ describe('editor formatting controls', () => {
         expect(restored.getJSON()).toEqual(json);
 
         const html = createEditor(editor.getHTML());
+        const expectedStyle = document.createElement('span').style;
+        expectedStyle.fontFamily = JSON.stringify('Geist');
+
         expect(targetMarks(html)).toMatchObject({
             highlight: targetMarks(editor).highlight,
             textStyle: {
-                fontFamily: '"Geist"',
+                fontFamily: expectedStyle.fontFamily,
                 fontSize: '18px',
                 lineHeight: '1.5',
                 color: 'rgb(18, 52, 86)',
