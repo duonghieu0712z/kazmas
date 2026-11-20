@@ -133,6 +133,21 @@ describe('editor formatting controls', () => {
         },
     );
 
+    it('recognizes a highlight preset and removes only the highlight mark', () => {
+        const editor = createEditor();
+        const preset = HIGHLIGHT_PRESETS[0]!;
+        setColor(editor, 'color', '#123456');
+        setColor(editor, 'backgroundColor', '#abcdef');
+
+        expect(setColor(editor, 'highlight', preset)).toBe(true);
+        expect(getActiveColor(editor, 'highlight', HIGHLIGHT_PRESETS)).toEqual(preset);
+        expect(setColor(editor, 'highlight', null)).toBe(true);
+        expect(getActiveColor(editor, 'highlight', HIGHLIGHT_PRESETS)).toBeUndefined();
+        expect(targetMarks(editor)).not.toHaveProperty('highlight');
+        expect(getActiveColor(editor, 'color', [])).toBe('#123456');
+        expect(getActiveColor(editor, 'backgroundColor', [])).toBe('#abcdef');
+    });
+
     it('clears one color without clearing the other or the font settings', () => {
         const editor = createEditor();
         setColor(editor, 'highlight', HIGHLIGHT_PRESETS[0]!);

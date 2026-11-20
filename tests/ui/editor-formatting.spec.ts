@@ -30,13 +30,17 @@ test('reaches earlier toolbar controls across narrow and wide windows', async ({
         await page.setViewportSize({ width, height: 800 });
         await selectTarget(page);
         await (await showToolbarControl(page, 'Highlight')).click();
-        await (await showToolbarControl(page, 'Text color')).click();
-        await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+        await (await showToolbarControl(page, 'Text color palette')).click();
+        await expect(
+            page.getByRole('dialog', { name: 'Text color palette', exact: true }),
+        ).toBeVisible();
         await page.keyboard.press('Escape');
         await (await showToolbarControl(page, 'Line height')).click();
         await page.keyboard.press('Escape');
-        await (await showToolbarControl(page, 'Text color')).click();
-        await expect(page.getByRole('dialog', { name: 'Text color', exact: true })).toBeVisible();
+        await (await showToolbarControl(page, 'Text color palette')).click();
+        await expect(
+            page.getByRole('dialog', { name: 'Text color palette', exact: true }),
+        ).toBeVisible();
         await page.keyboard.press('Escape');
     }
 });
@@ -50,6 +54,7 @@ test('highlight palette preserves selection and remembers the color for the icon
     await page.getByRole('button', { name: 'Highlight colors', exact: true }).click();
     const palette = page.getByRole('dialog', { name: 'Highlight colors', exact: true });
     await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(palette.getByRole('button', { name: 'Add custom color' })).toHaveCount(0);
     await palette.getByRole('button', { name: 'Green highlight', exact: true }).click();
 
     await expect(editor.locator('mark')).toHaveText('target');
@@ -161,8 +166,9 @@ for (const theme of ['light', 'dark'] as const) {
             (element) => getComputedStyle(element).backgroundColor,
         );
 
-        await page.getByRole('button', { name: 'Text color', exact: true }).click();
-        const foreground = page.getByRole('dialog', { name: 'Text color', exact: true });
+        await page.getByRole('button', { name: 'Text color palette', exact: true }).click();
+        const foreground = page.getByRole('dialog', { name: 'Text color palette', exact: true });
+        await foreground.getByRole('button', { name: 'Add custom color', exact: true }).click();
         await foreground.getByRole('textbox', { name: 'Hex color', exact: true }).fill('#123456');
         await expect(mark).not.toHaveCSS('color', 'rgb(18, 52, 86)');
         await foreground.getByRole('button', { name: 'Apply', exact: true }).click();
@@ -171,11 +177,14 @@ for (const theme of ['light', 'dark'] as const) {
         await expect(mark).toHaveCSS('background-color', background);
         await expect(editor).toBeFocused();
 
-        await page.getByRole('button', { name: 'Text background color', exact: true }).click();
+        await page.getByRole('button', { name: 'Background color palette', exact: true }).click();
         const backgroundPicker = page.getByRole('dialog', {
-            name: 'Text background color',
+            name: 'Background color palette',
             exact: true,
         });
+        await backgroundPicker
+            .getByRole('button', { name: 'Add custom color', exact: true })
+            .click();
         const hex = backgroundPicker.getByRole('textbox', { name: 'Hex color', exact: true });
         await hex.fill('#zzzzzz');
         await expect(hex).toHaveAttribute('aria-invalid', 'true');
@@ -195,31 +204,52 @@ for (const theme of ['light', 'dark'] as const) {
     });
 }
 
-test('a plain text color preset closes its popup and draft changes can be canceled', async ({
-    page,
-    workspace,
-}) => {
-    await workspace.open();
-    const editor = await selectTarget(page);
-    await page.getByRole('button', { name: 'Text color', exact: true }).click();
-    const palette = page.getByRole('dialog', { name: 'Text color', exact: true });
-    await palette.getByRole('button', { name: 'Blue', exact: true }).click();
-    await expect(palette).toHaveCount(0);
-    await expect(editor).toBeFocused();
-    const before = await editor.innerHTML();
+for (const label of ['Text color', 'Background color'] as const) {
+    test(`${label} remembers a preset and discards a custom draft without widening the palette`, async ({
+        page,
+        workspace,
+    }) => {
+        await workspace.open();
+        const editor = await selectTarget(page);
+        const toggle = page.getByRole('button', { name: label, exact: true });
+        const trigger = page.getByRole('button', { name: `${label} palette`, exact: true });
+        const palette = page.getByRole('dialog', { name: `${label} palette`, exact: true });
 
-    await page.getByRole('button', { name: 'Text color', exact: true }).click();
-    const area = palette.getByRole('slider', { name: 'Saturation, Brightness', exact: true });
-    await area.focus();
-    const hex = palette.getByRole('textbox', { name: 'Hex color', exact: true });
-    const initial = await hex.inputValue();
-    await page.keyboard.press('ArrowLeft');
-    await expect(hex).not.toHaveValue(initial);
-    await expect(editor).toHaveJSProperty('innerHTML', before);
-    await page.keyboard.press('Escape');
-    await expect(palette).toHaveCount(0);
-    await expect(editor).toHaveJSProperty('innerHTML', before);
-});
+        await trigger.click();
+        await palette.getByRole('button', { name: 'Blue', exact: true }).click();
+        await expect(palette).toHaveCount(0);
+        await expect(editor).toBeFocused();
+        await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        const before = await editor.innerHTML();
+
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+        await expect(editor).not.toHaveJSProperty('innerHTML', before);
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+        await expect(editor).toHaveJSProperty('innerHTML', before);
+
+        await trigger.click();
+        const hex = palette.getByRole('textbox', { name: 'Hex color', exact: true });
+        await expect(hex).toHaveCount(0);
+        const width = await palette.evaluate((element) => element.clientWidth);
+
+        await palette.getByRole('button', { name: 'Add custom color', exact: true }).click();
+        await expect(hex).toBeVisible();
+        await expect(palette).toHaveJSProperty('clientWidth', width);
+        const area = palette.getByRole('slider', { name: 'Saturation, Brightness', exact: true });
+        const initial = await hex.inputValue();
+        await area.focus();
+        await page.keyboard.press('ArrowLeft');
+        await expect(hex).not.toHaveValue(initial);
+        await expect(editor).toHaveJSProperty('innerHTML', before);
+
+        await page.keyboard.press('Escape');
+        await expect(palette).toHaveCount(0);
+        await expect(trigger).toBeFocused();
+        await expect(editor).toHaveJSProperty('innerHTML', before);
+    });
+}
 
 test('new formatting controls are disabled in a read-only editor', async ({ page, workspace }) => {
     await workspace.open();
@@ -229,7 +259,7 @@ test('new formatting controls are disabled in a read-only editor', async ({ page
         'Font family',
         'Line height',
         'Text color',
-        'Text background color',
+        'Background color',
         'Highlight',
     ]) {
         await expect(

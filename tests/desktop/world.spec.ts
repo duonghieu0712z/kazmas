@@ -73,6 +73,16 @@ async function clickToolbarControl(name: string) {
     throw new Error(`Toolbar control ${name} could not be reached.`);
 }
 
+async function applyCustomColor(paletteLabel: string, color: string) {
+    await clickToolbarControl(paletteLabel);
+
+    const palette = await $(`[role="dialog"][aria-label="${paletteLabel}"]`);
+    await palette.$('button[aria-label="Add custom color"]').click({ button: 'left' });
+    await palette.$('input[aria-label="Hex color"]').setValue(color);
+    await palette.$('button[aria-label="Apply"]').click({ button: 'left' });
+    await palette.waitForExist({ reverse: true });
+}
+
 async function clickToolbarButton(name: string) {
     const point = await browser.waitUntil(
         async () => {
@@ -270,12 +280,12 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
 
             await clickToolbarControl('Highlight');
 
-            const after = await browser.execute(getToolbarNavigationState, 'Text color');
+            const after = await browser.execute(getToolbarNavigationState, 'Text color palette');
             expect(after.scrollLeft).toBe(before.scrollLeft);
             expect(after.direction).toBeNull();
 
-            await clickToolbarControl('Text color');
-            await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+            await clickToolbarControl('Text color palette');
+            await expect($('[role="dialog"][aria-label="Text color palette"]')).toBeDisplayed();
             await browser.keys('Escape');
         } finally {
             await browser.setWindowSize(size.width, size.height);
@@ -295,13 +305,13 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
                     process.platform === 'darwin' ? ['Meta', 'a'] : ['Control', 'a'],
                 );
                 await clickToolbarControl('Highlight');
-                await clickToolbarControl('Text color');
-                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await clickToolbarControl('Text color palette');
+                await expect($('[role="dialog"][aria-label="Text color palette"]')).toBeDisplayed();
                 await browser.keys('Escape');
                 await clickToolbarControl('Line height');
                 await browser.keys('Escape');
-                await clickToolbarControl('Text color');
-                await expect($('[role="dialog"][aria-label="Text color"]')).toBeDisplayed();
+                await clickToolbarControl('Text color palette');
+                await expect($('[role="dialog"][aria-label="Text color palette"]')).toBeDisplayed();
                 await browser.keys('Escape');
             }
         } finally {
@@ -323,20 +333,8 @@ describe('desktop world lifecycle with real SQLite and packages', () => {
         await fontOption.click();
 
         await clickToolbarControl('Highlight');
-        await clickToolbarControl('Text color');
-        await $(
-            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
-        ).setValue('#123456');
-        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
-        await $('[role="dialog"][aria-label="Text color"]').waitForExist({ reverse: true });
-        await clickToolbarControl('Text background color');
-        await $(
-            '[data-slot="popover-content"][data-state="open"] input[aria-label="Hex color"]',
-        ).setValue('#abcdef');
-        await $('[data-slot="popover-content"][data-state="open"]').$('button=Apply').click();
-        await $('[role="dialog"][aria-label="Text background color"]').waitForExist({
-            reverse: true,
-        });
+        await applyCustomColor('Text color palette', '#123456');
+        await applyCustomColor('Background color palette', '#abcdef');
 
         await clickToolbarControl('Line height');
         await $(
