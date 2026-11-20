@@ -2,9 +2,40 @@ import type { Page } from '@playwright/test';
 
 import { expect, test as base } from '@playwright/test';
 
+import { getToolbarNavigationState } from '../support/toolbar';
+
 type Workspace = {
     open: (scenario?: string) => Promise<void>;
 };
+
+export async function showToolbarControl(page: Page, name: string) {
+    const control = page.getByRole('button', { name, exact: true, includeHidden: true });
+    let state = await page.evaluate(getToolbarNavigationState, name);
+    const maxSteps = state.controlCount * 2;
+
+    for (let index = 0; index < maxSteps; index++) {
+        if (state.direction === null) {
+            await expect(control).toBeVisible();
+            return control;
+        }
+
+        const navigation = page.getByRole('button', {
+            name: `${state.direction} toolbar controls`,
+            exact: true,
+        });
+        const previousLeft = state.scrollLeft;
+
+        await navigation.click();
+        await expect
+            .poll(async () => {
+                state = await page.evaluate(getToolbarNavigationState, name);
+                return state.scrollLeft !== previousLeft || state.direction === null;
+            })
+            .toBe(true);
+    }
+
+    throw new Error(`Toolbar control ${name} could not be reached.`);
+}
 
 async function expectPlatformChrome(page: Page) {
     const fileMenu = page.getByRole('menuitem', { name: 'File', exact: true, includeHidden: true });

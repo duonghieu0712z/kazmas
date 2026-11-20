@@ -149,6 +149,32 @@
     --color-tooltip-border: var(--border);
 }
 
+@theme static {
+    /* Editor text colors */
+    --color-editor-text-yellow: var(--highlight-yellow-foreground);
+    --color-editor-text-background-yellow: var(--highlight-yellow-background);
+    --color-editor-text-green: var(--highlight-green-foreground);
+    --color-editor-text-background-green: var(--highlight-green-background);
+    --color-editor-text-blue: var(--highlight-blue-foreground);
+    --color-editor-text-background-blue: var(--highlight-blue-background);
+    --color-editor-text-purple: var(--highlight-purple-foreground);
+    --color-editor-text-background-purple: var(--highlight-purple-background);
+    --color-editor-text-pink: var(--highlight-pink-foreground);
+    --color-editor-text-background-pink: var(--highlight-pink-background);
+
+    /* Editor highlight presets */
+    --color-editor-highlight-yellow-background: var(--highlight-yellow-background);
+    --color-editor-highlight-yellow-foreground: var(--highlight-yellow-foreground);
+    --color-editor-highlight-green-background: var(--highlight-green-background);
+    --color-editor-highlight-green-foreground: var(--highlight-green-foreground);
+    --color-editor-highlight-blue-background: var(--highlight-blue-background);
+    --color-editor-highlight-blue-foreground: var(--highlight-blue-foreground);
+    --color-editor-highlight-purple-background: var(--highlight-purple-background);
+    --color-editor-highlight-purple-foreground: var(--highlight-purple-foreground);
+    --color-editor-highlight-pink-background: var(--highlight-pink-background);
+    --color-editor-highlight-pink-foreground: var(--highlight-pink-foreground);
+}
+
 :root {
     --radius: 0.5rem;
 
@@ -167,6 +193,18 @@
     --highlight: oklch(0.86 0.12 85);
     --highlight-foreground: oklch(0.34 0.07 85);
     --highlight-border: oklch(0.65 0.12 85);
+
+    --highlight-yellow-background: oklch(0.93 0.1 95);
+    --highlight-yellow-foreground: oklch(0.38 0.09 75);
+    --highlight-green-background: oklch(0.92 0.08 150);
+    --highlight-green-foreground: oklch(0.4 0.1 155);
+    --highlight-blue-background: oklch(0.91 0.07 250);
+    --highlight-blue-foreground: oklch(0.42 0.13 260);
+    --highlight-purple-background: oklch(0.91 0.07 305);
+    --highlight-purple-foreground: oklch(0.43 0.15 300);
+    --highlight-pink-background: oklch(0.92 0.07 350);
+    --highlight-pink-foreground: oklch(0.43 0.15 350);
+
     --overlay: oklch(0.55 0 0 / 60%);
 }
 
@@ -186,6 +224,18 @@
     --highlight: oklch(0.42 0.08 85);
     --highlight-foreground: oklch(0.94 0.07 85);
     --highlight-border: oklch(0.7 0.12 85);
+
+    --highlight-yellow-background: oklch(0.4 0.07 90);
+    --highlight-yellow-foreground: oklch(0.92 0.11 95);
+    --highlight-green-background: oklch(0.39 0.07 155);
+    --highlight-green-foreground: oklch(0.9 0.09 150);
+    --highlight-blue-background: oklch(0.39 0.08 255);
+    --highlight-blue-foreground: oklch(0.9 0.08 250);
+    --highlight-purple-background: oklch(0.39 0.09 305);
+    --highlight-purple-foreground: oklch(0.89 0.09 305);
+    --highlight-pink-background: oklch(0.39 0.09 350);
+    --highlight-pink-foreground: oklch(0.9 0.08 350);
+
     --overlay: oklch(0.12 0 0 / 80%);
 }
 
@@ -235,6 +285,10 @@
 @utility prose-editor {
     background-color: var(--color-editor-background);
     color: var(--color-editor-foreground);
+
+    :where(p, h1, h2, h3, h4, h5, h6) {
+        line-height: 1.15;
+    }
 
     --tw-prose-body: var(--color-editor-foreground);
     --tw-prose-headings: var(--color-editor-foreground);

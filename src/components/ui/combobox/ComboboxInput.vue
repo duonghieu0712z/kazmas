@@ -12,22 +12,26 @@ defineOptions({
     inheritAttrs: false,
 });
 
-const props = defineProps<
-    ComboboxInputProps & {
-        class?: HTMLAttributes['class'];
-    }
->();
+const props = withDefaults(
+    defineProps<
+        ComboboxInputProps & {
+            class?: HTMLAttributes['class'];
+            showSearchIcon?: boolean;
+        }
+    >(),
+    { showSearchIcon: true },
+);
 
 const emits = defineEmits<ComboboxInputEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'showSearchIcon');
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
     <div class="flex h-9 items-center gap-2 border-b px-3" data-slot="command-input-wrapper">
-        <SearchIcon class="size-4 shrink-0 opacity-50" />
+        <SearchIcon v-if="showSearchIcon" class="size-4 shrink-0 opacity-50" />
         <ComboboxInput
             :class="
                 cn(
