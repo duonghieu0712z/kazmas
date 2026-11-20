@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import type { ToggleProps } from '@/components/ui/toggle';
-import type { ComponentPublicInstance } from 'vue';
 
 import { ChevronDownIcon, EraserIcon } from '@lucide/vue';
-import { ref, useId, useTemplateRef, watch } from 'vue';
+import { ref, useId, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { ButtonGroup, ButtonGroupSeparator } from '@/components/ui/button-group';
@@ -29,7 +28,7 @@ const emits = defineEmits<{ toggle: [] }>();
 const open = defineModel<boolean>('open', { default: false });
 const tooltipOpen = ref(false);
 const popupId = useId();
-const paletteTrigger = useTemplateRef<ComponentPublicInstance>('paletteTrigger');
+const paletteTriggerId = useId();
 
 let applied = false;
 let restoreTriggerFocus = false;
@@ -73,12 +72,7 @@ function handleCloseAutoFocus(event: Event) {
         event.preventDefault();
     } else if (restoreTriggerFocus) {
         event.preventDefault();
-
-        const trigger = paletteTrigger.value?.$el;
-
-        if (trigger instanceof HTMLElement) {
-            trigger.focus();
-        }
+        document.getElementById(paletteTriggerId)?.focus({ preventScroll: true });
     }
 
     applied = false;
@@ -123,7 +117,7 @@ function handleCloseAutoFocus(event: Event) {
 
                         <PopoverTrigger>
                             <Toggle
-                                ref="paletteTrigger"
+                                :id="paletteTriggerId"
                                 :aria-controls="open ? popupId : undefined"
                                 :aria-expanded="open"
                                 aria-haspopup="dialog"
