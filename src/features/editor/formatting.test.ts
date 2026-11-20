@@ -7,13 +7,12 @@ import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 import { defineComponent } from 'vue';
 
+import { HIGHLIGHT_PRESETS, getActiveColor, setColor } from '@/components/tiptap/color';
 import { getDocumentTextSize, setDocumentTextSize } from '@/components/tiptap/document-text-size';
 import { setFontFamily, useFontFamily } from '@/components/tiptap/font-family';
 import { getActiveFontSize, setFontSize } from '@/components/tiptap/font-size';
-import { HIGHLIGHT_PRESETS, setHighlight } from '@/components/tiptap/highlight';
 import { getActiveLineHeight, setLineHeight } from '@/components/tiptap/line-height';
 import { resetAllFormatting } from '@/components/tiptap/reset-all-formatting';
-import { getActiveTextStyleColor, setTextStyleColor } from '@/components/tiptap/text-style-color';
 
 import { createEditorExtensions } from './options';
 
@@ -80,8 +79,8 @@ describe('editor formatting controls', () => {
         expect(setFontFamily(editor, 'Geist')).toBe(true);
         expect(setFontSize(editor, '20px')).toBe(true);
         expect(setLineHeight(editor, 1.5)).toBe(true);
-        expect(setTextStyleColor(editor, 'color', '#123456')).toBe(true);
-        expect(setTextStyleColor(editor, 'backgroundColor', '#abcdef')).toBe(true);
+        expect(setColor(editor, 'color', '#123456')).toBe(true);
+        expect(setColor(editor, 'backgroundColor', '#abcdef')).toBe(true);
 
         expect(targetMarks(editor)).toMatchObject({
             bold: {},
@@ -107,23 +106,23 @@ describe('editor formatting controls', () => {
         (type) => {
             const editor = createEditor();
             const preset = HIGHLIGHT_PRESETS[0]!;
-            setHighlight(editor, preset);
+            setColor(editor, 'highlight', preset);
             editor.commands.command(({ tr }) => {
                 closeHistory(tr);
                 return true;
             });
             const before = editor.getJSON();
 
-            expect(setTextStyleColor(editor, type, '#123456')).toBe(true);
-            expect(getActiveTextStyleColor(editor, type)).toBe('#123456');
+            expect(setColor(editor, type, '#123456')).toBe(true);
+            expect(getActiveColor(editor, type, [])).toBe('#123456');
             const highlight = targetMarks(editor).highlight!;
 
             if (type === 'color') {
                 expect(highlight.textColor).toBe('#123456');
-                expect(highlight.color).toBe(preset.backgroundColor);
+                expect(highlight.color).toBe(preset.color);
             } else {
                 expect(highlight.color).toBe('#123456');
-                expect(highlight.textColor).toBe(preset.color);
+                expect(highlight.textColor).toBe(preset.textColor);
             }
 
             const after = editor.getJSON();
@@ -136,31 +135,31 @@ describe('editor formatting controls', () => {
 
     it('clears one color without clearing the other or the font settings', () => {
         const editor = createEditor();
-        setHighlight(editor, HIGHLIGHT_PRESETS[0]!);
+        setColor(editor, 'highlight', HIGHLIGHT_PRESETS[0]!);
         setFontFamily(editor, 'Geist');
-        setTextStyleColor(editor, 'color', '#123456');
-        setTextStyleColor(editor, 'backgroundColor', '#abcdef');
+        setColor(editor, 'color', '#123456');
+        setColor(editor, 'backgroundColor', '#abcdef');
 
-        setTextStyleColor(editor, 'color', null);
-        expect(getActiveTextStyleColor(editor, 'color')).toBeNull();
-        expect(getActiveTextStyleColor(editor, 'backgroundColor')).toBe('#abcdef');
+        setColor(editor, 'color', null);
+        expect(getActiveColor(editor, 'color', [])).toBeNull();
+        expect(getActiveColor(editor, 'backgroundColor', [])).toBe('#abcdef');
         expect(targetMarks(editor).textStyle?.fontFamily).toBe('"Geist"');
 
-        setTextStyleColor(editor, 'color', '#654321');
-        setTextStyleColor(editor, 'backgroundColor', null);
-        expect(getActiveTextStyleColor(editor, 'backgroundColor')).toBeNull();
-        expect(getActiveTextStyleColor(editor, 'color')).toBe('#654321');
+        setColor(editor, 'color', '#654321');
+        setColor(editor, 'backgroundColor', null);
+        expect(getActiveColor(editor, 'backgroundColor', [])).toBeNull();
+        expect(getActiveColor(editor, 'color', [])).toBe('#654321');
     });
 
     it('updates stored highlight colors at a cursor without recoloring existing text', () => {
         const editor = createEditor();
-        setHighlight(editor, HIGHLIGHT_PRESETS[0]!);
+        setColor(editor, 'highlight', HIGHLIGHT_PRESETS[0]!);
         editor.commands.setTextSelection(10);
         const before = editor.getJSON();
 
-        setTextStyleColor(editor, 'color', '#123456');
+        setColor(editor, 'color', '#123456');
         expect(editor.getJSON()).toEqual(before);
-        expect(getActiveTextStyleColor(editor, 'color')).toBe('#123456');
+        expect(getActiveColor(editor, 'color', [])).toBe('#123456');
         editor.commands.insertContent('X');
         expect(editor.view.dom.querySelector('span')?.style.color).toBe('rgb(18, 52, 86)');
         expect(editor.state.doc.textContent).toBe('Before taXrget after');
@@ -171,27 +170,27 @@ describe('editor formatting controls', () => {
         expect(getActiveLineHeight(editor)).toBe(1.15);
         setFontSize(editor, '20px');
         setLineHeight(editor, 2);
-        setTextStyleColor(editor, 'color', '#123456');
+        setColor(editor, 'color', '#123456');
         editor.commands.setTextSelection({ from: 1, to: 14 });
 
         expect(getActiveFontSize(editor)).toBeUndefined();
         expect(getActiveLineHeight(editor)).toBeUndefined();
-        expect(getActiveTextStyleColor(editor, 'color')).toBeUndefined();
+        expect(getActiveColor(editor, 'color', [])).toBeUndefined();
         expect(resetAllFormatting(editor)).toBe(true);
         expect(getActiveFontSize(editor)).toBeNull();
         expect(getActiveLineHeight(editor)).toBe(1.15);
-        expect(getActiveTextStyleColor(editor, 'color')).toBeNull();
+        expect(getActiveColor(editor, 'color', [])).toBeNull();
         expect(editor.state.doc.textContent).toBe('Before target after');
     });
 
     it('round-trips formatting through document JSON and HTML', () => {
         const editor = createEditor();
-        setHighlight(editor, HIGHLIGHT_PRESETS[1]!);
+        setColor(editor, 'highlight', HIGHLIGHT_PRESETS[1]!);
         setFontFamily(editor, 'Geist');
         setFontSize(editor, '18px');
         setLineHeight(editor, 1.5);
-        setTextStyleColor(editor, 'color', '#123456');
-        setTextStyleColor(editor, 'backgroundColor', '#abcdef');
+        setColor(editor, 'color', '#123456');
+        setColor(editor, 'backgroundColor', '#abcdef');
 
         const json = editor.getJSON();
         const restored = createEditor(JSON.parse(JSON.stringify(json)) as JSONContent);
@@ -249,20 +248,20 @@ describe('editor formatting controls', () => {
         expect(setFontFamily(editor, 'Geist')).toBe(false);
         expect(setFontSize(editor, '20px')).toBe(false);
         expect(setLineHeight(editor, 2)).toBe(false);
-        expect(setTextStyleColor(editor, 'color', '#123456')).toBe(false);
+        expect(setColor(editor, 'color', '#123456')).toBe(false);
         expect(setDocumentTextSize(editor, 1.25)).toBe(false);
         expect(editor.getJSON()).toEqual(before);
 
         const unsupported = new Editor({ extensions: [StarterKit], content: '<p>Text</p>' });
         editors.push(unsupported);
-        expect(setTextStyleColor(unsupported, 'color', '#123456')).toBe(false);
+        expect(setColor(unsupported, 'color', '#123456')).toBe(false);
         expect(setLineHeight(unsupported, 2)).toBe(false);
         unsupported.destroy();
-        expect(setTextStyleColor(unsupported, 'color', '#123456')).toBe(false);
+        expect(setColor(unsupported, 'color', '#123456')).toBe(false);
 
         editor.setEditable(true);
         editor.commands.setCode();
-        expect(setTextStyleColor(editor, 'color', '#123456')).toBe(false);
+        expect(setColor(editor, 'color', '#123456')).toBe(false);
         expect(setFontFamily(editor, 'Geist')).toBe(false);
     });
 });
