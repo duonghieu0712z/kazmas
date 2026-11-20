@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CheckIcon } from '@lucide/vue';
+import { formatHex } from 'culori';
 import {
     ColorAreaArea,
     ColorAreaRoot,
@@ -14,10 +16,10 @@ import { Input } from '@/components/ui/input';
 
 import ColorSwatch from './ColorSwatch.vue';
 
-const props = defineProps<{ disabled?: boolean }>();
+const props = defineProps<{ disabled?: boolean; initialColor?: string }>();
 const emits = defineEmits<{ select: [color: string] }>();
-const color = defineModel<string>({ required: true });
 
+const color = ref(formatHex(props.initialColor) ?? '#000000');
 const hexInput = ref(color.value);
 const isValid = computed(() => /^#[\da-f]{6}$/i.test(hexInput.value));
 
@@ -83,14 +85,20 @@ function handleSelect() {
                 :aria-invalid="!isValid"
                 aria-label="Hex color"
                 autocomplete="off"
-                class="font-mono text-xs"
+                class="min-w-0 font-mono text-xs"
                 :disabled="disabled"
                 maxlength="7"
                 spellcheck="false"
                 @keydown.enter.prevent="handleSelect"
             />
-            <Button :disabled="disabled || !isValid" variant="ghost" @click="handleSelect">
-                Apply
+            <Button
+                aria-label="Apply"
+                :disabled="disabled || !isValid"
+                size="icon"
+                variant="ghost"
+                @click="handleSelect"
+            >
+                <CheckIcon aria-hidden="true" />
             </Button>
         </div>
     </div>
