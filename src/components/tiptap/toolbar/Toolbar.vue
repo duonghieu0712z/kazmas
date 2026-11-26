@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from 'vue';
 
 import { ChevronsLeftIcon, ChevronsRightIcon } from '@lucide/vue';
-import { useResizeObserver } from '@vueuse/core';
+import { useRafFn, useResizeObserver } from '@vueuse/core';
 import { ref, useTemplateRef } from 'vue';
 
 import { Button } from '@/components/ui/button';
@@ -186,8 +186,13 @@ function goToNextGroup() {
     updateNavigation();
 }
 
-useResizeObserver(navigationViewport, updateNavigation);
-useResizeObserver(navigationContent, updateNavigation);
+const { resume: scheduleNavigationUpdate } = useRafFn(updateNavigation, {
+    immediate: false,
+    once: true,
+});
+
+useResizeObserver(navigationViewport, scheduleNavigationUpdate);
+useResizeObserver(navigationContent, scheduleNavigationUpdate);
 </script>
 
 <template>

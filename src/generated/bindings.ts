@@ -6,6 +6,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 
 /** Commands */
 export const commands = {
+	getSystemFonts: (options?: InvokeOptions) => typedError<string[], CommandError>(__TAURI_INVOKE("get_system_fonts", undefined, options)),
 	executeMenuCommand: (id: MenuCommand, options?: InvokeOptions) => typedError<null, CommandError>(__TAURI_INVOKE("execute_menu_command", { id }, options)),
 	getWorld: (options?: InvokeOptions) => typedError<WorldManifestDto | null, CommandError>(__TAURI_INVOKE("get_world", undefined, options)),
 	createWorld: (name: string, path: string, newWindow: boolean, options?: InvokeOptions) => typedError<WorldManifestDto | null, CommandError>(__TAURI_INVOKE("create_world", { name, path, newWindow }, options)),
@@ -46,7 +47,7 @@ export type CommandError = {
 	message: string,
 };
 
-export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
+export type CommandErrorCode = "ALREADY_EXISTS" | "INVALID" | "NOT_FOUND" | "FONT" | "IO" | "JSON" | "SQLITE" | "STRIP_PREFIX" | "STRUM" | "TAURI" | "UUID" | "WALK_DIR" | "ZIP";
 
 export type MenuCommand = "about" | "clear-worlds" | "close-world" | "close-window" | "copy" | "cut" | "empty-trash" | "new-manuscript-entry" | "new-file" | "new-folder" | "new-window" | "new-world" | "new-wiki-entry" | "open-world" | "paste" | "project-settings" | "quit" | "redo" | "recent-worlds" | "reload-window" | "save" | "save-as" | "settings" | "select-all" | "toggle-devtools" | "undo" | "updates";
 
