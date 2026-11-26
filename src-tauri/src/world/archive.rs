@@ -1,3 +1,7 @@
+#[cfg(target_os = "macos")]
+use std::os::darwin::fs::FileTimesExt;
+#[cfg(windows)]
+use std::os::windows::fs::FileTimesExt;
 use std::{
     fs::{self, File, Metadata},
     io::{self, Read},
@@ -150,12 +154,36 @@ pub(super) fn pack_world_archive(
     }
 
     let temp = writer.finish()?;
+    #[cfg(any(target_os = "macos", windows))]
+    preserve_package_creation_time(package, temp.as_file())?;
+
     temp.as_file().sync_all()?;
 
     let temp_package = temp.into_temp_path();
     fs::rename(&temp_package, package)?;
 
     Ok(())
+}
+
+#[cfg(any(target_os = "macos", windows))]
+fn preserve_package_creation_time(package: &Path, replacement: &File) -> io::Result<()> {
+    let metadata = match fs::symlink_metadata(package) {
+        Ok(metadata) if metadata.is_file() => metadata,
+        Ok(_) => return Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+    };
+
+    let created = match metadata.created() {
+        Ok(created) => created,
+        Err(error) if error.kind() == io::ErrorKind::Unsupported => return Ok(()),
+        Err(error) => return Err(error),
+    };
+
+    match replacement.set_times(fs::FileTimes::new().set_created(created)) {
+        Err(error) if error.kind() == io::ErrorKind::Unsupported => Ok(()),
+        result => result,
+    }
 }
 
 fn walk_world_entries(
