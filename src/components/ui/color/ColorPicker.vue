@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Color } from 'reka-ui';
+import type { Color, HSBColor } from 'reka-ui';
 
 import { CheckIcon } from '@lucide/vue';
 import { formatHex } from 'culori';
@@ -25,7 +25,8 @@ const emits = defineEmits<{ select: [color: string] }>();
 
 const color = ref(formatHex(props.initialColor) ?? '#000000');
 const hexInput = ref(color.value);
-const areaSeed = shallowRef<{ key: symbol; hex: string; color: Color }>();
+const areaKey = shallowRef<symbol>();
+const areaSeed = shallowRef<{ hex: string; color: HSBColor }>();
 
 const areaColor = computed(() => {
     const seed = areaSeed.value;
@@ -38,7 +39,8 @@ watch(color, (value) => {
 });
 
 watch(hexInput, (value) => {
-    if (isValid.value) {
+    if (isValid.value && value !== color.value) {
+        areaSeed.value = undefined;
         color.value = value;
     }
 });
@@ -47,6 +49,11 @@ function handleSelect() {
     if (!props.disabled && isValid.value) {
         emits('select', color.value);
     }
+}
+
+function handleAreaColor(value: Color) {
+    areaSeed.value =
+        color.value === '#000000' ? { hex: color.value, color: convertToHsb(value) } : undefined;
 }
 
 function handleSliderUpdate(value: string | Color) {
@@ -59,11 +66,12 @@ function handleSliderColor(value: Color) {
     const hsb = convertToHsb(parseColor(color.value));
 
     if (hsb.s === 0 && value.space !== 'rgb') {
+        const current = areaColor.value;
         areaSeed.value = {
-            key: Symbol(),
             hex: color.value,
-            color: { ...hsb, h: value.h },
+            color: { ...(typeof current === 'string' ? hsb : current), h: value.h },
         };
+        areaKey.value = Symbol();
     }
 }
 </script>
@@ -71,13 +79,14 @@ function handleSliderColor(value: Color) {
 <template>
     <div class="flex flex-col gap-2" data-slot="color-picker">
         <ColorAreaRoot
-            :key="areaSeed?.key"
+            :key="areaKey"
             v-slot="{ style }"
             color-space="hsb"
             :disabled="disabled"
             :model-value="areaColor"
             x-channel="saturation"
             y-channel="brightness"
+            @update:color="handleAreaColor"
             @update:model-value="color = $event"
         >
             <ColorAreaArea class="relative h-28 w-full rounded-sm" :style="style">
